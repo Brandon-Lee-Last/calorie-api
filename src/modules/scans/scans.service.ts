@@ -42,6 +42,8 @@ export class ScansService {
     private repo: ScansRepo,
     private storage: ObjectStorage,
     private clock: Clock,
+    /** Called once for each new scan, to count it towards the daily total the app shows. */
+    private onNewScan: (userId: string) => Promise<void> = async () => {},
   ) {}
 
   async record(userId: string, id: string, input: ScanInput) {
@@ -63,6 +65,7 @@ export class ScansService {
       },
       now,
     );
+    if (!before) await this.onNewScan(userId);
     // Taking consent back removes the photo that was given under it.
     if (before?.image_key && !input.contributeConsent) {
       await this.storage.delete(before.image_key);

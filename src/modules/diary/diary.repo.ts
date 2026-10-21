@@ -1,4 +1,4 @@
-import { all } from '../../db/sql';
+import { all, first } from '../../db/sql';
 import { SyncedTable, type DeleteResult, type UpsertResult } from '../../db/synced-table';
 import type { MealType } from './diary.types';
 
@@ -197,6 +197,17 @@ export class DiaryRepo {
         )
         .bind(userId, sinceMs, userId, limit),
     );
+  }
+
+  async countPhotos(userId: string): Promise<number> {
+    const row = await first<{ n: number }>(
+      this.db
+        .prepare(
+          'SELECT COUNT(*) AS n FROM diary_entries WHERE user_id = ? AND photo_key IS NOT NULL AND deleted_at IS NULL',
+        )
+        .bind(userId),
+    );
+    return row?.n ?? 0;
   }
 
   /** Attach or remove the photo key. Bumps the revision so other devices learn about it; the edit time is unchanged. */

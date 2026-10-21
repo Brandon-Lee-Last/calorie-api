@@ -1,4 +1,4 @@
-import { conflict, notFound } from '../../core/errors';
+import { conflict, notFound, quotaExceeded } from '../../core/errors';
 import { DAY, type Clock } from '../../core/time';
 import { assertLoggedTime, assertRangeWithin, sanitizeClientTime } from '../../core/validation';
 import type { ObjectStorage } from '../media/object-storage';
@@ -88,6 +88,8 @@ export class DiaryService {
     private repo: DiaryRepo,
     private storage: ObjectStorage,
     private clock: Clock,
+    /** How many meal photos this person may keep (depends on their plan). */
+    private photoLimit: (userId: string) => Promise<number> = async () => Number.MAX_SAFE_INTEGER,
   ) {}
 
   async put(userId: string, id: string, input: EntryInput) {
@@ -182,6 +184,10 @@ export class DiaryService {
   async setPhoto(userId: string, id: string, upload: { bytes: Uint8Array; type: ImageType }) {
     const entry = await this.repo.get(userId, id);
     if (!entry || entry.deleted_at !== null) throw notFound('Diary entry');
+    if (!entry.photo_key) {
+      const limit = await this.photoLimit(userId);
+      if ((await this.repo.countPhotos(userId)) >= limit) throw quotaExceeded('meal_photos', limit);
+    }
     const key = photoKey(userId, id, upload.type);
     await this.storage.put(key, upload.bytes, upload.type);
     if (entry.photo_key && entry.photo_key !== key) await this.storage.delete(entry.photo_key);

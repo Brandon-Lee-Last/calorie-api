@@ -10,9 +10,13 @@ export const T0 = Date.UTC(2026, 9, 21, 12, 0, 0); // 2026-10-21 12:00:00 UTC
 export type TestApp = ReturnType<typeof makeApp>;
 
 /** An app wired with a frozen clock, a silent logger and no rate limiting, plus a small request helper. */
-export function makeApp(overrides: Overrides & { clock?: FakeClock } = {}) {
+export function makeApp(
+  overrides: Overrides & { clock?: FakeClock } = {},
+  configure?: (app: ReturnType<typeof createApp>) => void,
+) {
   const clock = overrides.clock ?? new FakeClock(T0);
   const app = createApp({ logger: silentLogger, rateLimiter: unlimited, ...overrides, clock });
+  configure?.(app); // add test-only routes here, before the first request builds the router
   const request = (path: string, init?: RequestInit) => app.request(path, init, env);
   return { app, clock, env, request };
 }

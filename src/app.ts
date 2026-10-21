@@ -16,6 +16,7 @@ import { diaryRoutes } from './modules/diary/diary.routes';
 import { foodsRoutes } from './modules/foods/foods.routes';
 import { scansRoutes } from './modules/scans/scans.routes';
 import { syncRoutes } from './modules/sync/sync.routes';
+import { subscriptionsRoutes } from './modules/subscriptions/subscriptions.routes';
 import { healthRoutes } from './modules/health/health.routes';
 
 export const API_PREFIX = '/v1';
@@ -91,6 +92,7 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', foodsRoutes);
   v1.route('/', scansRoutes);
   v1.route('/', syncRoutes);
+  v1.route('/', subscriptionsRoutes);
   app.route(API_PREFIX, v1);
 
   app.doc(`${API_PREFIX}/openapi.json`, {

@@ -18,6 +18,12 @@ import { OpenFoodFactsClient, type FoodLookup } from './modules/foods/off';
 import { ScansRepo } from './modules/scans/scans.repo';
 import { ScansService } from './modules/scans/scans.service';
 import { SyncService } from './modules/sync/sync.service';
+import { GooglePlayBillingProvider } from './modules/subscriptions/billing/google-play';
+import { MockBillingProvider } from './modules/subscriptions/billing/mock';
+import type { BillingProvider } from './modules/subscriptions/billing/provider';
+import { SubscriptionsRepo } from './modules/subscriptions/subscriptions.repo';
+import { SubscriptionsService } from './modules/subscriptions/subscriptions.service';
+import { UsageRepo } from './modules/usage/usage.repo';
 import { UsersRepo } from './modules/users/users.repo';
 import { UsersService } from './modules/users/users.service';
 
@@ -28,6 +34,7 @@ export interface Overrides {
   rateLimiter?: RateLimiter;
   googleVerifier?: GoogleVerifier;
   foodLookup?: FoodLookup;
+  billing?: BillingProvider;
 }
 
 /**
@@ -95,8 +102,43 @@ export class Container {
     return this.once('storage', () => new ObjectStorage(this.env.MEDIA));
   }
 
+  get billing(): BillingProvider {
+    return this.once(
+      'billing',
+      () =>
+        this.overrides.billing ??
+        (this.config.BILLING_PROVIDER === 'google_play'
+          ? new GooglePlayBillingProvider()
+          : new MockBillingProvider(this.clock)),
+    );
+  }
+
+  get subscriptions(): SubscriptionsService {
+    return this.once(
+      'subscriptions',
+      () =>
+        new SubscriptionsService(
+          new SubscriptionsRepo(this.db),
+          new UsageRepo(this.db),
+          new UsersRepo(this.db),
+          this.billing,
+          this.clock,
+          { isProduction: this.config.isProduction, simulateEnabled: this.config.SIMULATE_ENABLED },
+        ),
+    );
+  }
+
   get diary(): DiaryService {
-    return this.once('diary', () => new DiaryService(new DiaryRepo(this.db), this.storage, this.clock));
+    return this.once(
+      'diary',
+      () =>
+        new DiaryService(
+          new DiaryRepo(this.db),
+          this.storage,
+          this.clock,
+          async (userId) => (await this.subscriptions.limitsFor(userId)).mealPhotos,
+        ),
+    );
   }
 
   get foodLookup(): FoodLookup {
@@ -115,7 +157,13 @@ export class Container {
   }
 
   get scans(): ScansService {
-    return this.once('scans', () => new ScansService(new ScansRepo(this.db), this.storage, this.clock));
+    return this.once(
+      'scans',
+      () =>
+        new ScansService(new ScansRepo(this.db), this.storage, this.clock, (userId) =>
+          this.subscriptions.countAdvisory(userId, 'scan'),
+        ),
+    );
   }
 
   get sync(): SyncService {
