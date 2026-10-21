@@ -86,11 +86,20 @@ export class SyncedTable {
     return row !== null && row.user_id !== userId;
   }
 
-  changesSince<Row>(db: D1Database, userId: string, rev: number, limit: number): Promise<Row[]> {
+  /** Rows changed after revision `rev`, oldest first, optionally only up to and including `upTo`. */
+  changesSince<Row>(
+    db: D1Database,
+    userId: string,
+    rev: number,
+    limit: number,
+    upTo = Number.MAX_SAFE_INTEGER,
+  ): Promise<Row[]> {
     return all<Row>(
       db
-        .prepare(`SELECT * FROM ${this.table} WHERE user_id = ? AND rev > ? ORDER BY rev LIMIT ?`)
-        .bind(userId, rev, limit),
+        .prepare(
+          `SELECT * FROM ${this.table} WHERE user_id = ? AND rev > ? AND rev <= ? ORDER BY rev LIMIT ?`,
+        )
+        .bind(userId, rev, upTo, limit),
     );
   }
 }

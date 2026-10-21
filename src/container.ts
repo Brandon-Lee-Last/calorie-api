@@ -12,6 +12,12 @@ import { BodyService } from './modules/body/body.service';
 import { DiaryRepo } from './modules/diary/diary.repo';
 import { DiaryService } from './modules/diary/diary.service';
 import { ObjectStorage } from './modules/media/object-storage';
+import { FoodsRepo } from './modules/foods/foods.repo';
+import { FoodsService } from './modules/foods/foods.service';
+import { OpenFoodFactsClient, type FoodLookup } from './modules/foods/off';
+import { ScansRepo } from './modules/scans/scans.repo';
+import { ScansService } from './modules/scans/scans.service';
+import { SyncService } from './modules/sync/sync.service';
 import { UsersRepo } from './modules/users/users.repo';
 import { UsersService } from './modules/users/users.service';
 
@@ -21,6 +27,7 @@ export interface Overrides {
   logger?: Logger;
   rateLimiter?: RateLimiter;
   googleVerifier?: GoogleVerifier;
+  foodLookup?: FoodLookup;
 }
 
 /**
@@ -90,6 +97,29 @@ export class Container {
 
   get diary(): DiaryService {
     return this.once('diary', () => new DiaryService(new DiaryRepo(this.db), this.storage, this.clock));
+  }
+
+  get foodLookup(): FoodLookup {
+    return this.once(
+      'foodLookup',
+      () =>
+        this.overrides.foodLookup ??
+        new OpenFoodFactsClient(
+          this.config.OFF_USER_AGENT ?? 'CalorieApp/0.1 (https://github.com/Brandon-Lee-Last)',
+        ),
+    );
+  }
+
+  get foods(): FoodsService {
+    return this.once('foods', () => new FoodsService(new FoodsRepo(this.db), this.foodLookup, this.clock));
+  }
+
+  get scans(): ScansService {
+    return this.once('scans', () => new ScansService(new ScansRepo(this.db), this.storage, this.clock));
+  }
+
+  get sync(): SyncService {
+    return this.once('sync', () => new SyncService(this.db, this.diary, this.body, this.foods, this.logger));
   }
 
   get auth(): AuthService {

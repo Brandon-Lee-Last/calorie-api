@@ -13,6 +13,9 @@ import { authRoutes } from './modules/auth/auth.routes';
 import { usersRoutes } from './modules/users/users.routes';
 import { bodyRoutes } from './modules/body/body.routes';
 import { diaryRoutes } from './modules/diary/diary.routes';
+import { foodsRoutes } from './modules/foods/foods.routes';
+import { scansRoutes } from './modules/scans/scans.routes';
+import { syncRoutes } from './modules/sync/sync.routes';
 import { healthRoutes } from './modules/health/health.routes';
 
 export const API_PREFIX = '/v1';
@@ -85,6 +88,9 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', usersRoutes);
   v1.route('/', bodyRoutes);
   v1.route('/', diaryRoutes);
+  v1.route('/', foodsRoutes);
+  v1.route('/', scansRoutes);
+  v1.route('/', syncRoutes);
   app.route(API_PREFIX, v1);
 
   app.doc(`${API_PREFIX}/openapi.json`, {
