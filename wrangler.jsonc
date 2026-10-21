@@ -15,6 +15,8 @@
     "AI_TEXT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
     "CORS_ORIGINS": "",
     "SIMULATE_ENABLED": "true",
+    "REQUIRE_INTEGRITY": "false",
+    "AI_DAILY_BUDGET": "20000",
   },
   "d1_databases": [
     {
@@ -37,10 +39,12 @@
       "vars": {
         "ENVIRONMENT": "stage",
         "GOOGLE_CLIENT_IDS": "__GOOGLE_CLIENT_IDS__",
-        "BILLING_PROVIDER": "mock",
+        "BILLING_PROVIDER": "__BILLING_PROVIDER__",
         "AI_TEXT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
         "CORS_ORIGINS": "",
         "SIMULATE_ENABLED": "true",
+        "REQUIRE_INTEGRITY": "__REQUIRE_INTEGRITY__",
+        "AI_DAILY_BUDGET": "__AI_DAILY_BUDGET__",
       },
       "d1_databases": [
         {
@@ -61,10 +65,12 @@
       "vars": {
         "ENVIRONMENT": "production",
         "GOOGLE_CLIENT_IDS": "__GOOGLE_CLIENT_IDS__",
-        "BILLING_PROVIDER": "mock",
+        "BILLING_PROVIDER": "__BILLING_PROVIDER__",
         "AI_TEXT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
         "CORS_ORIGINS": "",
         "SIMULATE_ENABLED": "false",
+        "REQUIRE_INTEGRITY": "__REQUIRE_INTEGRITY__",
+        "AI_DAILY_BUDGET": "__AI_DAILY_BUDGET__",
       },
       "d1_databases": [
         {

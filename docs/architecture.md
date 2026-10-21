@@ -147,10 +147,17 @@ per-user quotas, idempotent writes, constant-time secret comparison, POPIA/GDPR 
 
 ## Status
 
-Everything in the phase plan is built and tested locally: foundation and pipeline, auth and profile, foods, diary, weight, water,
-scans and sync, subscriptions on a mock store, workouts, media and admin, AI text parsing, insights, account export and
-deletion, nightly housekeeping. The first deploy to Cloudflare, Google Play billing, Cloudflare Stream playback and content
-authoring are what remains. See [operations.md](operations.md) for the setup steps and the plain list of limits.
+Everything in the phase plan is built and tested locally, plus the hardening round: foundation and pipeline, auth (anonymous, Google,
+email codes), profile, foods and a shared catalogue with an importer, diary, weight, water, recipes, exercise and steps, body
+measurements, progress photos, scans and sync (nine record types), subscriptions (mock store, and a Google Play provider with
+real-time notifications tested against fakes), workouts, media (R2, external, signed Cloudflare Stream), admin with an audit log,
+AI text parsing, insights, push reminders, training-data export, account export and deletion, nightly housekeeping, a public
+`/config` with maintenance mode, minimum app version and feature kill switches, shared (D1) rate limits, per-account and global AI
+limits, optional Play Integrity, JWT key rotation, error alerts, and a route fuzzer, injection tests and a secret scan in CI.
+
+What remains needs accounts or decisions that only the owner can supply: the first deploy to Cloudflare, a Play developer account
+(and then a licence-tester run of billing), Firebase, a mail domain, Google OAuth client ids, legal text, and licensed content.
+See [operations.md](operations.md) for the setup steps and the plain list of limits.
 
 Decisions worth remembering:
 
@@ -158,4 +165,8 @@ Decisions worth remembering:
 - **Deletes** from a direct `DELETE` always apply; deletes that arrive through sync lose to a newer edit like any other change.
 - **Deleted accounts** are rejected on the next request, not when their token expires.
 - **The mock store** can never grant Pro in production.
+- **Stores are never believed by default.** A Play notification only says which purchase changed; the state is always re-read from
+  the Play API, and a purchase only counts for the account named in it.
+- **At-least-once is made safe**: reminders are claimed before they are sent, store notifications are recorded once, imports and
+  writes are idempotent.
 - **AI** only ever sees the person's typed meal text (as data, with validated output) or already-computed numbers.

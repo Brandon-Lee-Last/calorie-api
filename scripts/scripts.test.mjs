@@ -642,3 +642,88 @@ test('this repository contains no secrets', () => {
   const found = scanRepo(root);
   assert.deepEqual(found, [], found.map((f) => `${f.file}:${f.line} ${f.what}`).join('\n'));
 });
+
+// ---- deploy settings added with the hardening work -------------------------------------------------------------
+
+test('render-wrangler defaults the deploy-time settings, and takes them from the environment when given', () => {
+  const out = fileURLToPath(new URL('../wrangler.rendered.jsonc', import.meta.url));
+  const base = { D1_DATABASE_ID: 'abc', API_HOST: 'api.example.com' };
+  let r = run('render-wrangler.mjs', [], base);
+  assert.equal(r.status, 0, r.stderr);
+  let text = readFileSync(out, 'utf8');
+  assert.match(text, /"BILLING_PROVIDER": "mock"/);
+  assert.match(text, /"REQUIRE_INTEGRITY": "false"/);
+  assert.match(text, /"AI_DAILY_BUDGET": "20000"/);
+  // GitHub passes an unset variable as an empty string: that must mean "default", not "empty"
+  r = run('render-wrangler.mjs', [], { ...base, BILLING_PROVIDER: '', AI_DAILY_BUDGET: '' });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(readFileSync(out, 'utf8'), /"BILLING_PROVIDER": "mock"/);
+  r = run('render-wrangler.mjs', [], {
+    ...base,
+    BILLING_PROVIDER: 'google_play',
+    REQUIRE_INTEGRITY: 'true',
+    AI_DAILY_BUDGET: '500',
+  });
+  assert.equal(r.status, 0, r.stderr);
+  text = readFileSync(out, 'utf8');
+  assert.match(text, /"BILLING_PROVIDER": "google_play"/);
+  assert.match(text, /"REQUIRE_INTEGRITY": "true"/);
+  assert.match(text, /"AI_DAILY_BUDGET": "500"/);
+  rmSync(out, { force: true });
+});
+
+test('sync-secrets passes the newer optional secrets and settings, and checks the rotation secret', () => {
+  const good = {
+    JWT_SECRET: 'j'.repeat(40),
+    MEDIA_SIGNING_SECRET: 'm'.repeat(40),
+    ADMIN_API_KEY: 'a'.repeat(30),
+  };
+  const ok = run('sync-secrets.mjs', ['stage', '--dry-run'], {
+    ...good,
+    JWT_SECRET_PREVIOUS: 'p'.repeat(40),
+    RESEND_API_KEY: 'x',
+    FCM_PROJECT_ID: 'my-project',
+    STREAM_CUSTOMER_CODE: 'abcd1234',
+    MIN_APP_VERSION: '1.2.0',
+    ADMIN_ALLOWED_IPS: '203.0.113.0/24',
+  });
+  assert.equal(ok.status, 0, ok.stderr);
+  for (const name of [
+    'JWT_SECRET_PREVIOUS',
+    'RESEND_API_KEY',
+    'FCM_PROJECT_ID',
+    'STREAM_CUSTOMER_CODE',
+    'MIN_APP_VERSION',
+    'ADMIN_ALLOWED_IPS',
+  ])
+    assert.match(ok.stdout, new RegExp(name));
+  assert.ok(!ok.stdout.includes('p'.repeat(40)), 'values are never printed');
+  const short = run('sync-secrets.mjs', ['stage', '--dry-run'], { ...good, JWT_SECRET_PREVIOUS: 'short' });
+  assert.notEqual(short.status, 0);
+  assert.match(short.stderr, /JWT_SECRET_PREVIOUS must be at least 32/);
+  const same = run('sync-secrets.mjs', ['stage', '--dry-run'], {
+    ...good,
+    JWT_SECRET_PREVIOUS: good.JWT_SECRET,
+  });
+  assert.notEqual(same.status, 0);
+  assert.match(same.stderr, /same as JWT_SECRET/);
+});
+
+test('both deploy workflows hand the Worker the same settings', () => {
+  const read = (n) => readFileSync(new URL(`../.github/workflows/${n}`, import.meta.url), 'utf8');
+  const names = (t) =>
+    [...t.matchAll(/^\s{6}([A-Z0-9_]+): \$\{\{ (?:secrets|vars)\./gm)].map((m) => m[1]).sort();
+  const stage = names(read('deploy-stage.yml'));
+  assert.deepEqual(stage, names(read('deploy-production.yml')));
+  const sync = readFileSync(new URL('./sync-secrets.mjs', import.meta.url), 'utf8');
+  const render = readFileSync(new URL('./render-wrangler.mjs', import.meta.url), 'utf8');
+  for (const name of stage) {
+    if (['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID'].includes(name)) continue;
+    assert.ok(
+      sync.includes(`'${name}'`) ||
+        /(JWT_SECRET|MEDIA_SIGNING_SECRET|ADMIN_API_KEY)/.test(name) ||
+        render.includes(name),
+      `${name} reaches the Worker`,
+    );
+  }
+});

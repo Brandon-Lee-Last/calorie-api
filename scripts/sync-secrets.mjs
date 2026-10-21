@@ -19,11 +19,36 @@ const REQUIRED = {
   MEDIA_SIGNING_SECRET: 32,
   ADMIN_API_KEY: 24,
 };
+// Set only when present. Secrets come from GitHub environment secrets, settings from environment variables; the Worker sees both
+// the same way. Leaving one out does NOT remove it from the Worker: delete it there with `wrangler secret delete`.
 const OPTIONAL = [
   'GOOGLE_PLAY_PACKAGE_NAME',
   'GOOGLE_PLAY_SERVICE_ACCOUNT_JSON',
   'GOOGLE_PLAY_RTDN_AUDIENCE',
   'OFF_USER_AGENT',
+  // secrets
+  'JWT_SECRET_PREVIOUS',
+  'RESEND_API_KEY',
+  'FCM_SERVICE_ACCOUNT_JSON',
+  'STREAM_SIGNING_KEY_PEM',
+  'ALERT_WEBHOOK_URL',
+  // settings
+  'EMAIL_FROM',
+  'FCM_PROJECT_ID',
+  'STREAM_CUSTOMER_CODE',
+  'STREAM_SIGNING_KEY_ID',
+  'MIN_APP_VERSION',
+  'LATEST_APP_VERSION',
+  'STORE_URL',
+  'PRIVACY_URL',
+  'TERMS_URL',
+  'SUPPORT_EMAIL',
+  'ADMIN_ALLOWED_IPS',
+  'CF_ACCESS_TEAM_DOMAIN',
+  'CF_ACCESS_AUD',
+  'GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT',
+  'MAINTENANCE_MODE',
+  'MAINTENANCE_MESSAGE',
 ];
 
 const secrets = {};
@@ -35,6 +60,10 @@ for (const [name, minLength] of Object.entries(REQUIRED)) {
   else secrets[name] = value;
 }
 for (const name of OPTIONAL) if (process.env[name]) secrets[name] = process.env[name];
+if (secrets.JWT_SECRET_PREVIOUS && secrets.JWT_SECRET_PREVIOUS.length < 32)
+  problems.push('JWT_SECRET_PREVIOUS must be at least 32 characters');
+if (secrets.JWT_SECRET_PREVIOUS === secrets.JWT_SECRET)
+  problems.push('JWT_SECRET_PREVIOUS is the same as JWT_SECRET: rotate by setting a NEW JWT_SECRET');
 if (problems.length) {
   console.error(problems.join('\n'));
   process.exit(1);
