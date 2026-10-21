@@ -32,6 +32,17 @@ export class UsageRepo {
     );
   }
 
+  /** Give one back (used when the thing that was counted failed). Never goes below zero. */
+  async remove(userId: string, key: string, period: string): Promise<void> {
+    await run(
+      this.db
+        .prepare(
+          'UPDATE usage_counters SET count = MAX(count - 1, 0) WHERE user_id = ? AND key = ? AND period = ?',
+        )
+        .bind(userId, key, period),
+    );
+  }
+
   async forPeriod(userId: string, period: string): Promise<Record<string, number>> {
     const rows = await all<{ key: string; count: number }>(
       this.db

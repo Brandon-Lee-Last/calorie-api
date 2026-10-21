@@ -137,8 +137,11 @@ export class AuthService {
     await this.repo.revokeAllForUser(userId, this.clock.now());
   }
 
-  verifyAccess(token: string) {
-    return this.tokens.verifyAccess(token);
+  /** A valid access token for an account that still exists. A deleted account is locked out at once, not after 15 minutes. */
+  async authenticate(token: string) {
+    const claims = await this.tokens.verifyAccess(token);
+    if (!(await this.repo.findUser(claims.userId))) throw unauthorized('This account no longer exists');
+    return claims;
   }
 
   private async startSession(userId: string, familyId: string, deviceLabel: string | null): Promise<Session> {

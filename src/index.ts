@@ -1,11 +1,12 @@
 import { createApp } from './app';
+import { Container } from './container';
 import type { Bindings } from './env';
 
 const app = createApp();
 
 export default {
   fetch: app.fetch,
-  async scheduled(_controller: ScheduledController, _env: Bindings, _ctx: ExecutionContext) {
-    // Nightly maintenance is wired in phase 5.
+  async scheduled(_controller: ScheduledController, env: Bindings, ctx: ExecutionContext) {
+    ctx.waitUntil(new Container(env).maintenance.run());
   },
 } satisfies ExportedHandler<Bindings>;

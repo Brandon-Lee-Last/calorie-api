@@ -21,6 +21,9 @@ import { mediaRoutes } from './modules/media/media.routes';
 import { workoutsRoutes } from './modules/workouts/workouts.routes';
 import { sessionsRoutes } from './modules/workouts/sessions.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
+import { accountRoutes } from './modules/account/account.routes';
+import { aiRoutes } from './modules/ai/ai.routes';
+import { insightsRoutes } from './modules/insights/insights.routes';
 import { healthRoutes } from './modules/health/health.routes';
 
 export const API_PREFIX = '/v1';
@@ -101,6 +104,9 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', workoutsRoutes);
   v1.route('/', sessionsRoutes);
   v1.route('/', adminRoutes);
+  v1.route('/', accountRoutes);
+  v1.route('/', aiRoutes);
+  v1.route('/', insightsRoutes);
   app.route(API_PREFIX, v1);
 
   app.doc(`${API_PREFIX}/openapi.json`, {

@@ -96,6 +96,11 @@ export class SubscriptionsService {
     return { used, limit };
   }
 
+  /** Hand back one unit of an allowance, for example after the AI service failed. */
+  async refund(userId: string, key: UsageKey): Promise<void> {
+    await this.usageRepo.remove(userId, key, await this.today(userId));
+  }
+
   /** Count something that the app, not the server, enforces (photo scans run on the phone). */
   async countAdvisory(userId: string, key: UsageKey): Promise<void> {
     await this.usageRepo.add(userId, key, await this.today(userId));

@@ -19,6 +19,12 @@ import { WorkoutsRepo } from './modules/workouts/workouts.repo';
 import { WorkoutsService } from './modules/workouts/workouts.service';
 import { AdminRepo } from './modules/admin/admin.repo';
 import { AdminService } from './modules/admin/admin.service';
+import { AccountRepo } from './modules/account/account.repo';
+import { AccountService } from './modules/account/account.service';
+import { MaintenanceService } from './modules/maintenance/maintenance.service';
+import { WorkersAiClient, type AiClient } from './modules/ai/ai.client';
+import { AiService } from './modules/ai/ai.service';
+import { InsightsService } from './modules/insights/insights.service';
 import { ObjectStorage } from './modules/media/object-storage';
 import { FoodsRepo } from './modules/foods/foods.repo';
 import { FoodsService } from './modules/foods/foods.service';
@@ -43,6 +49,7 @@ export interface Overrides {
   googleVerifier?: GoogleVerifier;
   foodLookup?: FoodLookup;
   billing?: BillingProvider;
+  ai?: AiClient;
 }
 
 /**
@@ -180,6 +187,47 @@ export class Container {
       'admin',
       () => new AdminService(new AdminRepo(this.db), new MediaRepo(this.db), this.storage, this.clock),
     );
+  }
+
+  get account(): AccountService {
+    return this.once(
+      'account',
+      () =>
+        new AccountService(new AccountRepo(this.db), this.storage, this.clock, (userId) =>
+          this.subscriptions.entitlement(userId),
+        ),
+    );
+  }
+
+  get maintenance(): MaintenanceService {
+    return this.once('maintenance', () => new MaintenanceService(this.db, this.clock, this.logger));
+  }
+
+  get aiClient(): AiClient {
+    return this.once(
+      'aiClient',
+      () => this.overrides.ai ?? new WorkersAiClient(this.env.AI, this.config.AI_TEXT_MODEL),
+    );
+  }
+
+  get ai(): AiService {
+    return this.once('ai', () => new AiService(this.aiClient));
+  }
+
+  get insights(): InsightsService {
+    return this.once(
+      'insights',
+      () =>
+        new InsightsService(
+          new DiaryRepo(this.db),
+          new BodyRepo(this.db),
+          new SessionsRepo(this.db),
+          new UsersRepo(this.db),
+          this.subscriptions,
+          this.ai,
+          this.clock,
+        ),
+    ); // fmt: skip
   }
 
   get diary(): DiaryService {

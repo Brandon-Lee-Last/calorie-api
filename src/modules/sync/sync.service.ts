@@ -1,5 +1,5 @@
 import type { ZodType } from 'zod';
-import { isAppError } from '../../core/errors';
+import { isAppError, resyncRequired } from '../../core/errors';
 import type { Logger } from '../../core/logger';
 import { first } from '../../db/sql';
 import { waterTable, weightTable } from '../body/body.repo';
@@ -59,9 +59,12 @@ export class SyncService {
     since: number,
     limit: number,
   ): Promise<{ changes: Change[]; rev: number; hasMore: boolean }> {
-    const head = await first<{ sync_rev: number }>(
-      this.db.prepare('SELECT sync_rev FROM users WHERE id = ?').bind(userId),
+    const head = await first<{ sync_rev: number; purged_rev: number }>(
+      this.db.prepare('SELECT sync_rev, purged_rev FROM users WHERE id = ?').bind(userId),
     );
+    // Deletions older than the retention window have been cleaned up; a device that has not synced since then cannot
+    // learn about them, so it has to start again.
+    if (since > 0 && since < (head?.purged_rev ?? 0)) throw resyncRequired();
     const upper = head?.sync_rev ?? 0;
     if (since >= upper) return { changes: [], rev: Math.max(upper, 0), hasMore: false };
 

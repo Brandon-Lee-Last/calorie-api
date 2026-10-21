@@ -215,3 +215,17 @@ adminRoutes.openapi(
 );
 
 export { badRequest };
+
+adminRoutes.openapi(
+  createRoute({
+    method: 'post',
+    path: '/admin/maintenance/run',
+    tags: ['Admin'],
+    summary: 'Run the nightly housekeeping now',
+    ...guarded,
+    description:
+      'Removes expired sign-in tokens, old deletion markers and old usage counters. It also runs by itself every night.',
+    responses: { 200: json(z.record(z.string(), z.unknown()), 'What was removed'), ...unauthorised },
+  }), // fmt: skip
+  async (c) => c.json(await c.get('deps').maintenance.run(), 200),
+);

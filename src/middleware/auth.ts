@@ -12,7 +12,7 @@ function bearer(header: string | undefined): string | null {
 export const requireAuth = createMiddleware<AppEnv>(async (c, next) => {
   const token = bearer(c.req.header('authorization'));
   if (!token) throw unauthorized();
-  const claims = await c.get('deps').auth.verifyAccess(token);
+  const claims = await c.get('deps').auth.authenticate(token);
   c.set('auth', { userId: claims.userId, sessionId: claims.sessionId });
   await next();
 });
@@ -23,7 +23,7 @@ export const optionalAuth = createMiddleware<AppEnv>(async (c, next) => {
   if (header) {
     const token = bearer(header);
     if (!token) throw unauthorized();
-    const claims = await c.get('deps').auth.verifyAccess(token);
+    const claims = await c.get('deps').auth.authenticate(token);
     c.set('auth', { userId: claims.userId, sessionId: claims.sessionId });
   }
   await next();

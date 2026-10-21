@@ -14,6 +14,7 @@ export type ErrorCode =
   | 'subscription_required'
   | 'upstream_failed'
   | 'not_configured'
+  | 'resync_required'
   | 'internal_error';
 
 /** An error the API intends to show to the client. Anything else becomes a generic 500. */
@@ -52,5 +53,12 @@ export const upstreamFailed = (service: string, message?: string) =>
   new AppError(502, 'upstream_failed', message ?? `${service} is not available right now`, { service });
 export const notConfigured = (what: string) =>
   new AppError(501, 'not_configured', `${what} is not configured`);
+
+export const resyncRequired = () =>
+  new AppError(
+    409,
+    'resync_required',
+    'Too much time has passed since this device last synced. Clear the local copy and sync from the start (since=0).',
+  );
 
 export const isAppError = (e: unknown): e is AppError => e instanceof AppError;
