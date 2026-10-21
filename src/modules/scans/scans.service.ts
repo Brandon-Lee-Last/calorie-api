@@ -1,6 +1,7 @@
 import { badRequest, conflict, notFound } from '../../core/errors';
 import type { Clock } from '../../core/time';
 import { sanitizeClientTime } from '../../core/validation';
+import { stripMetadata } from '../../lib/image-metadata';
 import { IMAGE_TYPES, type ImageType, type ObjectStorage } from '../media/object-storage';
 import type { ScanData, ScanRow, ScansRepo } from './scans.repo';
 
@@ -81,7 +82,8 @@ export class ScansService {
     if (scan.contribute_consent !== 1)
       throw badRequest('The person has not agreed to contribute this photo', { reason: 'no_consent' });
     const key = contributionKey(userId, id, upload.type);
-    await this.storage.put(key, upload.bytes, upload.type);
+    // A contributed photo is kept for training, so it goes in without the position and device details the phone wrote into it.
+    await this.storage.put(key, stripMetadata(upload.bytes, upload.type), upload.type);
     if (scan.image_key && scan.image_key !== key) await this.storage.delete(scan.image_key);
     await this.repo.setImageKey(userId, id, key);
     return toScan((await this.repo.get(userId, id))!);

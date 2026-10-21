@@ -15,6 +15,7 @@ import { bodyRoutes } from './modules/body/body.routes';
 import { diaryRoutes } from './modules/diary/diary.routes';
 import { foodsRoutes } from './modules/foods/foods.routes';
 import { catalogueRoutes } from './modules/foods/catalogue.routes';
+import { trainingRoutes } from './modules/training/training.routes';
 import { scansRoutes } from './modules/scans/scans.routes';
 import { syncRoutes } from './modules/sync/sync.routes';
 import { subscriptionsRoutes } from './modules/subscriptions/subscriptions.routes';
@@ -120,6 +121,7 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', workoutsRoutes);
   v1.route('/', sessionsRoutes);
   v1.route('/', adminRoutes);
+  v1.route('/', trainingRoutes);
   v1.route('/', accountRoutes);
   v1.route('/', aiRoutes);
   v1.route('/', insightsRoutes);

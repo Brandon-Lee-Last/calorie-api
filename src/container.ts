@@ -34,6 +34,8 @@ import { SettingsRepo } from './modules/settings/settings.repo';
 import { SettingsService } from './modules/settings/settings.service';
 import { CatalogueRepo } from './modules/foods/catalogue.repo';
 import { CatalogueService } from './modules/foods/catalogue.service';
+import { TrainingRepo } from './modules/training/training.repo';
+import { TrainingService } from './modules/training/training.service';
 import { AuditRepo } from './modules/admin/audit.repo';
 import { AdminAuditService } from './modules/admin/audit.service';
 import { AdminRepo } from './modules/admin/admin.repo';
@@ -180,6 +182,13 @@ export class Container {
         return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
       return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
     });
+  }
+
+  get training(): TrainingService {
+    return this.once(
+      'training',
+      () => new TrainingService(new TrainingRepo(this.db), this.storage, this.config.MEDIA_SIGNING_SECRET),
+    );
   }
 
   get catalogue(): CatalogueService {

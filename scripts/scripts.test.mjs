@@ -1,10 +1,18 @@
 // Tests for the deploy scripts. Run with: npm run test:scripts  (plain Node, no Cloudflare needed)
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { planImport, runImport } from './import-content.mjs';
+import {
+  COLUMNS,
+  classify,
+  exportContributions,
+  isTestDonor,
+  toCsv,
+  trainRow,
+} from './export-training-data.mjs';
 import { chunks, convertCsv, convertJson, convertUsda, parseCsv, sendFoods } from './import-foods.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -414,4 +422,146 @@ test('import-foods can convert a file with no server, and refuses to run without
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+// ---- export-training-data --------------------------------------------------------------------------------------
+
+const contribution = (id, over = {}) => ({
+  id,
+  donor: 'donorAAAAAAAAAAAA',
+  createdAt: 1_760_000_000_000,
+  modelVersion: 'nutrition_v1',
+  outcome: 'edited',
+  kind: 'food',
+  predictedCalories: 400,
+  label: { calories: 520, massG: 260, fatG: 20, carbG: 50, proteinG: 25, edited: true },
+  photoType: 'image/jpeg',
+  ...over,
+});
+
+test('contributions: corrected photos train at low weight, accepted ones are left out unless asked for', () => {
+  assert.deepEqual(classify(contribution('a')), { use: 'train', weight: 0.3 });
+  const accepted = contribution('b', {
+    outcome: 'saved',
+    label: { calories: 400, massG: 200, fatG: 1, carbG: 1, proteinG: 1, edited: false },
+  });
+  assert.deepEqual(classify(accepted), { use: 'skip', why: 'accepted without change' });
+  assert.deepEqual(classify(accepted, { includeAccepted: true }), { use: 'train', weight: 0.1 });
+  assert.deepEqual(classify(contribution('c', { kind: 'not_food', label: null })), { use: 'not_food' });
+  assert.deepEqual(classify(contribution('d', { kind: 'unlabelled', label: null })), {
+    use: 'skip',
+    why: 'no label',
+  });
+  assert.deepEqual(
+    classify(
+      contribution('e', {
+        label: { calories: null, massG: null, fatG: 1, carbG: 1, proteinG: 1, edited: true },
+      }),
+    ),
+    { use: 'skip', why: 'no usable number' },
+  );
+});
+
+test('contributions: a person is always on one side of the train/test split', () => {
+  assert.equal(isTestDonor('someone', 0.1), isTestDonor('someone', 0.1));
+  const donors = Array.from({ length: 2000 }, (_, i) => `donor${i}`);
+  const share = donors.filter((d) => isTestDonor(d, 0.1)).length / donors.length;
+  assert.ok(share > 0.07 && share < 0.13, `share ${share}`);
+  assert.equal(donors.filter((d) => isTestDonor(d, 0)).length, 0);
+  assert.equal(donors.filter((d) => isTestDonor(d, 1)).length, donors.length);
+});
+
+test('contributions: rows leave unknown numbers blank and CSV quoting is safe', () => {
+  const row = trainRow(
+    contribution('a', {
+      label: { calories: 520.04, massG: null, fatG: 20, carbG: 50, proteinG: 25, edited: true },
+    }),
+    'img/a.jpg',
+    0.3,
+    0,
+  );
+  assert.equal(row.calories, '520');
+  assert.equal(row.mass, '');
+  assert.equal(row.split, '');
+  assert.equal(row.source, 'app-contrib');
+  assert.equal(toCsv(['a', 'b'], [{ a: 'x,y', b: 'say "hi"' }]), 'a,b\n"x,y","say ""hi"""\n');
+});
+
+test('contributions: exports photos, a training index and a not-food list, and skips what is gone', async () => {
+  const dir = fileURLToPath(new URL('../tmp-export-test/', import.meta.url));
+  rmSync(dir, { recursive: true, force: true });
+  const items = [
+    contribution('keep1'),
+    contribution('keep2', { donor: 'donorBBBBBBBBBBBB' }),
+    contribution('neg1', { kind: 'not_food', outcome: 'not_food', label: null }),
+    contribution('plain', { kind: 'unlabelled', outcome: 'discarded', label: null }),
+    contribution('gone1'),
+  ];
+  const requested = [];
+  const fetcher = async (url) => {
+    requested.push(url);
+    if (url.includes('/contributions?')) {
+      return url.includes('cursor=NEXT')
+        ? Response.json({ items: items.slice(3), nextCursor: null })
+        : Response.json({ items: items.slice(0, 3), nextCursor: 'NEXT' });
+    }
+    if (url.includes('gone1')) return new Response('', { status: 404 });
+    return new Response(new Uint8Array([0xff, 0xd8, 1, 2]), { headers: { 'content-type': 'image/jpeg' } });
+  };
+  try {
+    const stats = await exportContributions({
+      base: 'https://api.example.com',
+      key: 'k',
+      out: dir,
+      fetcher,
+      log: () => {},
+    });
+    assert.deepEqual(
+      { ...stats, newest: 0 },
+      { listed: 5, train: 2, notFood: 1, skipped: 1, downloaded: 3, failed: 1, newest: 0 },
+    );
+    assert.equal(stats.newest, 1_760_000_000_000);
+    const index = readFileSync(`${dir}index.csv`, 'utf8').trim().split('\n');
+    assert.equal(index[0], COLUMNS.join(','));
+    assert.equal(index.length, 3);
+    assert.match(index[1], /^img\/keep1\.jpg,520,260,20,50,25,0\.3,/);
+    assert.deepEqual([...readFileSync(`${dir}img/keep1.jpg`)], [0xff, 0xd8, 1, 2]);
+    assert.match(readFileSync(`${dir}not_food/index.csv`, 'utf8'), /img\/neg1\.jpg/);
+    assert.ok(!existsSync(`${dir}img/gone1.jpg`));
+    assert.ok(requested.every((u) => u.startsWith('https://api.example.com/v1/admin/training/')));
+    // run again: photos already on disk are not downloaded a second time
+    requested.length = 0;
+    await exportContributions({
+      base: 'https://api.example.com',
+      key: 'k',
+      out: dir,
+      fetcher,
+      log: () => {},
+    });
+    assert.equal(requested.filter((u) => u.endsWith('/photo')).length, 1); // only the unavailable one is retried
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('contributions: a failed listing stops the export with a clear error', async () => {
+  const dir = fileURLToPath(new URL('../tmp-export-test2/', import.meta.url));
+  try {
+    await assert.rejects(
+      exportContributions({
+        base: 'https://x',
+        key: 'bad',
+        out: dir,
+        fetcher: async () => new Response('no', { status: 401 }),
+        log: () => {},
+      }),
+      /listing failed: HTTP 401/,
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('export-training-data refuses to run without its settings', () => {
+  assert.notEqual(run('export-training-data.mjs').status, 0);
 });
