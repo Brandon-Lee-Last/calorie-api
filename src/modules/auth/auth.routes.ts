@@ -5,10 +5,14 @@ import { optionalAuth, requireAuth } from '../../middleware/auth';
 import { requireIntegrity } from '../../middleware/integrity';
 import { rateLimit } from '../../middleware/rate-limit';
 import { issueChallenge } from '../integrity/integrity';
+import { CODE_TTL_MS, RESEND_COOLDOWN_MS } from './email.service';
 import {
   anonymousBodySchema,
+  emailStartBodySchema,
+  emailStartResultSchema,
+  emailVerifyBodySchema,
   googleBodySchema,
-  googleSessionSchema,
+  signInSessionSchema,
   refreshBodySchema,
   sessionSchema,
 } from './auth.schemas';
@@ -84,7 +88,7 @@ authRoutes.openapi(
     ] as const,
     request: { body: jsonBody(googleBodySchema) },
     responses: {
-      200: json(googleSessionSchema, 'Signed in'),
+      200: json(signInSessionSchema, 'Signed in'),
       ...authErrors,
       409: commonErrors[400],
       501: commonErrors[400],
@@ -94,6 +98,75 @@ authRoutes.openapi(
     const body = c.req.valid('json');
     const result = await c.get('deps').auth.signInWithGoogle({
       idToken: body.idToken,
+      currentUserId: c.get('auth')?.userId ?? null,
+      discardAnonymousData: body.discardAnonymousData,
+      deviceLabel: body.deviceLabel ?? null,
+    });
+    return c.json(result, 200);
+  },
+);
+
+authRoutes.openapi(
+  createRoute({
+    method: 'post',
+    path: '/auth/email/start',
+    tags: ['Auth'],
+    summary: 'Email a six digit sign-in code',
+    description:
+      'Answers 202 for any well formed address, so it cannot be used to find out who has an account. The code works for ten minutes, ' +
+      'once, with five guesses. Asking again within a minute sends nothing new. Complete with `POST /auth/email/verify`.',
+    middleware: [
+      rateLimit({ name: 'auth-email-start', limit: 10, windowSeconds: 3600, strict: true }),
+      rateLimit({ name: 'auth-email-start-day', limit: 40, windowSeconds: 86400, strict: true }),
+    ] as const,
+    request: { body: jsonBody(emailStartBodySchema) },
+    responses: {
+      202: json(emailStartResultSchema, 'A code was sent if the address can receive one'),
+      501: commonErrors[400],
+      ...commonErrors,
+    },
+  }),
+  async (c) => {
+    await c.get('deps').emailCodes.start(c.req.valid('json').email);
+    return c.json(
+      { sent: true as const, expiresIn: CODE_TTL_MS / 1000, resendAfter: RESEND_COOLDOWN_MS / 1000 },
+      202,
+    );
+  },
+);
+
+authRoutes.openapi(
+  createRoute({
+    method: 'post',
+    path: '/auth/email/verify',
+    tags: ['Auth'],
+    summary: 'Sign in with an emailed code, or link the email to the signed-in account',
+    description:
+      'Works like `POST /auth/google`: with a Bearer token for an anonymous account the email is linked and the data is kept, ' +
+      'and it fails with 409 `identity_in_use` if that email already has data (unless `discardAnonymousData`). ' +
+      'A wrong, used or expired code is 400 `invalid_code`. An account that signed in with Google can later add its email the same way, ' +
+      'and the same email address is recognised as the same person across both.',
+    middleware: [
+      rateLimit({ name: 'auth-email-verify', limit: 30, windowSeconds: 3600, strict: true }),
+      optionalAuth,
+    ] as const,
+    request: { body: jsonBody(emailVerifyBodySchema) },
+    responses: {
+      200: json(signInSessionSchema, 'Signed in'),
+      ...authErrors,
+      409: commonErrors[400],
+    },
+  }),
+  async (c) => {
+    const body = c.req.valid('json');
+    const d = c.get('deps');
+    const email = await d.emailCodes.verify(body.email, body.code);
+    const result = await d.auth.signInWithIdentity({
+      provider: 'email',
+      subject: email,
+      email,
+      name: null,
+      label: 'email address',
       currentUserId: c.get('auth')?.userId ?? null,
       discardAnonymousData: body.discardAnonymousData,
       deviceLabel: body.deviceLabel ?? null,

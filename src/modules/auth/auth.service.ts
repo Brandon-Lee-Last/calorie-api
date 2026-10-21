@@ -3,7 +3,7 @@ import { randomToken, sha256Hex } from '../../core/crypto';
 import { newId } from '../../core/ids';
 import { DAY, type Clock } from '../../core/time';
 import type { GoogleVerifier } from './google';
-import type { AuthRepo } from './auth.repo';
+import type { AuthRepo, Provider } from './auth.repo';
 import type { TokenService } from './tokens';
 
 export const REFRESH_TTL_MS = 90 * DAY;
@@ -19,7 +19,7 @@ export type Session = {
   isAnonymous: boolean;
 };
 
-export type GoogleSignInResult = Session & { linked: boolean; created: boolean };
+export type SignInResult = Session & { linked: boolean; created: boolean };
 
 export class AuthService {
   constructor(
@@ -42,65 +42,95 @@ export class AuthService {
     currentUserId: string | null;
     discardAnonymousData: boolean;
     deviceLabel: string | null;
-  }): Promise<GoogleSignInResult> {
+  }): Promise<SignInResult> {
     const g = await this.google.verify(input.idToken);
-    const email = g.emailVerified ? g.email : null;
+    return this.signInWithIdentity({
+      provider: 'google',
+      subject: g.subject,
+      email: g.emailVerified ? g.email : null,
+      name: g.name,
+      label: 'Google account',
+      currentUserId: input.currentUserId,
+      discardAnonymousData: input.discardAnonymousData,
+      deviceLabel: input.deviceLabel,
+    });
+  }
+
+  /**
+   * Sign in with an identity that has already been proven (a verified Google token, or an emailed code):
+   *  - known identity: sign in to its account;
+   *  - same verified email as an identity from another provider: the same person, so the same account;
+   *  - a signed-in anonymous account: the identity is linked to it and the data stays;
+   *  - otherwise a new account.
+   * `email` must only be passed when it is verified.
+   */
+  async signInWithIdentity(input: {
+    provider: Provider;
+    subject: string;
+    email: string | null;
+    name: string | null;
+    /** What to call this in error messages, e.g. "Google account". */
+    label: string;
+    currentUserId: string | null;
+    discardAnonymousData: boolean;
+    deviceLabel: string | null;
+  }): Promise<SignInResult> {
+    const { provider, subject, email, name } = input;
     const now = this.clock.now();
 
-    let existing = await this.repo.findIdentity('google', g.subject);
+    let existing = await this.repo.findIdentity(provider, subject);
     if (existing && !(await this.repo.findUser(existing.user_id))) {
       // The account this identity belonged to was deleted. Free the identity so the person can start again.
       await this.repo.deleteIdentity(existing.id);
       existing = null;
     }
+    let sameMailbox = null;
+    if (!existing && email) {
+      const other = await this.repo.findIdentityByEmail(email, provider);
+      if (other && (await this.repo.findUser(other.user_id))) sameMailbox = other;
+    }
 
-    if (existing) {
-      if (input.currentUserId && input.currentUserId !== existing.user_id) {
+    const target = existing ?? sameMailbox;
+    if (target) {
+      if (input.currentUserId && input.currentUserId !== target.user_id) {
         const callerIsAnonymous = (await this.repo.listIdentities(input.currentUserId)).length === 0;
         if (callerIsAnonymous && !input.discardAnonymousData) {
           throw conflict(
-            'This Google account already has data. Signing in will leave this device’s data behind.',
-            {
-              reason: 'identity_in_use',
-            },
+            `This ${input.label} already has data. Signing in will leave this device’s data behind.`,
+            { reason: 'identity_in_use' },
           );
         }
       }
-      await this.repo.fillMissingProfile(existing.user_id, email, g.name, now);
-      const session = await this.startSession(existing.user_id, newId(now), input.deviceLabel);
+      if (!existing)
+        await this.repo.addIdentity({
+          id: newId(now),
+          userId: target.user_id,
+          provider,
+          subject,
+          email,
+          now,
+        });
+      await this.repo.fillMissingProfile(target.user_id, email, name, now);
+      const session = await this.startSession(target.user_id, newId(now), input.deviceLabel);
       return { ...session, linked: false, created: false };
     }
 
     const current = input.currentUserId ? await this.repo.findUser(input.currentUserId) : null;
     if (current) {
-      if ((await this.repo.listIdentities(current.id)).length > 0) {
-        throw conflict('This account is already linked to a different Google account', {
+      if ((await this.repo.listIdentities(current.id)).some((i) => i.provider === provider)) {
+        throw conflict(`This account is already linked to a different ${input.label}`, {
           reason: 'already_linked',
         });
       }
-      await this.repo.addIdentity({
-        id: newId(now),
-        userId: current.id,
-        provider: 'google',
-        subject: g.subject,
-        email,
-        now,
-      });
-      await this.repo.fillMissingProfile(current.id, email, g.name, now);
+      await this.repo.addIdentity({ id: newId(now), userId: current.id, provider, subject, email, now });
+      await this.repo.fillMissingProfile(current.id, email, name, now);
       const session = await this.startSession(current.id, newId(now), input.deviceLabel);
       return { ...session, linked: true, created: false };
     }
 
     const userId = newId(now);
-    await this.repo.createUser({ id: userId, now, email, displayName: g.name });
-    await this.repo.addIdentity({
-      id: newId(now),
-      userId,
-      provider: 'google',
-      subject: g.subject,
-      email,
-      now,
-    });
+    await this.repo.createUser({ id: userId, now, email, displayName: name });
+    await this.repo.addIdentity({ id: newId(now), userId, provider, subject, email, now });
     const session = await this.startSession(userId, newId(now), input.deviceLabel);
     return { ...session, linked: false, created: true };
   }

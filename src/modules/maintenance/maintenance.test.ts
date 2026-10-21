@@ -66,6 +66,22 @@ describe('nightly maintenance', () => {
       (await env.DB.prepare('SELECT key FROM rate_limits').all<{ key: string }>()).results.map((r) => r.key),
     ).toEqual(['fresh']);
   });
+  it('removes sign-in codes a day after they expired', async () => {
+    const { run } = await setup();
+    await env.DB.exec('DELETE FROM email_codes');
+    await env.DB.batch([
+      env.DB.prepare(
+        "INSERT INTO email_codes (id, email_hash, code_hash, created_at, expires_at) VALUES ('a', 'h', 'c', ?, ?)",
+      ).bind(T0 - 3 * DAY, T0 - 3 * DAY + 600_000),
+      env.DB.prepare(
+        "INSERT INTO email_codes (id, email_hash, code_hash, created_at, expires_at) VALUES ('b', 'h', 'c', ?, ?)",
+      ).bind(T0 - 1000, T0 + 600_000),
+    ]);
+    expect((await run()).emailCodesRemoved).toBe(1);
+    expect(
+      (await env.DB.prepare('SELECT id FROM email_codes').all<{ id: string }>()).results.map((r) => r.id),
+    ).toEqual(['b']);
+  });
   it('removes old usage counters only', async () => {
     const { t, s, run } = await setup();
     await env.DB.batch([

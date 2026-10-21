@@ -21,6 +21,8 @@ export interface Bindings {
   OFF_USER_AGENT?: string;
   AI_DAILY_BUDGET?: string;
   REQUIRE_INTEGRITY?: string;
+  RESEND_API_KEY?: string;
+  EMAIL_FROM?: string;
   // test only
   TEST_MIGRATIONS?: unknown;
 }
@@ -50,6 +52,9 @@ const schema = z.object({
   OFF_USER_AGENT: z.string().optional(),
   /** Most AI calls the whole service will make in a day, so a bug or an attack cannot run up the bill. */
   AI_DAILY_BUDGET: z.coerce.number().int().min(0).default(20000),
+  RESEND_API_KEY: z.string().optional(),
+  /** The From address for sign-in emails, e.g. `Calories <login@yourdomain.com>`. */
+  EMAIL_FROM: z.string().optional(),
   /** `true` to demand Play Integrity proof when an account is created. Off until the Play project exists. */
   REQUIRE_INTEGRITY: z
     .enum(['true', 'false'])

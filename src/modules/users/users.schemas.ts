@@ -64,7 +64,7 @@ export const meSchema = z
     displayName: z.string().nullable(),
     email: z.string().nullable(),
     isAnonymous: z.boolean(),
-    providers: z.array(z.literal('google')),
+    providers: z.array(z.enum(['google', 'email'])),
     profile: profileSchema,
   })
   .openapi('Me');

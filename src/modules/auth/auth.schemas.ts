@@ -13,12 +13,12 @@ export const sessionSchema = z
   })
   .openapi('Session');
 
-export const googleSessionSchema = sessionSchema
+export const signInSessionSchema = sessionSchema
   .extend({
-    linked: z.boolean().describe('The Google account was attached to the signed-in anonymous account'),
+    linked: z.boolean().describe('The sign-in method was attached to the signed-in account'),
     created: z.boolean().describe('A brand new account was created'),
   })
-  .openapi('GoogleSession');
+  .openapi('SignInSession');
 
 const deviceLabel = z.string().trim().min(1).max(64).optional();
 
@@ -40,3 +40,30 @@ export const googleBodySchema = z
 export const refreshBodySchema = z
   .object({ refreshToken: z.string().min(20).max(256) })
   .openapi('RefreshRequest');
+
+const email = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(254)
+  .pipe(z.string().email())
+  .openapi({ example: 'person@example.com' });
+
+export const emailStartBodySchema = z.object({ email }).openapi('EmailStartRequest');
+
+export const emailStartResultSchema = z
+  .object({
+    sent: z.literal(true).describe('Always true, whether or not the address has an account'),
+    expiresIn: z.number().int().describe('Seconds the code works for'),
+    resendAfter: z.number().int().describe('Seconds to wait before asking for another code'),
+  })
+  .openapi('EmailStartResult');
+
+export const emailVerifyBodySchema = z
+  .object({
+    email,
+    code: z.string().regex(/^\d{6}$/, 'The code is six digits'),
+    deviceLabel,
+    discardAnonymousData: googleBodySchema.shape.discardAnonymousData,
+  })
+  .openapi('EmailVerifyRequest');

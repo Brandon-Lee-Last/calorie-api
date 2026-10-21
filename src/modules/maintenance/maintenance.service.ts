@@ -12,6 +12,7 @@ export type MaintenanceReport = {
   tombstonesRemoved: Record<string, number>;
   usageCountersRemoved: number;
   rateLimitsRemoved: number;
+  emailCodesRemoved: number;
 };
 
 /**
@@ -32,6 +33,7 @@ export class MaintenanceService {
       tombstonesRemoved: {},
       usageCountersRemoved: 0,
       rateLimitsRemoved: 0,
+      emailCodesRemoved: 0,
     };
 
     // Refresh tokens that expired a week ago, or were revoked a month ago, can no longer matter.
@@ -57,6 +59,13 @@ export class MaintenanceService {
       await this.db
         .prepare('DELETE FROM rate_limits WHERE window_start < ?')
         .bind(now - 2 * DAY)
+        .run()
+    ).meta.changes;
+
+    report.emailCodesRemoved = (
+      await this.db
+        .prepare('DELETE FROM email_codes WHERE expires_at < ?')
+        .bind(now - DAY)
         .run()
     ).meta.changes;
 

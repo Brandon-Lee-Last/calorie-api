@@ -9,10 +9,12 @@ export type UserRow = {
   display_name: string | null;
 };
 
+export type Provider = 'google' | 'email';
+
 export type IdentityRow = {
   id: string;
   user_id: string;
-  provider: 'google';
+  provider: Provider;
   subject: string;
   email: string | null;
   created_at: number;
@@ -60,6 +62,15 @@ export class AuthRepo {
     );
   }
 
+  /** An identity of another provider whose (verified) email is this one: the same mailbox, so the same person. */
+  findIdentityByEmail(email: string, otherThan: Provider): Promise<IdentityRow | null> {
+    return first<IdentityRow>(
+      this.db
+        .prepare('SELECT * FROM identities WHERE email = ? AND provider != ? ORDER BY created_at LIMIT 1')
+        .bind(email, otherThan),
+    );
+  }
+
   async deleteIdentity(id: string): Promise<void> {
     await run(this.db.prepare('DELETE FROM identities WHERE id = ?').bind(id));
   }
@@ -73,7 +84,7 @@ export class AuthRepo {
   async addIdentity(i: {
     id: string;
     userId: string;
-    provider: 'google';
+    provider: Provider;
     subject: string;
     email: string | null;
     now: number;

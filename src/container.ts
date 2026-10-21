@@ -13,6 +13,9 @@ import {
 import { systemClock, type Clock } from './core/time';
 import { AuthRepo } from './modules/auth/auth.repo';
 import { AuthService } from './modules/auth/auth.service';
+import { EmailCodesRepo } from './modules/auth/email.repo';
+import { EmailCodeService } from './modules/auth/email.service';
+import { LogMailer, ResendMailer, unconfiguredMailer, type Mailer } from './modules/auth/mailer';
 import { GoogleIdTokenVerifier, type GoogleVerifier } from './modules/auth/google';
 import { TokenService } from './modules/auth/tokens';
 import { BodyRepo } from './modules/body/body.repo';
@@ -59,6 +62,7 @@ export interface Overrides {
   integrity?: IntegrityVerifier;
   fetcher?: typeof fetch;
   googleVerifier?: GoogleVerifier;
+  mailer?: Mailer;
   foodLookup?: FoodLookup;
   billing?: BillingProvider;
   ai?: AiClient;
@@ -152,6 +156,30 @@ export class Container {
       'google',
       () =>
         this.overrides.googleVerifier ?? new GoogleIdTokenVerifier(this.config.GOOGLE_CLIENT_IDS, this.clock),
+    );
+  }
+
+  get mailer(): Mailer {
+    return this.once('mailer', () => {
+      if (this.overrides.mailer) return this.overrides.mailer;
+      const { RESEND_API_KEY, EMAIL_FROM, isProduction } = this.config;
+      if (RESEND_API_KEY && EMAIL_FROM)
+        return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
+      return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
+    });
+  }
+
+  get emailCodes(): EmailCodeService {
+    return this.once(
+      'emailCodes',
+      () =>
+        new EmailCodeService(
+          new EmailCodesRepo(this.db),
+          this.mailer,
+          this.config.JWT_SECRET,
+          this.clock,
+          this.logger,
+        ),
     );
   }
 

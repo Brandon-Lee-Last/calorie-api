@@ -16,6 +16,7 @@ export type ErrorCode =
   | 'not_configured'
   | 'resync_required'
   | 'integrity_failed'
+  | 'invalid_code'
   | 'ai_budget_exceeded'
   | 'maintenance'
   | 'upgrade_required'
@@ -51,6 +52,8 @@ export const rateLimited = (retryAfterSeconds: number) =>
   new AppError(429, 'rate_limited', 'Too many requests, slow down', { retryAfterSeconds });
 export const quotaExceeded = (key: string, limit: number) =>
   new AppError(429, 'quota_exceeded', `Daily limit reached for ${key}`, { key, limit });
+export const invalidCode = () =>
+  new AppError(400, 'invalid_code', 'That code is wrong or has expired. Ask for a new one.');
 export const aiBudgetExceeded = (retryAfterSeconds: number) =>
   new AppError(503, 'ai_budget_exceeded', 'AI logging is paused for today, please try again later', {
     retryAfterSeconds,
