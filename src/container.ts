@@ -7,6 +7,11 @@ import { AuthRepo } from './modules/auth/auth.repo';
 import { AuthService } from './modules/auth/auth.service';
 import { GoogleIdTokenVerifier, type GoogleVerifier } from './modules/auth/google';
 import { TokenService } from './modules/auth/tokens';
+import { BodyRepo } from './modules/body/body.repo';
+import { BodyService } from './modules/body/body.service';
+import { DiaryRepo } from './modules/diary/diary.repo';
+import { DiaryService } from './modules/diary/diary.service';
+import { ObjectStorage } from './modules/media/object-storage';
 import { UsersRepo } from './modules/users/users.repo';
 import { UsersService } from './modules/users/users.service';
 
@@ -73,6 +78,18 @@ export class Container {
       'users',
       () => new UsersService(new UsersRepo(this.db), new AuthRepo(this.db), this.clock),
     );
+  }
+
+  get body(): BodyService {
+    return this.once('body', () => new BodyService(new BodyRepo(this.db), this.users, this.clock));
+  }
+
+  get storage(): ObjectStorage {
+    return this.once('storage', () => new ObjectStorage(this.env.MEDIA));
+  }
+
+  get diary(): DiaryService {
+    return this.once('diary', () => new DiaryService(new DiaryRepo(this.db), this.storage, this.clock));
   }
 
   get auth(): AuthService {

@@ -11,10 +11,19 @@ import { onError, onNotFound, zodDetails } from './middleware/error-handler';
 import { requestId } from './middleware/request-id';
 import { authRoutes } from './modules/auth/auth.routes';
 import { usersRoutes } from './modules/users/users.routes';
+import { bodyRoutes } from './modules/body/body.routes';
+import { diaryRoutes } from './modules/diary/diary.routes';
 import { healthRoutes } from './modules/health/health.routes';
 
 export const API_PREFIX = '/v1';
 const JSON_BODY_LIMIT = 1024 * 1024;
+
+/** JSON is capped at 1 MB; image uploads and admin media uploads get more room. */
+export function bodyLimitFor(pathname: string): number {
+  if (/^\/v1\/admin\/media\//.test(pathname)) return 100 * 1024 * 1024;
+  if (/\/photo$/.test(pathname)) return 4 * 1024 * 1024;
+  return JSON_BODY_LIMIT;
+}
 
 export function createApp(overrides: Overrides = {}) {
   const app = new OpenAPIHono<AppEnv>({
@@ -57,12 +66,14 @@ export function createApp(overrides: Overrides = {}) {
   );
   app.use(
     `${API_PREFIX}/*`,
-    bodyLimit({
-      maxSize: JSON_BODY_LIMIT,
-      onError: () => {
-        throw payloadTooLarge();
-      },
-    }),
+    createMiddleware<AppEnv>((c, next) =>
+      bodyLimit({
+        maxSize: bodyLimitFor(new URL(c.req.url).pathname),
+        onError: () => {
+          throw payloadTooLarge();
+        },
+      })(c, next),
+    ),
   );
 
   app.onError(onError);
@@ -72,6 +83,8 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', healthRoutes);
   v1.route('/', authRoutes);
   v1.route('/', usersRoutes);
+  v1.route('/', bodyRoutes);
+  v1.route('/', diaryRoutes);
   app.route(API_PREFIX, v1);
 
   app.doc(`${API_PREFIX}/openapi.json`, {

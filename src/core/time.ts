@@ -68,3 +68,26 @@ export function dateRange(from: string, to: string): string[] {
   for (let d = from; d <= to && out.length < 4000; d = addDays(d, 1)) out.push(d);
   return out;
 }
+
+/** Phones' clocks are wrong sometimes. How far into the future a device timestamp may be before it is not believed. */
+export const MAX_CLIENT_SKEW_MS = 24 * HOUR;
+export const EARLIEST_LOGGED_AT = Date.UTC(2015, 0, 1);
+
+/**
+ * A device's "last edited" time decides which of two edits wins, so a device whose clock is far ahead must not be able
+ * to win every time. Anything more than five minutes in the future is treated as five minutes in the future.
+ */
+export function clampClientTime(clientMs: number, nowMs: number): number {
+  return Math.min(clientMs, nowMs + 5 * MINUTE);
+}
+
+/** True when `loggedAt` is a believable moment for something a person logs (not before 2015, not far ahead). */
+export function isPlausibleLoggedAt(loggedAt: number, nowMs: number): boolean {
+  return loggedAt >= EARLIEST_LOGGED_AT && loggedAt <= nowMs + MAX_CLIENT_SKEW_MS;
+}
+
+/** The local date can differ from the UTC date by a day at most (timezones run from UTC-12 to UTC+14). */
+export function localDateMatchesInstant(localDate: string, instantMs: number): boolean {
+  const utc = new Date(instantMs).toISOString().slice(0, 10);
+  return localDate === utc || localDate === addDays(utc, 1) || localDate === addDays(utc, -1);
+}
