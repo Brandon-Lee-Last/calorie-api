@@ -4,6 +4,7 @@ import type { Overrides } from '../../src/container';
 import { FakeClock } from '../../src/core/time';
 import { silentLogger } from '../../src/core/logger';
 import { unlimited } from '../../src/core/rate-limiter';
+import { clearSettingsCache } from '../../src/modules/settings/settings.service';
 
 export const T0 = Date.UTC(2026, 9, 21, 12, 0, 0); // 2026-10-21 12:00:00 UTC
 
@@ -14,6 +15,7 @@ export function makeApp(
   overrides: Overrides & { clock?: FakeClock } = {},
   configure?: (app: ReturnType<typeof createApp>) => void,
 ) {
+  clearSettingsCache(); // settings are cached per Worker instance; every test starts from what is in the database
   const clock = overrides.clock ?? new FakeClock(T0);
   const app = createApp({
     logger: silentLogger,

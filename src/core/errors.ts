@@ -20,6 +20,7 @@ export type ErrorCode =
   | 'ai_budget_exceeded'
   | 'maintenance'
   | 'upgrade_required'
+  | 'feature_disabled'
   | 'internal_error';
 
 /** An error the API intends to show to the client. Anything else becomes a generic 500. */
@@ -73,3 +74,18 @@ export const resyncRequired = () =>
   );
 
 export const isAppError = (e: unknown): e is AppError => e instanceof AppError;
+
+export const maintenance = (message: string) =>
+  new AppError(503, 'maintenance', message, { retryAfterSeconds: 60 });
+export const upgradeRequired = (details: { minAppVersion: string; storeUrl: string | null }) =>
+  new AppError(
+    426,
+    'upgrade_required',
+    'This version of the app is too old. Please update to continue.',
+    details,
+  );
+export const featureDisabled = (feature: string, description: string) =>
+  new AppError(503, 'feature_disabled', `${description} is switched off right now`, {
+    feature,
+    retryAfterSeconds: 300,
+  });

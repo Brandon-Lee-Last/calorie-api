@@ -23,6 +23,14 @@ export interface Bindings {
   REQUIRE_INTEGRITY?: string;
   RESEND_API_KEY?: string;
   EMAIL_FROM?: string;
+  MIN_APP_VERSION?: string;
+  LATEST_APP_VERSION?: string;
+  MAINTENANCE_MODE?: string;
+  MAINTENANCE_MESSAGE?: string;
+  STORE_URL?: string;
+  PRIVACY_URL?: string;
+  TERMS_URL?: string;
+  SUPPORT_EMAIL?: string;
   // test only
   TEST_MIGRATIONS?: unknown;
 }
@@ -53,6 +61,25 @@ const schema = z.object({
   /** Most AI calls the whole service will make in a day, so a bug or an attack cannot run up the bill. */
   AI_DAILY_BUDGET: z.coerce.number().int().min(0).default(20000),
   RESEND_API_KEY: z.string().optional(),
+  /** Oldest app version still allowed to use the API ("1.4.0"). Older ones get 426 `upgrade_required`. Admin settings override it. */
+  MIN_APP_VERSION: z
+    .string()
+    .regex(/^\d+\.\d+(\.\d+)?$/, 'MIN_APP_VERSION must look like 1.4.0')
+    .optional(),
+  LATEST_APP_VERSION: z
+    .string()
+    .regex(/^\d+\.\d+(\.\d+)?$/, 'LATEST_APP_VERSION must look like 1.4.0')
+    .optional(),
+  /** `true` to start in maintenance mode from the deploy. The admin setting overrides it. */
+  MAINTENANCE_MODE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
+  MAINTENANCE_MESSAGE: z.string().max(300).optional(),
+  STORE_URL: z.string().url().optional(),
+  PRIVACY_URL: z.string().url().optional(),
+  TERMS_URL: z.string().url().optional(),
+  SUPPORT_EMAIL: z.string().email().optional(),
   /** The From address for sign-in emails, e.g. `Calories <login@yourdomain.com>`. */
   EMAIL_FROM: z.string().optional(),
   /** `true` to demand Play Integrity proof when an account is created. Off until the Play project exists. */

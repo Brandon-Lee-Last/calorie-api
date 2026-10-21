@@ -25,6 +25,8 @@ import { accountRoutes } from './modules/account/account.routes';
 import { aiRoutes } from './modules/ai/ai.routes';
 import { insightsRoutes } from './modules/insights/insights.routes';
 import { healthRoutes } from './modules/health/health.routes';
+import { settingsRoutes } from './modules/settings/settings.routes';
+import { gate } from './middleware/gate';
 
 export const API_PREFIX = '/v1';
 const JSON_BODY_LIMIT = 1024 * 1024;
@@ -55,7 +57,17 @@ export function createApp(overrides: Overrides = {}) {
     }),
   );
   app.use('*', accessLog);
-  app.use('*', secureHeaders());
+  // This is a JSON API: it never serves a page, so nothing may load or frame anything.
+  app.use(
+    '*',
+    secureHeaders({
+      contentSecurityPolicy: { defaultSrc: ["'none'"], frameAncestors: ["'none'"], baseUri: ["'none'"] },
+      strictTransportSecurity: 'max-age=63072000; includeSubDomains',
+      referrerPolicy: 'no-referrer',
+      crossOriginResourcePolicy: 'same-site',
+      permissionsPolicy: { camera: [], microphone: [], geolocation: [], payment: [] },
+    }),
+  );
   app.use(
     '*',
     createMiddleware<AppEnv>(async (c, next) => {
@@ -68,6 +80,7 @@ export function createApp(overrides: Overrides = {}) {
       })(c, next);
     }),
   );
+  app.use(`${API_PREFIX}/*`, gate);
   app.use(
     `${API_PREFIX}/*`,
     createMiddleware<AppEnv>(async (c, next) => {
@@ -92,6 +105,7 @@ export function createApp(overrides: Overrides = {}) {
 
   const v1 = new OpenAPIHono<AppEnv>();
   v1.route('/', healthRoutes);
+  v1.route('/', settingsRoutes);
   v1.route('/', authRoutes);
   v1.route('/', usersRoutes);
   v1.route('/', bodyRoutes);

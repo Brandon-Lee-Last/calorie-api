@@ -3,6 +3,7 @@ import type { AppEnv } from '../../app-types';
 import { authErrors, bearer, commonErrors, json, jsonBody, z } from '../../core/openapi';
 import { aiBudgetExceeded } from '../../core/errors';
 import { requireAuth } from '../../middleware/auth';
+import { requireFeature } from '../../middleware/feature';
 import { rateLimit } from '../../middleware/rate-limit';
 
 export const aiRoutes = new OpenAPIHono<AppEnv>();
@@ -50,6 +51,7 @@ aiRoutes.openapi(
     description:
       'Counts against the daily AI allowance (429 `quota_exceeded` when it is used up; a failed call is not charged). Show the items for the person to confirm, edit and save as diary entries with source `ai_text`.',
     middleware: [
+      requireFeature('aiText'),
       requireAuth,
       rateLimit({ name: 'ai', limit: 20, windowSeconds: 60, by: 'user' }),
       // One address cannot drain the allowance of many throwaway accounts.

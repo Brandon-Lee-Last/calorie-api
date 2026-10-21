@@ -18,11 +18,11 @@ export const onError: ErrorHandler<AppEnv> = (err, c) => {
   const logger = c.get('logger');
 
   if (isAppError(err)) {
-    if (err.status >= 500) logger?.error('app error', { code: err.code, message: err.message });
-    if (err.code === 'rate_limited' || err.code === 'ai_budget_exceeded') {
-      const retry = (err.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
-      if (retry) c.header('retry-after', String(retry));
-    }
+    // 503 is a deliberate "not now" (maintenance, a switched-off feature, a spent budget), not a fault.
+    if (err.status >= 500 && err.status !== 503)
+      logger?.error('app error', { code: err.code, message: err.message });
+    const retry = (err.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
+    if (retry) c.header('retry-after', String(retry));
     return c.json(body(err.code, err.message, requestId, err.details), err.status);
   }
   if (err instanceof ZodError) {

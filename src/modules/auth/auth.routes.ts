@@ -3,6 +3,7 @@ import type { AppEnv } from '../../app-types';
 import { authErrors, bearer, commonErrors, json, jsonBody, z } from '../../core/openapi';
 import { optionalAuth, requireAuth } from '../../middleware/auth';
 import { requireIntegrity } from '../../middleware/integrity';
+import { requireFeature } from '../../middleware/feature';
 import { rateLimit } from '../../middleware/rate-limit';
 import { issueChallenge } from '../integrity/integrity';
 import { CODE_TTL_MS, RESEND_COOLDOWN_MS } from './email.service';
@@ -116,6 +117,7 @@ authRoutes.openapi(
       'Answers 202 for any well formed address, so it cannot be used to find out who has an account. The code works for ten minutes, ' +
       'once, with five guesses. Asking again within a minute sends nothing new. Complete with `POST /auth/email/verify`.',
     middleware: [
+      requireFeature('emailSignIn'),
       rateLimit({ name: 'auth-email-start', limit: 10, windowSeconds: 3600, strict: true }),
       rateLimit({ name: 'auth-email-start-day', limit: 40, windowSeconds: 86400, strict: true }),
     ] as const,
@@ -147,6 +149,7 @@ authRoutes.openapi(
       'A wrong, used or expired code is 400 `invalid_code`. An account that signed in with Google can later add its email the same way, ' +
       'and the same email address is recognised as the same person across both.',
     middleware: [
+      requireFeature('emailSignIn'),
       rateLimit({ name: 'auth-email-verify', limit: 30, windowSeconds: 3600, strict: true }),
       optionalAuth,
     ] as const,

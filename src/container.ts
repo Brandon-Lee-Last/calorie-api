@@ -28,6 +28,8 @@ import { SessionsRepo } from './modules/workouts/sessions.repo';
 import { SessionsService } from './modules/workouts/sessions.service';
 import { WorkoutsRepo } from './modules/workouts/workouts.repo';
 import { WorkoutsService } from './modules/workouts/workouts.service';
+import { SettingsRepo } from './modules/settings/settings.repo';
+import { SettingsService } from './modules/settings/settings.service';
 import { AdminRepo } from './modules/admin/admin.repo';
 import { AdminService } from './modules/admin/admin.service';
 import { AccountRepo } from './modules/account/account.repo';
@@ -167,6 +169,22 @@ export class Container {
         return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
       return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
     });
+  }
+
+  get settings(): SettingsService {
+    return this.once(
+      'settings',
+      () => new SettingsService(new SettingsRepo(this.db), this.db, this.config, this.clock, this.logger),
+    );
+  }
+
+  /** Can this deployment actually send a sign-in email? (Production needs a mail service; elsewhere codes go to the log.) */
+  get emailSignInAvailable(): boolean {
+    return (
+      this.overrides.mailer !== undefined ||
+      Boolean(this.config.RESEND_API_KEY && this.config.EMAIL_FROM) ||
+      !this.config.isProduction
+    );
   }
 
   get emailCodes(): EmailCodeService {

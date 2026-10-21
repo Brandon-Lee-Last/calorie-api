@@ -120,6 +120,7 @@ describe('OpenAPI document', () => {
         problems.push(`${id}: no success response`);
       const needsAuth =
         !path.startsWith('/v1/health') &&
+        path !== '/v1/config' &&
         !path.startsWith('/v1/auth/') &&
         !path.endsWith('/file') &&
         !path.startsWith('/v1/webhooks');
@@ -129,6 +130,7 @@ describe('OpenAPI document', () => {
     expect(new Set(operations.map((o) => o.op.tags[0]))).toEqual(
       new Set([
         'Health',
+        'Config',
         'Auth',
         'Me',
         'Weight',
