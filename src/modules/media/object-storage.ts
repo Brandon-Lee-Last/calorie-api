@@ -53,6 +53,14 @@ export class ObjectStorage {
     return this.bucket.get(key);
   }
 
+  head(key: string): Promise<R2Object | null> {
+    return this.bucket.head(key);
+  }
+
+  getRange(key: string, range: { offset: number; length: number }): Promise<R2ObjectBody | null> {
+    return this.bucket.get(key, { range });
+  }
+
   async delete(key: string): Promise<void> {
     await this.bucket.delete(key);
   }

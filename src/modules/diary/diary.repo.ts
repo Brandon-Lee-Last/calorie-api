@@ -134,8 +134,14 @@ export class DiaryRepo {
     ); // fmt: skip
   }
 
-  delete(userId: string, id: string, clientUpdatedAt: number, now: number): Promise<DeleteResult> {
-    return entriesTable.softDelete(this.db, userId, id, clientUpdatedAt, now);
+  delete(
+    userId: string,
+    id: string,
+    clientUpdatedAt: number,
+    now: number,
+    force = false,
+  ): Promise<DeleteResult> {
+    return entriesTable.softDelete(this.db, userId, id, clientUpdatedAt, now, force);
   }
 
   get(userId: string, id: string) {

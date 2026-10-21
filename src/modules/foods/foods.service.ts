@@ -111,6 +111,7 @@ export class FoodsService {
       id,
       clientUpdatedAt === undefined ? now : sanitizeClientTime(clientUpdatedAt, now),
       now,
+      clientUpdatedAt === undefined, // a direct DELETE is the person acting now: always applies
     );
   }
 

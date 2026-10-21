@@ -71,6 +71,7 @@ export class BodyService {
       id,
       clientUpdatedAt === undefined ? now : sanitizeClientTime(clientUpdatedAt, now),
       now,
+      clientUpdatedAt === undefined, // a direct DELETE is the person acting now: always applies
     );
     if (result.outcome === 'applied') await this.syncProfileWeight(userId);
     return result;
@@ -108,6 +109,7 @@ export class BodyService {
       id,
       clientUpdatedAt === undefined ? now : sanitizeClientTime(clientUpdatedAt, now),
       now,
+      clientUpdatedAt === undefined, // a direct DELETE is the person acting now: always applies
     );
   }
 

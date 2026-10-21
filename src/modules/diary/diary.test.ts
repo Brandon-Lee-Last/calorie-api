@@ -108,6 +108,15 @@ describe('diary entries', () => {
     expect((await body(await send('GET', `/v1/diary/entries?from=${TODAY}&to=${TODAY}`))).items).toEqual([]);
     expect((await body(await send('GET', `/v1/diary/summary?from=${TODAY}&to=${TODAY}`))).days).toEqual([]);
   });
+  it('a direct delete always applies, even after an edit stamped slightly ahead by a fast phone clock', async () => {
+    const { put, send } = await setup();
+    const id = newId();
+    await put(id, { clientUpdatedAt: T0 + 4 * 60_000 }); // the phone's clock is 4 minutes ahead
+    expect((await send('DELETE', `/v1/diary/entries/${id}`)).status).toBe(204);
+    expect((await body(await send('GET', `/v1/diary/entries?from=${TODAY}&to=${TODAY}`))).items).toEqual([]);
+    // and an older offline edit cannot bring it back
+    expect((await body(await put(id, { clientUpdatedAt: T0 + 3 * 60_000 }))).applied).toBe(false);
+  });
   it('rejects bad entries and says where', async () => {
     const { send, entry } = await setup();
     const cases: [Record<string, unknown>, string][] = [

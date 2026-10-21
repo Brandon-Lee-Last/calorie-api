@@ -11,6 +11,9 @@ import { foodsTable } from '../foods/foods.repo';
 import { foodInputSchema } from '../foods/foods.schemas';
 import { toFood, type FoodsService } from '../foods/foods.service';
 import { waterInputSchema, weightInputSchema } from '../body/body.schemas';
+import { sessionsTable } from '../workouts/sessions.repo';
+import { sessionInputSchema } from '../workouts/sessions.schemas';
+import { toSession, type SessionsService } from '../workouts/sessions.service';
 import { zodDetails } from '../../middleware/error-handler';
 import type { SYNC_TYPES } from './sync.schemas';
 
@@ -34,7 +37,8 @@ export type Change =
   | { type: 'diary_entry'; record: ReturnType<typeof toEntry> }
   | { type: 'weight'; record: ReturnType<typeof toWeight> }
   | { type: 'water'; record: ReturnType<typeof toWater> }
-  | { type: 'food'; record: ReturnType<typeof toFood> };
+  | { type: 'food'; record: ReturnType<typeof toFood> }
+  | { type: 'workout_session'; record: ReturnType<typeof toSession> };
 
 export class SyncService {
   constructor(
@@ -42,6 +46,7 @@ export class SyncService {
     private diary: DiaryService,
     private body: BodyService,
     private foods: FoodsService,
+    private sessions: SessionsService,
     private logger: Logger,
   ) {}
 
@@ -60,17 +65,19 @@ export class SyncService {
     const upper = head?.sync_rev ?? 0;
     if (since >= upper) return { changes: [], rev: Math.max(upper, 0), hasMore: false };
 
-    const [entries, weights, waters, foods] = await Promise.all([
+    const [entries, weights, waters, foods, sessionRows] = await Promise.all([
       entriesTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
       weightTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
       waterTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
       foodsTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
+      sessionsTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
     ]);
     const all: Change[] = [
       ...entries.map((r) => ({ type: 'diary_entry' as const, record: toEntry(r) })),
       ...weights.map((r) => ({ type: 'weight' as const, record: toWeight(r) })),
       ...waters.map((r) => ({ type: 'water' as const, record: toWater(r) })),
       ...foods.map((r) => ({ type: 'food' as const, record: toFood(r, userId) })),
+      ...sessionRows.map((r) => ({ type: 'workout_session' as const, record: toSession(r) })),
     ].sort((a, b) => a.record.rev - b.record.rev);
 
     if (all.length > limit) {
@@ -155,6 +162,12 @@ export class SyncService {
         result = await this.foods.putCustom(userId, op.id, d);
         break;
       }
+      case 'workout_session': {
+        const d = parse(sessionInputSchema);
+        if (isFailure(d)) return d;
+        result = await this.sessions.put(userId, op.id, d);
+        break;
+      }
     }
     return { type: op.type, id: op.id, status: result.applied ? 'applied' : 'stale', record: result.record };
   }
@@ -173,6 +186,9 @@ export class SyncService {
         break;
       case 'food':
         outcome = (await this.foods.deleteCustom(userId, op.id, op.clientUpdatedAt)).outcome;
+        break;
+      case 'workout_session':
+        outcome = (await this.sessions.delete(userId, op.id, op.clientUpdatedAt)).outcome;
         break;
     }
     return { type: op.type, id: op.id, status: outcome };

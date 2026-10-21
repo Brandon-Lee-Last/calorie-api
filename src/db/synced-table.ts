@@ -46,22 +46,29 @@ export class SyncedTable {
     return { applied: (results[1]!.meta.changes ?? 0) === 1 };
   }
 
+  /**
+   * Mark a row deleted. A delete that arrives through sync is an edit like any other and loses to a newer edit. A direct
+   * DELETE request (`force`) is the person acting right now, so it always applies; the row's edit time moves forward so
+   * it cannot be undone by an older offline edit.
+   */
   async softDelete(
     db: D1Database,
     userId: string,
     id: string,
     clientUpdatedAt: number,
     now: number,
+    force = false,
   ): Promise<DeleteResult> {
     const t = this.table;
     const results = await db.batch([
       db.prepare('UPDATE users SET sync_rev = sync_rev + 1 WHERE id = ?').bind(userId),
       db
         .prepare(
-          `UPDATE ${t} SET deleted_at = ?, updated_at = ?, client_updated_at = ?, rev = (SELECT sync_rev FROM users WHERE id = ?)
-           WHERE id = ? AND user_id = ? AND deleted_at IS NULL AND ? >= client_updated_at`,
+          `UPDATE ${t} SET deleted_at = ?, updated_at = ?, client_updated_at = MAX(client_updated_at, ?),
+             rev = (SELECT sync_rev FROM users WHERE id = ?)
+           WHERE id = ? AND user_id = ? AND deleted_at IS NULL AND (? = 1 OR ? >= client_updated_at)`,
         )
-        .bind(now, now, clientUpdatedAt, userId, id, userId, clientUpdatedAt),
+        .bind(now, now, clientUpdatedAt, userId, id, userId, force ? 1 : 0, clientUpdatedAt),
     ]);
     if ((results[1]!.meta.changes ?? 0) === 1) return { outcome: 'applied' };
     const row = await this.get(db, userId, id);

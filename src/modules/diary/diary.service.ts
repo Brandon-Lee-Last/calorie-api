@@ -132,6 +132,7 @@ export class DiaryService {
       id,
       clientUpdatedAt === undefined ? now : sanitizeClientTime(clientUpdatedAt, now),
       now,
+      clientUpdatedAt === undefined, // a direct DELETE is the person acting now: always applies
     );
     if (result.outcome === 'applied' && before?.photo_key) await this.storage.delete(before.photo_key);
     return result;

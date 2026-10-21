@@ -96,8 +96,14 @@ export class FoodsRepo {
     ); // fmt: skip
   }
 
-  deleteCustom(userId: string, id: string, clientUpdatedAt: number, now: number): Promise<DeleteResult> {
-    return foodsTable.softDelete(this.db, userId, id, clientUpdatedAt, now);
+  deleteCustom(
+    userId: string,
+    id: string,
+    clientUpdatedAt: number,
+    now: number,
+    force = false,
+  ): Promise<DeleteResult> {
+    return foodsTable.softDelete(this.db, userId, id, clientUpdatedAt, now, force);
   }
 
   getOwn(userId: string, id: string) {

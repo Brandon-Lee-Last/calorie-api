@@ -49,8 +49,8 @@ export class BodyRepo {
       now,
     );
   }
-  deleteWeight(userId: string, id: string, cu: number, now: number): Promise<DeleteResult> {
-    return weightTable.softDelete(this.db, userId, id, cu, now);
+  deleteWeight(userId: string, id: string, cu: number, now: number, force = false): Promise<DeleteResult> {
+    return weightTable.softDelete(this.db, userId, id, cu, now, force);
   }
   getWeight(userId: string, id: string) {
     return weightTable.get<WeightRow>(this.db, userId, id);
@@ -93,8 +93,8 @@ export class BodyRepo {
       now,
     );
   }
-  deleteWater(userId: string, id: string, cu: number, now: number): Promise<DeleteResult> {
-    return waterTable.softDelete(this.db, userId, id, cu, now);
+  deleteWater(userId: string, id: string, cu: number, now: number, force = false): Promise<DeleteResult> {
+    return waterTable.softDelete(this.db, userId, id, cu, now, force);
   }
   getWater(userId: string, id: string) {
     return waterTable.get<WaterRow>(this.db, userId, id);

@@ -11,6 +11,14 @@ import { BodyRepo } from './modules/body/body.repo';
 import { BodyService } from './modules/body/body.service';
 import { DiaryRepo } from './modules/diary/diary.repo';
 import { DiaryService } from './modules/diary/diary.service';
+import { MediaRepo } from './modules/media/media.repo';
+import { MediaService } from './modules/media/media.service';
+import { SessionsRepo } from './modules/workouts/sessions.repo';
+import { SessionsService } from './modules/workouts/sessions.service';
+import { WorkoutsRepo } from './modules/workouts/workouts.repo';
+import { WorkoutsService } from './modules/workouts/workouts.service';
+import { AdminRepo } from './modules/admin/admin.repo';
+import { AdminService } from './modules/admin/admin.service';
 import { ObjectStorage } from './modules/media/object-storage';
 import { FoodsRepo } from './modules/foods/foods.repo';
 import { FoodsService } from './modules/foods/foods.service';
@@ -128,6 +136,52 @@ export class Container {
     );
   }
 
+  get media(): MediaService {
+    return this.once(
+      'media',
+      () =>
+        new MediaService(
+          new MediaRepo(this.db),
+          this.storage,
+          this.clock,
+          this.config.MEDIA_SIGNING_SECRET,
+          async (userId) => (await this.subscriptions.entitlement(userId)).plan,
+        ),
+    );
+  }
+
+  get workouts(): WorkoutsService {
+    return this.once(
+      'workouts',
+      () =>
+        new WorkoutsService(
+          new WorkoutsRepo(this.db),
+          async (userId) => (await this.subscriptions.entitlement(userId)).plan,
+          this.clock,
+        ),
+    );
+  }
+
+  get sessions(): SessionsService {
+    return this.once(
+      'sessions',
+      () =>
+        new SessionsService(
+          new SessionsRepo(this.db),
+          new WorkoutsRepo(this.db),
+          (userId, programId) => this.workouts.afterSession(userId, programId),
+          this.clock,
+        ),
+    );
+  }
+
+  get admin(): AdminService {
+    return this.once(
+      'admin',
+      () => new AdminService(new AdminRepo(this.db), new MediaRepo(this.db), this.storage, this.clock),
+    );
+  }
+
   get diary(): DiaryService {
     return this.once(
       'diary',
@@ -167,7 +221,10 @@ export class Container {
   }
 
   get sync(): SyncService {
-    return this.once('sync', () => new SyncService(this.db, this.diary, this.body, this.foods, this.logger));
+    return this.once(
+      'sync',
+      () => new SyncService(this.db, this.diary, this.body, this.foods, this.sessions, this.logger),
+    );
   }
 
   get auth(): AuthService {

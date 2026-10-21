@@ -3,8 +3,9 @@ import { clientIdSchema, timestampSchema } from '../../core/schemas';
 import { entryRecordSchema } from '../diary/diary.schemas';
 import { waterRecordSchema, weightRecordSchema } from '../body/body.schemas';
 import { foodRecordSchema } from '../foods/foods.schemas';
+import { sessionRecordSchema } from '../workouts/sessions.schemas';
 
-export const SYNC_TYPES = ['diary_entry', 'weight', 'water', 'food'] as const;
+export const SYNC_TYPES = ['diary_entry', 'weight', 'water', 'food', 'workout_session'] as const;
 export const syncTypeSchema = z.enum(SYNC_TYPES);
 
 export const changeSchema = z
@@ -13,6 +14,7 @@ export const changeSchema = z
     z.object({ type: z.literal('weight'), record: weightRecordSchema }),
     z.object({ type: z.literal('water'), record: waterRecordSchema }),
     z.object({ type: z.literal('food'), record: foodRecordSchema }),
+    z.object({ type: z.literal('workout_session'), record: sessionRecordSchema }),
   ])
   .openapi('SyncChange');
 
