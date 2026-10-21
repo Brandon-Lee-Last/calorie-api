@@ -23,6 +23,12 @@ export type Plan = {
 
 export const UNLIMITED = 1_000_000;
 
+/**
+ * Accounts nobody has signed in to (no Google or email linked) are the cheapest thing to mass-produce, so they get a
+ * smaller AI allowance. Linking a sign-in method raises it to the plan's normal limit.
+ */
+export const ANONYMOUS_AI_TEXT_PER_DAY = 2;
+
 export const PLANS: Record<PlanId, Plan> = {
   free: {
     id: 'free',

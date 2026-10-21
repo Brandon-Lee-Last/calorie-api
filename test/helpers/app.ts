@@ -15,7 +15,13 @@ export function makeApp(
   configure?: (app: ReturnType<typeof createApp>) => void,
 ) {
   const clock = overrides.clock ?? new FakeClock(T0);
-  const app = createApp({ logger: silentLogger, rateLimiter: unlimited, ...overrides, clock });
+  const app = createApp({
+    logger: silentLogger,
+    rateLimiter: unlimited,
+    strictLimiter: unlimited,
+    ...overrides,
+    clock,
+  });
   configure?.(app); // add test-only routes here, before the first request builds the router
   const request = (path: string, init?: RequestInit) => app.request(path, init, env);
   return { app, clock, env, request };
@@ -62,3 +68,12 @@ export const authed = (token: string, extra: Record<string, string> = {}) => ({
   authorization: `Bearer ${token}`,
   ...extra,
 });
+
+/** Give an account a linked sign-in method, as if the person had signed in with Google: it stops being anonymous. */
+export async function linkAccount(userId: string, provider = 'google'): Promise<void> {
+  await env.DB.prepare(
+    'INSERT INTO identities (id, user_id, provider, subject, email, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+  )
+    .bind(`id-${userId}`, userId, provider, `subject-${userId}`, 'person@example.com', T0)
+    .run();
+}

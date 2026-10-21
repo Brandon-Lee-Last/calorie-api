@@ -1,6 +1,7 @@
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import type { AppEnv } from '../../app-types';
 import { authErrors, bearer, commonErrors, json, jsonBody, z } from '../../core/openapi';
+import { aiBudgetExceeded } from '../../core/errors';
 import { requireAuth } from '../../middleware/auth';
 import { rateLimit } from '../../middleware/rate-limit';
 
@@ -48,18 +49,27 @@ aiRoutes.openapi(
     security: bearer,
     description:
       'Counts against the daily AI allowance (429 `quota_exceeded` when it is used up; a failed call is not charged). Show the items for the person to confirm, edit and save as diary entries with source `ai_text`.',
-    middleware: [requireAuth, rateLimit({ name: 'ai', limit: 20, windowSeconds: 60, by: 'user' })],
+    middleware: [
+      requireAuth,
+      rateLimit({ name: 'ai', limit: 20, windowSeconds: 60, by: 'user' }),
+      // One address cannot drain the allowance of many throwaway accounts.
+      rateLimit({ name: 'ai-ip-day', limit: 60, windowSeconds: 86400, by: 'ip', strict: true }),
+    ],
     request: { body: jsonBody(bodySchema) },
     responses: {
       200: json(resultSchema, 'Estimated items'),
       502: commonErrors[400],
       501: commonErrors[400],
+      503: commonErrors[400],
       ...authErrors,
     },
   }), // fmt: skip
   async (c) => {
     const d = c.get('deps');
     const userId = c.get('auth')!.userId;
+    // A ceiling on what the AI can cost per day across everyone. Checked first so nobody's allowance is spent on a refusal.
+    const budget = await d.strictLimiter.hit('ai-budget', d.config.AI_DAILY_BUDGET, 86400);
+    if (!budget.allowed) throw aiBudgetExceeded(budget.retryAfterSeconds);
     const usage = await d.subscriptions.consume(userId, 'ai_text');
     try {
       const result = await d.ai.parseMeal(c.req.valid('json').text);

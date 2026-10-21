@@ -15,6 +15,10 @@ export type ErrorCode =
   | 'upstream_failed'
   | 'not_configured'
   | 'resync_required'
+  | 'integrity_failed'
+  | 'ai_budget_exceeded'
+  | 'maintenance'
+  | 'upgrade_required'
   | 'internal_error';
 
 /** An error the API intends to show to the client. Anything else becomes a generic 500. */
@@ -47,6 +51,10 @@ export const rateLimited = (retryAfterSeconds: number) =>
   new AppError(429, 'rate_limited', 'Too many requests, slow down', { retryAfterSeconds });
 export const quotaExceeded = (key: string, limit: number) =>
   new AppError(429, 'quota_exceeded', `Daily limit reached for ${key}`, { key, limit });
+export const aiBudgetExceeded = (retryAfterSeconds: number) =>
+  new AppError(503, 'ai_budget_exceeded', 'AI logging is paused for today, please try again later', {
+    retryAfterSeconds,
+  });
 export const subscriptionRequired = (feature: string) =>
   new AppError(402, 'subscription_required', `${feature} needs a Pro subscription`, { feature });
 export const upstreamFailed = (service: string, message?: string) =>

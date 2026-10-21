@@ -1,8 +1,8 @@
 import { env } from 'cloudflare:workers';
 import { SignJWT, generateKeyPair } from 'jose';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { MemoryRateLimiter } from '../../core/rate-limiter';
-import { DAY, FakeClock, MINUTE } from '../../core/time';
+import { D1RateLimiter } from '../../core/rate-limiter';
+import { DAY, FakeClock, HOUR, MINUTE } from '../../core/time';
 import { GOOGLE_CLIENT, makeGoogle } from '../../../test/helpers/google';
 import { T0, body, jsonInit, makeApp, signUp, type SessionBody } from '../../../test/helpers/app';
 import { REFRESH_REUSE_GRACE_MS } from './auth.service';
@@ -55,13 +55,37 @@ describe('anonymous accounts', () => {
     expect(b.error.code).toBe('validation_failed');
     expect(b.error.details[0].path).toBe('deviceLabel');
   });
-  it('limits how fast one address can create accounts', async () => {
+  it('limits how fast one address can create accounts, for real, across instances', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
     const clock = new FakeClock(T0);
-    const t = makeApp({ clock, rateLimiter: new MemoryRateLimiter(clock) });
+    // Two apps stand in for two Worker instances: the count lives in D1, so they share it.
+    const a = makeApp({ clock, strictLimiter: new D1RateLimiter(env.DB, clock) });
+    const b = makeApp({ clock, strictLimiter: new D1RateLimiter(env.DB, clock) });
     const init = jsonInit('POST', {}, undefined, { 'cf-connecting-ip': '203.0.113.9' });
-    let last = 0;
-    for (let i = 0; i < 61; i++) last = (await t.request('/v1/auth/anonymous', init)).status;
-    expect(last).toBe(429);
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++)
+      statuses.push((await (i % 2 ? a : b).request('/v1/auth/anonymous', init)).status);
+    expect(statuses.slice(0, 10).every((s) => s === 201)).toBe(true);
+    expect(statuses[10]).toBe(429);
+    // another address is unaffected, and the first one is let back in an hour later
+    const other = jsonInit('POST', {}, undefined, { 'cf-connecting-ip': '203.0.113.10' });
+    expect((await a.request('/v1/auth/anonymous', other)).status).toBe(201);
+    clock.advance(HOUR + 1000);
+    expect((await a.request('/v1/auth/anonymous', init)).status).toBe(201);
+  });
+  it('never stores the address itself, only a keyed hash', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
+    const clock = new FakeClock(T0);
+    const t = makeApp({ clock, strictLimiter: new D1RateLimiter(env.DB, clock) });
+    await t.request(
+      '/v1/auth/anonymous',
+      jsonInit('POST', {}, undefined, { 'cf-connecting-ip': '198.51.100.77' }),
+    );
+    const keys = (await env.DB.prepare('SELECT key FROM rate_limits').all<{ key: string }>()).results.map(
+      (r) => r.key,
+    );
+    expect(keys.length).toBeGreaterThan(0);
+    for (const k of keys) expect(k).not.toContain('198.51.100.77');
   });
 });
 

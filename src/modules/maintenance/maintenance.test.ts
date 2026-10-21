@@ -50,6 +50,22 @@ describe('nightly maintenance', () => {
     t.clock.advance(11 * DAY);
     expect((await run()).refreshTokensRemoved).toBe(1);
   });
+  it('removes finished rate-limit windows only', async () => {
+    const { run } = await setup();
+    await env.DB.exec('DELETE FROM rate_limits');
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO rate_limits (key, window_start, count) VALUES ('old', ?, 9)").bind(
+        T0 - 3 * DAY,
+      ),
+      env.DB.prepare("INSERT INTO rate_limits (key, window_start, count) VALUES ('fresh', ?, 1)").bind(
+        T0 - 1000,
+      ),
+    ]);
+    expect((await run()).rateLimitsRemoved).toBe(1);
+    expect(
+      (await env.DB.prepare('SELECT key FROM rate_limits').all<{ key: string }>()).results.map((r) => r.key),
+    ).toEqual(['fresh']);
+  });
   it('removes old usage counters only', async () => {
     const { t, s, run } = await setup();
     await env.DB.batch([

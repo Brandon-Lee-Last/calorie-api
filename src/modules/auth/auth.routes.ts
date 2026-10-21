@@ -2,7 +2,9 @@ import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import type { AppEnv } from '../../app-types';
 import { authErrors, bearer, commonErrors, json, jsonBody, z } from '../../core/openapi';
 import { optionalAuth, requireAuth } from '../../middleware/auth';
+import { requireIntegrity } from '../../middleware/integrity';
 import { rateLimit } from '../../middleware/rate-limit';
+import { issueChallenge } from '../integrity/integrity';
 import {
   anonymousBodySchema,
   googleBodySchema,
@@ -15,13 +17,49 @@ export const authRoutes = new OpenAPIHono<AppEnv>();
 
 authRoutes.openapi(
   createRoute({
+    method: 'get',
+    path: '/auth/challenge',
+    tags: ['Auth'],
+    summary: 'A one-time challenge to pass to Play Integrity',
+    description:
+      'Where device checks are on (`required: true`), ask for a challenge, hand it to the Play Integrity API as the nonce, ' +
+      'and send the token it returns with account creation: `x-integrity-token` and `x-integrity-challenge`. ' +
+      'Challenges expire after five minutes.',
+    middleware: [
+      rateLimit({ name: 'auth-challenge', limit: 60, windowSeconds: 3600, strict: true }),
+    ] as const,
+    responses: {
+      200: json(
+        z
+          .object({ challenge: z.string(), expiresAt: z.number().int(), required: z.boolean() })
+          .openapi('Challenge'),
+        'A challenge',
+      ),
+      ...commonErrors,
+    },
+  }),
+  async (c) => {
+    const d = c.get('deps');
+    return c.json(
+      { ...(await issueChallenge(d.config.JWT_SECRET, d.clock)), required: d.integrity.required },
+      200,
+    );
+  },
+);
+
+authRoutes.openapi(
+  createRoute({
     method: 'post',
     path: '/auth/anonymous',
     tags: ['Auth'],
     summary: 'Start using the app without signing in',
     description:
       'Creates an anonymous account on this device. Link Google later with `POST /auth/google` to keep the data.',
-    middleware: [rateLimit({ name: 'auth-anon', limit: 60, windowSeconds: 3600 })] as const,
+    middleware: [
+      rateLimit({ name: 'auth-anon-hour', limit: 10, windowSeconds: 3600, strict: true }),
+      rateLimit({ name: 'auth-anon-day', limit: 30, windowSeconds: 86400, strict: true }),
+      requireIntegrity,
+    ] as const,
     request: { body: jsonBody(anonymousBodySchema) },
     responses: { 201: json(sessionSchema, 'Account created'), ...commonErrors },
   }),
@@ -40,7 +78,10 @@ authRoutes.openapi(
     description:
       'With a Bearer token for an anonymous account, the Google account is linked to it and the data is kept. ' +
       'If that Google account already has data, the call fails with 409 `identity_in_use` unless `discardAnonymousData` is true.',
-    middleware: [rateLimit({ name: 'auth-google', limit: 60, windowSeconds: 3600 }), optionalAuth] as const,
+    middleware: [
+      rateLimit({ name: 'auth-google', limit: 60, windowSeconds: 3600, strict: true }),
+      optionalAuth,
+    ] as const,
     request: { body: jsonBody(googleBodySchema) },
     responses: {
       200: json(googleSessionSchema, 'Signed in'),

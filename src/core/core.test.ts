@@ -1,3 +1,4 @@
+import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
@@ -13,7 +14,7 @@ import { AppError, isAppError, notFound, rateLimited } from './errors';
 import { isClientId, isId, newId } from './ids';
 import { createLogger, redact } from './logger';
 import { decodeCursor, encodeCursor, pageQuerySchema, toPage } from './pagination';
-import { MemoryRateLimiter } from './rate-limiter';
+import { D1RateLimiter, MemoryRateLimiter, unlimited } from './rate-limiter';
 import { FakeClock, addDays, dateRange, isLocalDate, isTimeZone, localDateIn } from './time';
 
 describe('ids', () => {
@@ -190,5 +191,39 @@ describe('rate limiter', () => {
     clock.advance(11_000);
     expect((await rl.hit('c', 1, 10)).allowed).toBe(true); // triggers a sweep
     expect((await rl.hit('a', 1, 10)).allowed).toBe(true);
+  });
+});
+
+describe('shared (D1) rate limiter', () => {
+  it('allows up to the limit then blocks until the window ends, like the in-memory one', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
+    const clock = new FakeClock(1_000_000);
+    const rl = new D1RateLimiter(env.DB, clock);
+    for (let i = 0; i < 3; i++) expect((await rl.hit('k', 3, 60)).allowed).toBe(true);
+    const blocked = await rl.hit('k', 3, 60);
+    expect(blocked).toEqual({ allowed: false, retryAfterSeconds: 60 });
+    clock.advance(45_000);
+    expect((await rl.hit('k', 3, 60)).retryAfterSeconds).toBe(15);
+    clock.advance(15_000);
+    expect((await rl.hit('k', 3, 60)).allowed).toBe(true);
+    expect((await rl.hit('k', 3, 60)).allowed).toBe(true);
+    expect((await rl.hit('k', 3, 60)).allowed).toBe(true);
+    expect((await rl.hit('k', 3, 60)).allowed).toBe(false);
+  });
+  it('keeps keys apart', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
+    const rl = new D1RateLimiter(env.DB, new FakeClock(0));
+    expect((await rl.hit('a', 1, 10)).allowed).toBe(true);
+    expect((await rl.hit('a', 1, 10)).allowed).toBe(false);
+    expect((await rl.hit('b', 1, 10)).allowed).toBe(true);
+  });
+  it('cannot be squeezed past the limit by simultaneous requests', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
+    const rl = new D1RateLimiter(env.DB, new FakeClock(0));
+    const results = await Promise.all(Array.from({ length: 25 }, () => rl.hit('burst', 10, 60)));
+    expect(results.filter((r) => r.allowed)).toHaveLength(10);
+  });
+  it('the never-limiting stand-in always allows', async () => {
+    expect(await unlimited.hit('x', 0, 1)).toEqual({ allowed: true, retryAfterSeconds: 0 });
   });
 });

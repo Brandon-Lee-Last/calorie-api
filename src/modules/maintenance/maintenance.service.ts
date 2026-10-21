@@ -11,6 +11,7 @@ export type MaintenanceReport = {
   refreshTokensRemoved: number;
   tombstonesRemoved: Record<string, number>;
   usageCountersRemoved: number;
+  rateLimitsRemoved: number;
 };
 
 /**
@@ -30,6 +31,7 @@ export class MaintenanceService {
       refreshTokensRemoved: 0,
       tombstonesRemoved: {},
       usageCountersRemoved: 0,
+      rateLimitsRemoved: 0,
     };
 
     // Refresh tokens that expired a week ago, or were revoked a month ago, can no longer matter.
@@ -48,6 +50,14 @@ export class MaintenanceService {
     const oldestPeriod = new Date(now - 3 * DAY).toISOString().slice(0, 10);
     report.usageCountersRemoved = (
       await this.db.prepare('DELETE FROM usage_counters WHERE period < ?').bind(oldestPeriod).run()
+    ).meta.changes;
+
+    // Rate-limit windows are at most a day long, so anything older than two days is finished.
+    report.rateLimitsRemoved = (
+      await this.db
+        .prepare('DELETE FROM rate_limits WHERE window_start < ?')
+        .bind(now - 2 * DAY)
+        .run()
     ).meta.changes;
 
     this.logger.info('maintenance finished', { ...report });

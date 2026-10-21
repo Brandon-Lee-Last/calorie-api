@@ -2,7 +2,7 @@ import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { newId } from '../../core/ids';
 import { DAY, HOUR } from '../../core/time';
-import { T0, authed, body, jsonInit, makeApp, signUp } from '../../../test/helpers/app';
+import { T0, authed, body, jsonInit, linkAccount, makeApp, signUp } from '../../../test/helpers/app';
 import { requirePro } from '../../middleware/entitlements';
 import { requireAuth } from '../../middleware/auth';
 import { PLANS } from '../../config/plans';
@@ -18,6 +18,7 @@ function testRoutes(app: ReturnType<typeof makeApp>['app']) {
 async function setup(overrides: Parameters<typeof makeApp>[0] = {}) {
   const t = makeApp(overrides, testRoutes);
   const s = await signUp(t);
+  await linkAccount(s.userId); // the plan's normal limits apply to accounts with a sign-in method
   const session = { token: s.accessToken, refresh: s.refreshToken };
   const send = (method: string, path: string, data?: unknown, token = session.token) =>
     t.request(path, jsonInit(method, data, token));

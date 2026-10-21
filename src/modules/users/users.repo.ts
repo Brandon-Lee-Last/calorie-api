@@ -52,6 +52,14 @@ export class UsersRepo {
     return first<ProfileRow>(this.db.prepare('SELECT * FROM user_profiles WHERE user_id = ?').bind(userId));
   }
 
+  /** Has this account linked a sign-in method (Google, email)? Accounts without one are anonymous. */
+  async hasIdentity(userId: string): Promise<boolean> {
+    const row = await first<{ n: number }>(
+      this.db.prepare('SELECT 1 AS n FROM identities WHERE user_id = ? LIMIT 1').bind(userId),
+    );
+    return row !== null;
+  }
+
   /** Column names come from a fixed allow-list, never from the request. */
   async updateProfile(userId: string, patch: ProfileUpdate, now: number): Promise<void> {
     const entries = Object.entries(patch).filter(([, v]) => v !== undefined);

@@ -19,7 +19,7 @@ export const onError: ErrorHandler<AppEnv> = (err, c) => {
 
   if (isAppError(err)) {
     if (err.status >= 500) logger?.error('app error', { code: err.code, message: err.message });
-    if (err.code === 'rate_limited') {
+    if (err.code === 'rate_limited' || err.code === 'ai_budget_exceeded') {
       const retry = (err.details as { retryAfterSeconds?: number } | undefined)?.retryAfterSeconds;
       if (retry) c.header('retry-after', String(retry));
     }

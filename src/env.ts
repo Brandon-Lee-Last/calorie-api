@@ -19,6 +19,8 @@ export interface Bindings {
   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON?: string;
   GOOGLE_PLAY_RTDN_AUDIENCE?: string;
   OFF_USER_AGENT?: string;
+  AI_DAILY_BUDGET?: string;
+  REQUIRE_INTEGRITY?: string;
   // test only
   TEST_MIGRATIONS?: unknown;
 }
@@ -46,6 +48,13 @@ const schema = z.object({
   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: z.string().optional(),
   GOOGLE_PLAY_RTDN_AUDIENCE: z.string().optional(),
   OFF_USER_AGENT: z.string().optional(),
+  /** Most AI calls the whole service will make in a day, so a bug or an attack cannot run up the bill. */
+  AI_DAILY_BUDGET: z.coerce.number().int().min(0).default(20000),
+  /** `true` to demand Play Integrity proof when an account is created. Off until the Play project exists. */
+  REQUIRE_INTEGRITY: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((v) => v === 'true'),
 });
 
 export type Config = z.output<typeof schema> & { isProduction: boolean };

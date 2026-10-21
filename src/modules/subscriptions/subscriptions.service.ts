@@ -1,4 +1,5 @@
 import {
+  ANONYMOUS_AI_TEXT_PER_DAY,
   PLANS,
   PRODUCTS,
   isProductId,
@@ -66,7 +67,11 @@ export class SubscriptionsService {
   }
 
   async limitsFor(userId: string): Promise<PlanLimits> {
-    return PLANS[(await this.entitlement(userId)).plan].limits;
+    const plan = (await this.entitlement(userId)).plan;
+    const limits = PLANS[plan].limits;
+    if (plan === 'free' && !(await this.usersRepo.hasIdentity(userId)))
+      return { ...limits, aiTextPerDay: Math.min(limits.aiTextPerDay, ANONYMOUS_AI_TEXT_PER_DAY) };
+    return limits;
   }
 
   /** The local calendar date in the user's timezone, which is the period usage is counted over. */
@@ -82,7 +87,7 @@ export class SubscriptionsService {
     const used = await this.usageRepo.forPeriod(userId, period);
     return {
       ...entitlement,
-      limits: plan.limits,
+      limits: await this.limitsFor(userId),
       features: plan.features,
       usage: { date: period, scans: used.scan ?? 0, aiText: used.ai_text ?? 0 },
     };

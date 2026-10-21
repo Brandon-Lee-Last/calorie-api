@@ -1,7 +1,10 @@
+import { env } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { FakeAi, toastItem } from '../../../test/helpers/ai';
-import { T0, body, jsonInit, makeApp, signUp } from '../../../test/helpers/app';
-import { PLANS } from '../../config/plans';
+import { T0, body, jsonInit, linkAccount, makeApp, signUp } from '../../../test/helpers/app';
+import { ANONYMOUS_AI_TEXT_PER_DAY, PLANS } from '../../config/plans';
+import { D1RateLimiter } from '../../core/rate-limiter';
+import { DAY, FakeClock } from '../../core/time';
 import { WorkersAiClient } from './ai.client';
 import { MAX_ITEMS, MEAL_JSON_SCHEMA, sanitizeItem } from './ai.service';
 
@@ -10,6 +13,7 @@ async function setup() {
   ai.jsonAnswer = { items: [toastItem] };
   const t = makeApp({ ai });
   const s = await signUp(t);
+  await linkAccount(s.userId); // anonymous accounts get a smaller allowance, tested separately
   const parse = (text: unknown, token = s.accessToken) =>
     t.request('/v1/ai/parse-meal', jsonInit('POST', { text }, token));
   const ent = async () =>
@@ -223,5 +227,77 @@ describe('WorkersAiClient', () => {
     await expect(new WorkersAiClient(undefined, 'm').text({ system: 's', user: 'u' })).rejects.toMatchObject({
       status: 501,
     });
+  });
+});
+
+describe('abuse limits on the AI', () => {
+  const ip = { 'cf-connecting-ip': '203.0.113.50' };
+
+  it('gives accounts with no sign-in method a smaller allowance, until they link one', async () => {
+    const ai = new FakeAi();
+    ai.jsonAnswer = { items: [toastItem] };
+    const t = makeApp({ ai });
+    const s = await signUp(t);
+    const parse = () => t.request('/v1/ai/parse-meal', jsonInit('POST', { text: 'toast' }, s.accessToken));
+    for (let i = 0; i < ANONYMOUS_AI_TEXT_PER_DAY; i++) expect((await parse()).status).toBe(200);
+    const blocked = await parse();
+    expect(blocked.status).toBe(429);
+    expect((await body(blocked)).error.details).toEqual({ key: 'ai_text', limit: ANONYMOUS_AI_TEXT_PER_DAY });
+    const ent = await body(await t.request('/v1/entitlements', jsonInit('GET', undefined, s.accessToken)));
+    expect(ent.limits.aiTextPerDay).toBe(ANONYMOUS_AI_TEXT_PER_DAY);
+    await linkAccount(s.userId);
+    expect((await parse()).status).toBe(200); // linking raises it to the plan's normal limit
+  });
+
+  it('stops one address using up the allowance of many accounts', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
+    const clock = new FakeClock(T0);
+    const ai = new FakeAi();
+    ai.jsonAnswer = { items: [toastItem] };
+    const t = makeApp({ ai, clock, strictLimiter: new D1RateLimiter(env.DB, clock) });
+    const s = await signUp(t);
+    await linkAccount(s.userId);
+    await t.request('/v1/subscription/simulate', jsonInit('POST', { scenario: 'subscribe' }, s.accessToken));
+    const parse = () =>
+      t.request('/v1/ai/parse-meal', jsonInit('POST', { text: 'toast' }, s.accessToken, ip));
+    for (let i = 0; i < 60; i++) expect((await parse()).status).toBe(200);
+    const blocked = await parse();
+    expect(blocked.status).toBe(429);
+    expect((await body(blocked)).error.code).toBe('rate_limited');
+    expect(Number(blocked.headers.get('retry-after'))).toBeGreaterThan(0);
+  });
+
+  it('pauses for everyone when the daily AI budget is spent, without charging anyone', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
+    const clock = new FakeClock(T0);
+    const ai = new FakeAi();
+    ai.jsonAnswer = { items: [toastItem] };
+    const t = makeApp({ ai, clock, strictLimiter: new D1RateLimiter(env.DB, clock) });
+    const s = await signUp(t);
+    await linkAccount(s.userId);
+    const call = () =>
+      t.app.request('/v1/ai/parse-meal', jsonInit('POST', { text: 'toast' }, s.accessToken), {
+        ...env,
+        AI_DAILY_BUDGET: '2',
+      });
+    expect((await call()).status).toBe(200);
+    expect((await call()).status).toBe(200);
+    const paused = await call();
+    expect(paused.status).toBe(503);
+    expect((await body(paused)).error.code).toBe('ai_budget_exceeded');
+    expect(Number(paused.headers.get('retry-after'))).toBeGreaterThan(0);
+    const ent = await body(await t.request('/v1/entitlements', jsonInit('GET', undefined, s.accessToken)));
+    expect(ent.usage.aiText).toBe(2); // the refused call was not charged
+    expect(ai.jsonCalls).toHaveLength(2); // and the AI was not called
+    clock.advance(DAY + 1000);
+    const next = await body(
+      await t.request('/v1/auth/refresh', jsonInit('POST', { refreshToken: s.refreshToken })),
+    );
+    const again = await t.app.request(
+      '/v1/ai/parse-meal',
+      jsonInit('POST', { text: 'toast' }, next.accessToken),
+      { ...env, AI_DAILY_BUDGET: '2' },
+    );
+    expect(again.status).toBe(200); // the budget starts again the next day
   });
 });

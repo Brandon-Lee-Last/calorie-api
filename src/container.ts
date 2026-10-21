@@ -1,7 +1,15 @@
 import type { Bindings, Config } from './env';
 import { getConfig } from './env';
 import { createLogger, type Logger } from './core/logger';
-import { MemoryRateLimiter, type RateLimiter } from './core/rate-limiter';
+import { D1RateLimiter, MemoryRateLimiter, type RateLimiter } from './core/rate-limiter';
+import { hmacSha256Base64Url } from './core/crypto';
+import { GoogleServiceAccountAuth } from './core/google-auth';
+import {
+  integrityMock,
+  integrityOff,
+  PlayIntegrityVerifier,
+  type IntegrityVerifier,
+} from './modules/integrity/integrity';
 import { systemClock, type Clock } from './core/time';
 import { AuthRepo } from './modules/auth/auth.repo';
 import { AuthService } from './modules/auth/auth.service';
@@ -46,6 +54,10 @@ export interface Overrides {
   clock?: Clock;
   logger?: Logger;
   rateLimiter?: RateLimiter;
+  /** The shared-database limiter used for limits that must hold (sign-in, account creation, AI cost). */
+  strictLimiter?: RateLimiter;
+  integrity?: IntegrityVerifier;
+  fetcher?: typeof fetch;
   googleVerifier?: GoogleVerifier;
   foodLookup?: FoodLookup;
   billing?: BillingProvider;
@@ -79,6 +91,47 @@ export class Container {
       ...requestLogFields,
     });
     this.rateLimiter = overrides.rateLimiter ?? sharedLimiter(this.clock);
+  }
+
+  get strictLimiter(): RateLimiter {
+    return this.once(
+      'strictLimiter',
+      () => this.overrides.strictLimiter ?? new D1RateLimiter(this.db, this.clock),
+    );
+  }
+
+  /** A stable, non-reversible stand-in for an IP address, so limits can be keyed on it without storing the address. */
+  async hashIp(ip: string): Promise<string> {
+    return (await hmacSha256Base64Url(this.config.JWT_SECRET, `ip:${ip}`)).slice(0, 22);
+  }
+
+  get googleServiceAccount(): GoogleServiceAccountAuth {
+    return this.once(
+      'gsa',
+      () =>
+        new GoogleServiceAccountAuth(
+          this.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON,
+          this.clock,
+          this.overrides.fetcher,
+        ),
+    );
+  }
+
+  get integrity(): IntegrityVerifier {
+    return this.once('integrity', () => {
+      if (this.overrides.integrity) return this.overrides.integrity;
+      if (!this.config.REQUIRE_INTEGRITY) return integrityOff;
+      if (this.config.isProduction) {
+        return new PlayIntegrityVerifier(
+          this.googleServiceAccount,
+          this.config.GOOGLE_PLAY_PACKAGE_NAME,
+          this.config.JWT_SECRET,
+          this.clock,
+          this.overrides.fetcher,
+        );
+      }
+      return integrityMock; // local and stage: a fixed token, so the app team can test the flow without Play
+    });
   }
 
   get db(): D1Database {
