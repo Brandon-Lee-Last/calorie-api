@@ -37,3 +37,24 @@ export function jsonInit(
     ...(data === undefined ? {} : { body: JSON.stringify(data) }),
   };
 }
+
+export type SessionBody = {
+  accessToken: string;
+  refreshToken: string;
+  userId: string;
+  isAnonymous: boolean;
+  expiresIn: number;
+  tokenType: string;
+};
+
+/** Create an anonymous account and return its session. */
+export async function signUp(t: TestApp, deviceLabel = 'test phone'): Promise<SessionBody> {
+  const res = await t.request('/v1/auth/anonymous', jsonInit('POST', { deviceLabel }));
+  if (res.status !== 201) throw new Error(`signUp failed: ${res.status} ${await res.text()}`);
+  return body<SessionBody>(res);
+}
+
+export const authed = (token: string, extra: Record<string, string> = {}) => ({
+  authorization: `Bearer ${token}`,
+  ...extra,
+});

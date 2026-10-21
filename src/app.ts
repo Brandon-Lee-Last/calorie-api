@@ -9,6 +9,8 @@ import { payloadTooLarge, validationFailed } from './core/errors';
 import { accessLog } from './middleware/access-log';
 import { onError, onNotFound, zodDetails } from './middleware/error-handler';
 import { requestId } from './middleware/request-id';
+import { authRoutes } from './modules/auth/auth.routes';
+import { usersRoutes } from './modules/users/users.routes';
 import { healthRoutes } from './modules/health/health.routes';
 
 export const API_PREFIX = '/v1';
@@ -68,6 +70,8 @@ export function createApp(overrides: Overrides = {}) {
 
   const v1 = new OpenAPIHono<AppEnv>();
   v1.route('/', healthRoutes);
+  v1.route('/', authRoutes);
+  v1.route('/', usersRoutes);
   app.route(API_PREFIX, v1);
 
   app.doc(`${API_PREFIX}/openapi.json`, {
