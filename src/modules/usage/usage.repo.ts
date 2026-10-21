@@ -1,4 +1,4 @@
-import { all, first, run } from '../../db/sql';
+import { all, firstOnce, run } from '../../db/sql';
 
 export class UsageRepo {
   constructor(private db: D1Database) {}
@@ -8,7 +8,7 @@ export class UsageRepo {
    * both slip past the limit. Returns the new count, or null if the limit was already reached.
    */
   async incrementWithin(userId: string, key: string, period: string, limit: number): Promise<number | null> {
-    const row = await first<{ count: number }>(
+    const row = await firstOnce<{ count: number }>(
       this.db
         .prepare(
           `INSERT INTO usage_counters (user_id, key, period, count) VALUES (?, ?, ?, 1)

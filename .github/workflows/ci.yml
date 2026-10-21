@@ -26,6 +26,8 @@ jobs:
         run: npm run typecheck
       - name: Formatting
         run: npm run format:check
+      - name: No secrets in the repository
+        run: npm run scan:secrets
       - name: Deploy script tests
         run: npm run test:scripts
       - name: Tests (real Workers runtime, real D1) with coverage thresholds

@@ -209,7 +209,7 @@ describe('JWT secret rotation, end to end', () => {
     const s = await signUp(t); // signed with the original secret
     const rotated = {
       ...env,
-      JWT_SECRET: 'rotated-secret-0123456789-abcdefghijklmnopqrstuvwxyz',
+      JWT_SECRET: 'test-rotated-secret-0123456789-abcdefghijklmnopqrstuvwxyz',
       JWT_SECRET_PREVIOUS: env.JWT_SECRET,
     };
     const me = (e: object) => t.app.request('/v1/me', jsonInit('GET', undefined, s.accessToken), e);

@@ -1,4 +1,4 @@
-import { first, run } from '../../db/sql';
+import { first, firstOnce, run } from '../../db/sql';
 
 export type EmailCodeRow = {
   id: string;
@@ -50,7 +50,7 @@ export class EmailCodesRepo {
 
   /** The newest code that can still be tried, and spends one of its attempts in the same statement. */
   async takeAttempt(emailHash: string, now: number, maxAttempts: number): Promise<EmailCodeRow | null> {
-    return first<EmailCodeRow>(
+    return firstOnce<EmailCodeRow>(
       this.db
         .prepare(
           `UPDATE email_codes SET attempts = attempts + 1

@@ -13,6 +13,7 @@ import {
   toCsv,
   trainRow,
 } from './export-training-data.mjs';
+import { scanRepo, scanText } from './secret-scan.mjs';
 import { chunks, convertCsv, convertJson, convertUsda, parseCsv, sendFoods } from './import-foods.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -97,7 +98,11 @@ test('the wrangler config has the same bindings in every environment', () => {
     assert.ok(c.d1_databases[0].binding === 'DB', `${env} DB`);
     assert.ok(c.r2_buckets[0].binding === 'MEDIA', `${env} MEDIA`);
     assert.ok(c.ai.binding === 'AI', `${env} AI`);
-    assert.ok(c.triggers.crons.length === 1, `${env} cron`);
+    assert.deepEqual(
+      c.triggers.crons,
+      ['17 3 * * *', '*/5 * * * *'],
+      `${env} crons: nightly maintenance and the reminder job`,
+    );
     for (const v of Object.keys(config.vars)) assert.ok(v in c.vars, `${env} is missing var ${v}`);
   }
   assert.equal(
@@ -564,4 +569,76 @@ test('contributions: a failed listing stops the export with a clear error', asyn
 
 test('export-training-data refuses to run without its settings', () => {
   assert.notEqual(run('export-training-data.mjs').status, 0);
+});
+
+// ---- secret-scan -----------------------------------------------------------------------------------------------
+
+// Built from pieces so this file does not contain the very things it looks for.
+const fake = {
+  cloudflare: 'cf' + 'ut_' + 'A1b2C3d4'.repeat(5),
+  pem: '-----BEGIN ' + 'PRIVATE KEY-----',
+  aws: 'AK' + 'IA' + 'ABCDEFGHIJKLMNOP',
+  github: 'gh' + 'p_' + 'a'.repeat(36),
+  slack: 'https://hooks.slack.com/' + 'services/T0123ABC/B0123ABC/abcdefghijklmnop',
+  discord: 'https://discord.com/api/' + 'webhooks/123456789012345678/abc-DEF_123',
+  google: 'AI' + 'za' + 'A'.repeat(35),
+  resend: 're' + '_' + 'Ab1'.repeat(10),
+};
+
+test('secret scan recognises the usual kinds of secret', () => {
+  for (const [kind, value] of Object.entries(fake)) {
+    const hits = scanText('x.txt', `const v = "${value}";`);
+    assert.equal(hits.length > 0, true, `${kind} was not caught`);
+  }
+  assert.equal(scanText('x.ts', `CLOUDFLARE_API_TOKEN=${'a'.repeat(40)}`).length, 1);
+  assert.equal(scanText('x.ts', `JWT_SECRET = "${'Ab3'.repeat(15)}"`).length, 1);
+});
+
+test('secret scan leaves ordinary text, placeholders and marked lines alone', () => {
+  const fine = [
+    'CLOUDFLARE_API_TOKEN=${{ secrets.CLOUDFLARE_API_TOKEN }}',
+    'CLOUDFLARE_API_TOKEN: your-token-here',
+    "JWT_SECRET: 'test-jwt-secret-0123456789-abcdefghijklmnop'",
+    'const re_use = 5; // not a key',
+    'The token is stored as a hash.',
+    `JWT_SECRET = "${'Ab3'.repeat(15)}" // scan:allow`,
+    'ADMIN_API_KEY=',
+  ];
+  for (const line of fine) assert.deepEqual(scanText('x.ts', line), [], line);
+});
+
+test('secret scan reports where it found something', () => {
+  const hits = scanText('src/a.ts', `line one\nconst t = "${fake.github}";\n`);
+  assert.deepEqual(hits, [{ file: 'src/a.ts', line: 2, what: 'GitHub token' }]);
+});
+
+test('secret scan finds a secret in a folder, skips node_modules and binaries, and flags an unignored .env', () => {
+  const dir = fileURLToPath(new URL('../tmp-scan-test/', import.meta.url));
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(`${dir}src`, { recursive: true });
+  mkdirSync(`${dir}node_modules/pkg`, { recursive: true });
+  try {
+    writeFileSync(`${dir}src/ok.ts`, 'export const x = 1;\n');
+    writeFileSync(`${dir}src/leak.ts`, `const key = "${fake.aws}";\n`);
+    writeFileSync(`${dir}node_modules/pkg/bad.js`, `const key = "${fake.aws}";\n`);
+    writeFileSync(`${dir}image.bin`, Buffer.concat([Buffer.from([0, 1, 2]), Buffer.from(fake.aws)]));
+    writeFileSync(`${dir}.env`, 'A=1\n');
+    const found = scanRepo(dir);
+    assert.deepEqual(found.map((f) => `${f.file}:${f.what}`).sort(), [
+      '.env:environment file that is not git-ignored',
+      'src/leak.ts:AWS access key id',
+    ]);
+    writeFileSync(`${dir}.gitignore`, '.env\n');
+    assert.deepEqual(
+      scanRepo(dir).map((f) => f.file),
+      ['src/leak.ts'],
+    );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('this repository contains no secrets', () => {
+  const found = scanRepo(root);
+  assert.deepEqual(found, [], found.map((f) => `${f.file}:${f.line} ${f.what}`).join('\n'));
 });
