@@ -227,3 +227,29 @@ describe('shared (D1) rate limiter', () => {
     expect(await unlimited.hit('x', 0, 1)).toEqual({ allowed: true, retryAfterSeconds: 0 });
   });
 });
+
+describe('peeking at a limit', () => {
+  it('the in-memory limiter reports blocked only once the limit is reached, and counts nothing itself', async () => {
+    const clock = new FakeClock(0);
+    const rl = new MemoryRateLimiter(clock);
+    expect((await rl.peek('k', 2, 60)).allowed).toBe(true);
+    await rl.hit('k', 2, 60);
+    for (let i = 0; i < 5; i++) expect((await rl.peek('k', 2, 60)).allowed).toBe(true);
+    await rl.hit('k', 2, 60);
+    expect(await rl.peek('k', 2, 60)).toEqual({ allowed: false, retryAfterSeconds: 60 });
+    clock.advance(61_000);
+    expect((await rl.peek('k', 2, 60)).allowed).toBe(true);
+  });
+  it('the shared limiter does the same', async () => {
+    await env.DB.exec('DELETE FROM rate_limits');
+    const clock = new FakeClock(1_000_000);
+    const rl = new D1RateLimiter(env.DB, clock);
+    expect((await rl.peek('k', 2, 60)).allowed).toBe(true);
+    await rl.hit('k', 2, 60);
+    await rl.hit('k', 2, 60);
+    expect((await rl.peek('k', 2, 60)).allowed).toBe(false);
+    clock.advance(61_000);
+    expect((await rl.peek('k', 2, 60)).allowed).toBe(true);
+    expect((await unlimited.peek('k', 0, 1)).allowed).toBe(true);
+  });
+});

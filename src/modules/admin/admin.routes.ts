@@ -2,9 +2,11 @@ import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import type { AppEnv } from '../../app-types';
 import { badRequest } from '../../core/errors';
 import { commonErrors, json, jsonBody, z } from '../../core/openapi';
+import { pageQuerySchema } from '../../core/pagination';
 import { requireAdmin } from '../../middleware/admin';
 import {
   accuracyQuerySchema,
+  auditPageSchema,
   accuracySchema,
   adminProgramListSchema,
   adminSlugParam,
@@ -228,4 +230,22 @@ adminRoutes.openapi(
     responses: { 200: json(z.record(z.string(), z.unknown()), 'What was removed'), ...unauthorised },
   }), // fmt: skip
   async (c) => c.json(await c.get('deps').maintenance.run(), 200),
+);
+
+adminRoutes.openapi(
+  createRoute({
+    method: 'get',
+    path: '/admin/audit',
+    tags: ['Admin'],
+    summary: 'Who called the admin API, newest first',
+    ...guarded,
+    description:
+      'Every admin request is recorded with who made it (Cloudflare Access email, or `api-key`), the method, path and result, including refused ones. Kept 180 days.',
+    request: { query: pageQuerySchema },
+    responses: { 200: json(auditPageSchema, 'A page of entries'), ...unauthorised },
+  }), // fmt: skip
+  async (c) => {
+    const { limit, cursor } = c.req.valid('query');
+    return c.json(await c.get('deps').adminAudit.list(limit, cursor), 200);
+  },
 );

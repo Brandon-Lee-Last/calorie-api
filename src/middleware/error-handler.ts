@@ -13,7 +13,7 @@ export function zodDetails(e: ZodError) {
   return e.issues.map((i) => ({ path: i.path.join('.'), message: i.message, code: i.code }));
 }
 
-export const onError: ErrorHandler<AppEnv> = (err, c) => {
+export const onError: ErrorHandler<AppEnv> = async (err, c) => {
   const requestId = c.get('requestId') ?? 'unknown';
   const logger = c.get('logger');
 
@@ -41,6 +41,18 @@ export const onError: ErrorHandler<AppEnv> = (err, c) => {
   }
   // A real bug or a failed dependency. Log everything, tell the caller nothing internal.
   logger?.error('unhandled error', { name: err.name, message: err.message, stack: err.stack });
+  const alerted = c.get('deps')?.alerts.notify({
+    key: `error:${err.name}:${err.message.slice(0, 80)}`,
+    title: `Unexpected error on ${c.req.method} ${new URL(c.req.url).pathname}`,
+    detail: `${err.name}: ${err.message.slice(0, 200)}\nrequest ${requestId}`,
+  });
+  if (alerted) {
+    try {
+      c.executionCtx.waitUntil(alerted);
+    } catch {
+      await alerted; // no execution context (tests, local scripts): wait for it instead
+    }
+  }
   return c.json(body('internal_error', 'Something went wrong on our side', requestId), 500);
 };
 

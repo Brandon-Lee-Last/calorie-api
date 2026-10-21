@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isValidIpRule } from './lib/ip';
 
 /** Everything wrangler binds to the Worker: bindings, plain vars and secrets. */
 export interface Bindings {
@@ -13,6 +14,11 @@ export interface Bindings {
   SIMULATE_ENABLED: string;
   // secrets
   JWT_SECRET: string;
+  JWT_SECRET_PREVIOUS?: string;
+  ADMIN_ALLOWED_IPS?: string;
+  CF_ACCESS_TEAM_DOMAIN?: string;
+  CF_ACCESS_AUD?: string;
+  ALERT_WEBHOOK_URL?: string;
   MEDIA_SIGNING_SECRET: string;
   ADMIN_API_KEY: string;
   GOOGLE_PLAY_PACKAGE_NAME?: string;
@@ -44,6 +50,31 @@ const list = (s: string) =>
 const schema = z.object({
   ENVIRONMENT: z.enum(['local', 'stage', 'production']),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  JWT_SECRET_PREVIOUS: z.string().min(32, 'JWT_SECRET_PREVIOUS must be at least 32 characters').optional(),
+  /** Comma separated IPs or IPv4 ranges (`203.0.113.0/24`) allowed to call /admin. Empty means anywhere (the admin key is still needed). */
+  ADMIN_ALLOWED_IPS: z
+    .string()
+    .default('')
+    .transform(list)
+    .refine(
+      (l) => l.every(isValidIpRule),
+      'ADMIN_ALLOWED_IPS has an entry that is not an IP address or range',
+    ),
+  /** Your Cloudflare Zero Trust team domain, e.g. `yourteam.cloudflareaccess.com`. With CF_ACCESS_AUD, /admin also requires an Access login. */
+  CF_ACCESS_TEAM_DOMAIN: z
+    .string()
+    .regex(
+      /^[a-z0-9.-]+\.[a-z]{2,}$/i,
+      'CF_ACCESS_TEAM_DOMAIN must be a host name like yourteam.cloudflareaccess.com',
+    )
+    .optional(),
+  CF_ACCESS_AUD: z.string().min(16).optional(),
+  /** Slack, Discord or any URL that accepts a JSON POST. Gets a message when the API hits an unexpected error. */
+  ALERT_WEBHOOK_URL: z
+    .string()
+    .url()
+    .refine((u) => u.startsWith('https://'), 'ALERT_WEBHOOK_URL must be https')
+    .optional(),
   MEDIA_SIGNING_SECRET: z.string().min(32, 'MEDIA_SIGNING_SECRET must be at least 32 characters'),
   ADMIN_API_KEY: z.string().min(24, 'ADMIN_API_KEY must be at least 24 characters'),
   GOOGLE_CLIENT_IDS: z.string().default('').transform(list),
@@ -108,6 +139,9 @@ export function getConfig(env: Bindings): Config {
   const config: Config = { ...parsed.data, isProduction: parsed.data.ENVIRONMENT === 'production' };
   if (config.isProduction && config.SIMULATE_ENABLED) {
     throw new Error('Invalid configuration: SIMULATE_ENABLED must be false in production');
+  }
+  if (Boolean(config.CF_ACCESS_TEAM_DOMAIN) !== Boolean(config.CF_ACCESS_AUD)) {
+    throw new Error('Invalid configuration: CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD must be set together');
   }
   cache.set(env, config);
   return config;

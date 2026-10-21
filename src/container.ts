@@ -3,6 +3,8 @@ import { getConfig } from './env';
 import { createLogger, type Logger } from './core/logger';
 import { D1RateLimiter, MemoryRateLimiter, type RateLimiter } from './core/rate-limiter';
 import { hmacSha256Base64Url } from './core/crypto';
+import { noAlerts, WebhookAlerter, type Alerter } from './core/alerts';
+import { CloudflareAccessVerifier, type AccessVerifier } from './core/cloudflare-access';
 import { GoogleServiceAccountAuth } from './core/google-auth';
 import {
   integrityMock,
@@ -30,6 +32,8 @@ import { WorkoutsRepo } from './modules/workouts/workouts.repo';
 import { WorkoutsService } from './modules/workouts/workouts.service';
 import { SettingsRepo } from './modules/settings/settings.repo';
 import { SettingsService } from './modules/settings/settings.service';
+import { AuditRepo } from './modules/admin/audit.repo';
+import { AdminAuditService } from './modules/admin/audit.service';
 import { AdminRepo } from './modules/admin/admin.repo';
 import { AdminService } from './modules/admin/admin.service';
 import { AccountRepo } from './modules/account/account.repo';
@@ -65,6 +69,8 @@ export interface Overrides {
   fetcher?: typeof fetch;
   googleVerifier?: GoogleVerifier;
   mailer?: Mailer;
+  alerter?: Alerter;
+  accessVerifier?: AccessVerifier;
   foodLookup?: FoodLookup;
   billing?: BillingProvider;
   ai?: AiClient;
@@ -150,7 +156,10 @@ export class Container {
   }
 
   get tokens(): TokenService {
-    return this.once('tokens', () => new TokenService(this.config.JWT_SECRET, this.clock));
+    return this.once(
+      'tokens',
+      () => new TokenService(this.config.JWT_SECRET, this.clock, this.config.JWT_SECRET_PREVIOUS),
+    );
   }
 
   get googleVerifier(): GoogleVerifier {
@@ -169,6 +178,35 @@ export class Container {
         return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
       return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
     });
+  }
+
+  get alerts(): Alerter {
+    return this.once('alerts', () => {
+      if (this.overrides.alerter) return this.overrides.alerter;
+      const url = this.config.ALERT_WEBHOOK_URL;
+      return url
+        ? new WebhookAlerter(
+            url,
+            this.config.ENVIRONMENT,
+            this.strictLimiter,
+            this.logger,
+            this.overrides.fetcher,
+          )
+        : noAlerts;
+    });
+  }
+
+  /** Cloudflare Access check for /admin, or null where Access is not set up. */
+  get accessVerifier(): AccessVerifier | null {
+    return this.once('access', () => {
+      if (this.overrides.accessVerifier) return this.overrides.accessVerifier;
+      const { CF_ACCESS_TEAM_DOMAIN: team, CF_ACCESS_AUD: aud } = this.config;
+      return team && aud ? new CloudflareAccessVerifier(team, aud, this.clock) : null;
+    });
+  }
+
+  get adminAudit(): AdminAuditService {
+    return this.once('adminAudit', () => new AdminAuditService(new AuditRepo(this.db), this.clock));
   }
 
   get settings(): SettingsService {

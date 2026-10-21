@@ -71,7 +71,14 @@ aiRoutes.openapi(
     const userId = c.get('auth')!.userId;
     // A ceiling on what the AI can cost per day across everyone. Checked first so nobody's allowance is spent on a refusal.
     const budget = await d.strictLimiter.hit('ai-budget', d.config.AI_DAILY_BUDGET, 86400);
-    if (!budget.allowed) throw aiBudgetExceeded(budget.retryAfterSeconds);
+    if (!budget.allowed) {
+      await d.alerts.notify({
+        key: 'ai-budget',
+        title: 'The daily AI budget is used up, so AI meal logging is paused until it resets',
+        detail: `Budget: ${d.config.AI_DAILY_BUDGET} calls per day. Raise AI_DAILY_BUDGET if this is real growth, look for abuse if not.`,
+      });
+      throw aiBudgetExceeded(budget.retryAfterSeconds);
+    }
     const usage = await d.subscriptions.consume(userId, 'ai_text');
     try {
       const result = await d.ai.parseMeal(c.req.valid('json').text);

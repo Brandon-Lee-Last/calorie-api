@@ -4,6 +4,8 @@ export type RateDecision = { allowed: boolean; retryAfterSeconds: number };
 
 export interface RateLimiter {
   hit(key: string, limit: number, windowSeconds: number): Promise<RateDecision>;
+  /** Is this key already over `limit` in the current window? Counts nothing, so it can guard a path whose failures are what get counted. */
+  peek(key: string, limit: number, windowSeconds: number): Promise<RateDecision>;
 }
 
 /**
@@ -32,6 +34,14 @@ export class MemoryRateLimiter implements RateLimiter {
     if (w.count > limit)
       return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((w.start + windowMs - now) / 1000)) };
     return { allowed: true, retryAfterSeconds: 0 };
+  }
+
+  async peek(key: string, limit: number, windowSeconds: number): Promise<RateDecision> {
+    const now = this.clock.now();
+    const windowMs = windowSeconds * 1000;
+    const w = this.windows.get(key);
+    if (!w || now - w.start >= windowMs || w.count < limit) return { allowed: true, retryAfterSeconds: 0 };
+    return { allowed: false, retryAfterSeconds: Math.max(1, Math.ceil((w.start + windowMs - now) / 1000)) };
   }
 
   private sweep(now: number, windowMs: number) {
@@ -70,7 +80,22 @@ export class D1RateLimiter implements RateLimiter {
       retryAfterSeconds: Math.max(1, Math.ceil((row.window_start + windowMs - now) / 1000)),
     };
   }
+
+  async peek(key: string, limit: number, windowSeconds: number): Promise<RateDecision> {
+    const now = this.clock.now();
+    const windowMs = windowSeconds * 1000;
+    const row = await this.db
+      .prepare('SELECT count, window_start FROM rate_limits WHERE key = ?')
+      .bind(key)
+      .first<{ count: number; window_start: number }>();
+    if (!row || now - row.window_start >= windowMs || row.count < limit) return ALLOWED;
+    return {
+      allowed: false,
+      retryAfterSeconds: Math.max(1, Math.ceil((row.window_start + windowMs - now) / 1000)),
+    };
+  }
 }
 
 /** Never limits. For tests that are not about limiting. */
-export const unlimited: RateLimiter = { hit: async () => ({ allowed: true, retryAfterSeconds: 0 }) };
+const ALLOWED: RateDecision = { allowed: true, retryAfterSeconds: 0 };
+export const unlimited: RateLimiter = { hit: async () => ALLOWED, peek: async () => ALLOWED };

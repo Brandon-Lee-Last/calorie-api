@@ -1,4 +1,5 @@
 import { DAY, type Clock } from '../../core/time';
+import { AUDIT_RETENTION_MS } from '../admin/audit.service';
 import type { Logger } from '../../core/logger';
 
 export const TOMBSTONE_RETENTION_MS = 30 * DAY;
@@ -13,6 +14,7 @@ export type MaintenanceReport = {
   usageCountersRemoved: number;
   rateLimitsRemoved: number;
   emailCodesRemoved: number;
+  adminAuditRemoved: number;
 };
 
 /**
@@ -34,6 +36,7 @@ export class MaintenanceService {
       usageCountersRemoved: 0,
       rateLimitsRemoved: 0,
       emailCodesRemoved: 0,
+      adminAuditRemoved: 0,
     };
 
     // Refresh tokens that expired a week ago, or were revoked a month ago, can no longer matter.
@@ -66,6 +69,13 @@ export class MaintenanceService {
       await this.db
         .prepare('DELETE FROM email_codes WHERE expires_at < ?')
         .bind(now - DAY)
+        .run()
+    ).meta.changes;
+
+    report.adminAuditRemoved = (
+      await this.db
+        .prepare('DELETE FROM admin_audit WHERE at < ?')
+        .bind(now - AUDIT_RETENTION_MS)
         .run()
     ).meta.changes;
 

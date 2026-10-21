@@ -194,3 +194,20 @@ export const accuracySchema = z
   .openapi('ScanAccuracy');
 
 export { exerciseSchema };
+
+export const auditPageSchema = z
+  .object({
+    items: z.array(
+      z.object({
+        id: z.string(),
+        at: z.number().int(),
+        actor: z.string(),
+        method: z.string(),
+        path: z.string(),
+        status: z.number().int(),
+        requestId: z.string(),
+      }),
+    ),
+    nextCursor: z.string().nullable(),
+  })
+  .openapi('AdminAuditPage');

@@ -7,6 +7,17 @@ const app = createApp();
 export default {
   fetch: app.fetch,
   async scheduled(_controller: ScheduledController, env: Bindings, ctx: ExecutionContext) {
-    ctx.waitUntil(new Container(env).maintenance.run());
+    const d = new Container(env);
+    ctx.waitUntil(
+      d.maintenance.run().catch(async (e: unknown) => {
+        d.logger.error('maintenance failed', { message: String(e) });
+        await d.alerts.notify({
+          key: 'maintenance-failed',
+          title: 'The nightly maintenance run failed',
+          detail: String(e).slice(0, 300),
+        });
+        throw e;
+      }),
+    );
   },
 } satisfies ExportedHandler<Bindings>;
