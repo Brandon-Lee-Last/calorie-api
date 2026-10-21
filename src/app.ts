@@ -14,6 +14,7 @@ import { usersRoutes } from './modules/users/users.routes';
 import { bodyRoutes } from './modules/body/body.routes';
 import { diaryRoutes } from './modules/diary/diary.routes';
 import { foodsRoutes } from './modules/foods/foods.routes';
+import { catalogueRoutes } from './modules/foods/catalogue.routes';
 import { scansRoutes } from './modules/scans/scans.routes';
 import { syncRoutes } from './modules/sync/sync.routes';
 import { subscriptionsRoutes } from './modules/subscriptions/subscriptions.routes';
@@ -111,6 +112,7 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', bodyRoutes);
   v1.route('/', diaryRoutes);
   v1.route('/', foodsRoutes);
+  v1.route('/', catalogueRoutes);
   v1.route('/', scansRoutes);
   v1.route('/', syncRoutes);
   v1.route('/', subscriptionsRoutes);

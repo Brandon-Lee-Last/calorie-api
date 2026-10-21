@@ -6,6 +6,7 @@ import { requireAuth } from '../../middleware/auth';
 import { rateLimit } from '../../middleware/rate-limit';
 import {
   barcodeParamSchema,
+  dishParamSchema,
   foodInputSchema,
   foodListSchema,
   foodPutResultSchema,
@@ -102,4 +103,19 @@ foodsRoutes.openapi(
     responses: { 200: json(foodRecordSchema, 'The food'), 404: commonErrors[400], ...authErrors },
   }), // fmt: skip
   async (c) => c.json(await c.get('deps').foods.get(uid(c), c.req.valid('param').id), 200),
+);
+
+foodsRoutes.openapi(
+  createRoute({
+    method: 'get',
+    path: '/foods/dish/{dishId}',
+    tags: ['Foods'],
+    summary: 'What the catalogue says a dish contains',
+    ...secured,
+    description:
+      'Foods the catalogue links to a dish id from the model’s list (for example `bunny_chow`). An empty list means nobody has added sourced figures for it yet; the app must not invent any.',
+    request: { params: dishParamSchema },
+    responses: { 200: json(foodListSchema, 'Matching foods'), ...authErrors },
+  }), // fmt: skip
+  async (c) => c.json(await c.get('deps').foods.forDish(uid(c), c.req.valid('param').dishId), 200),
 );

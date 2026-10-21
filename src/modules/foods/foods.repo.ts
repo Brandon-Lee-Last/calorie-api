@@ -21,6 +21,8 @@ export type FoodRow = {
   fiber_100g: number | null;
   sugar_100g: number | null;
   sodium_mg_100g: number | null;
+  dish_id: string | null;
+  aliases_norm: string | null;
   created_at: number;
   updated_at: number;
   deleted_at: number | null;
@@ -169,12 +171,27 @@ export class FoodsRepo {
     ); // fmt: skip
   }
 
+  /** The shared foods linked to a dish id from the model's taxonomy, best documented first. */
+  catalogueForDish(dishId: string): Promise<FoodRow[]> {
+    return all<FoodRow>(
+      this.db
+        .prepare(
+          `SELECT * FROM foods WHERE user_id IS NULL AND dish_id = ? AND deleted_at IS NULL
+           ORDER BY (source = 'curated') DESC, name_norm LIMIT 20`,
+        )
+        .bind(dishId),
+    );
+  }
+
   /** Every token must appear in the name (or brand) somewhere. Own foods first. */
   search(userId: string, tokens: string[], limit: number): Promise<FoodRow[]> {
     const conds = tokens
-      .map(() => `(name_norm LIKE ? ESCAPE '\\' OR lower(COALESCE(brand, '')) LIKE ? ESCAPE '\\')`)
+      .map(
+        () =>
+          `(name_norm LIKE ? ESCAPE '\\' OR lower(COALESCE(brand, '')) LIKE ? ESCAPE '\\' OR COALESCE(aliases_norm, '') LIKE ? ESCAPE '\\')`,
+      )
       .join(' AND ');
-    const binds = tokens.flatMap((t) => [`%${escapeLike(t)}%`, `%${escapeLike(t)}%`]);
+    const binds = tokens.flatMap((t) => [`%${escapeLike(t)}%`, `%${escapeLike(t)}%`, `%${escapeLike(t)}%`]);
     const first = tokens[0] ?? '';
     return all<FoodRow>(
       this.db

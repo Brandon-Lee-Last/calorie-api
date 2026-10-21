@@ -47,6 +47,7 @@ export const foodRecordSchema = z
     fiber100g: z.number().nullable(),
     sugar100g: z.number().nullable(),
     sodiumMg100g: z.number().nullable(),
+    dishId: z.string().nullable().describe('The dish this food describes, from the model’s dish list'),
     perServing: perServing.nullable().describe('Present when the serving size in grams is known'),
     clientUpdatedAt: timestampSchema,
     updatedAt: timestampSchema,
@@ -62,6 +63,8 @@ export const searchQuerySchema = z.object({
   q: z.string().trim().min(2).max(80),
   limit: z.coerce.number().int().min(1).max(50).default(25),
 });
+
+export const dishParamSchema = z.object({ dishId: z.string().regex(/^[a-z0-9_]{2,60}$/) });
 
 export const barcodeParamSchema = z.object({
   code: z.string().regex(/^\d{8,14}$/, 'Digits only, 8 to 14 long'),

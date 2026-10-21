@@ -32,6 +32,8 @@ import { WorkoutsRepo } from './modules/workouts/workouts.repo';
 import { WorkoutsService } from './modules/workouts/workouts.service';
 import { SettingsRepo } from './modules/settings/settings.repo';
 import { SettingsService } from './modules/settings/settings.service';
+import { CatalogueRepo } from './modules/foods/catalogue.repo';
+import { CatalogueService } from './modules/foods/catalogue.service';
 import { AuditRepo } from './modules/admin/audit.repo';
 import { AdminAuditService } from './modules/admin/audit.service';
 import { AdminRepo } from './modules/admin/admin.repo';
@@ -178,6 +180,10 @@ export class Container {
         return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
       return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
     });
+  }
+
+  get catalogue(): CatalogueService {
+    return this.once('catalogue', () => new CatalogueService(new CatalogueRepo(this.db), this.clock));
   }
 
   get alerts(): Alerter {

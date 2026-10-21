@@ -5,6 +5,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { planImport, runImport } from './import-content.mjs';
+import { chunks, convertCsv, convertJson, convertUsda, parseCsv, sendFoods } from './import-foods.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const run = (script, args = [], env = {}) =>
@@ -157,4 +158,260 @@ test('import-content refuses files without a slug or key', () => {
   writeFileSync(`${dir}/exercises/bad.json`, '{"name":"No slug"}');
   assert.throws(() => planImport(dir), /missing "slug"/);
   rmSync(dir, { recursive: true, force: true });
+});
+
+// ---- import-foods ----------------------------------------------------------------------------------------------
+
+const nutrient = (number, amount, unitName = 'g') => ({
+  nutrient: { number: String(number), unitName },
+  amount,
+});
+const usdaRice = {
+  fdcId: 168878,
+  description: 'Rice, white, long-grain, regular, cooked',
+  foodNutrients: [
+    nutrient(208, 130, 'kcal'),
+    nutrient(203, 2.69),
+    nutrient(204, 0.28),
+    nutrient(205, 28.17),
+    nutrient(291, 0.4),
+    nutrient(269, 0.05),
+    nutrient(307, 1, 'mg'),
+  ],
+  foodPortions: [{ amount: 1, modifier: 'cup', measureUnit: { name: 'undetermined' }, gramWeight: 158 }],
+};
+
+test('USDA conversion maps nutrient numbers to our fields and keeps a serving', () => {
+  const { foods, skipped } = convertUsda({ SRLegacyFoods: [usdaRice] });
+  assert.deepEqual(skipped, []);
+  assert.deepEqual(foods, [
+    {
+      source: 'usda',
+      externalId: 'fdc:168878',
+      name: 'Rice, white, long-grain, regular, cooked',
+      servingG: 158,
+      servingLabel: '1 cup',
+      calories100g: 130,
+      protein100g: 2.69,
+      fat100g: 0.28,
+      carb100g: 28.17,
+      fiber100g: 0.4,
+      sugar100g: 0.05,
+      sodiumMg100g: 1,
+    },
+  ]);
+});
+
+test('USDA conversion never estimates: a food missing energy or a macro is skipped, with the reason', () => {
+  const noEnergy = {
+    ...usdaRice,
+    fdcId: 1,
+    foodNutrients: usdaRice.foodNutrients.filter((n) => n.nutrient.number !== '208'),
+  };
+  const noProtein = {
+    ...usdaRice,
+    fdcId: 2,
+    foodNutrients: usdaRice.foodNutrients.filter((n) => n.nutrient.number !== '203'),
+  };
+  const { foods, skipped } = convertUsda([noEnergy, noProtein, { fdcId: 3 }]);
+  assert.equal(foods.length, 0);
+  assert.deepEqual(
+    skipped.map((s) => s.reason),
+    ['no calories100g figure', 'no protein100g figure', 'no id or description'],
+  );
+});
+
+test('USDA conversion uses the Atwater energy figure when 208 is absent, and never reads kJ as kcal', () => {
+  const atwater = {
+    ...usdaRice,
+    fdcId: 4,
+    foodNutrients: [
+      ...usdaRice.foodNutrients.filter((n) => n.nutrient.number !== '208'),
+      nutrient(957, 128, 'kcal'),
+    ],
+  };
+  assert.equal(convertUsda([atwater]).foods[0].calories100g, 128);
+  const kj = {
+    ...usdaRice,
+    fdcId: 5,
+    foodNutrients: [
+      ...usdaRice.foodNutrients.filter((n) => n.nutrient.number !== '208'),
+      nutrient(208, 544, 'kJ'),
+    ],
+  };
+  assert.equal(convertUsda([kj]).foods.length, 0);
+});
+
+test('USDA conversion converts units, picks a readable serving, and handles branded foods', () => {
+  const branded = {
+    fdcId: 9,
+    description: 'CHOCOLATE BAR WITH NUTS',
+    brandOwner: 'Acme Foods',
+    gtinUpc: '4006381333931',
+    servingSize: 45,
+    servingSizeUnit: 'g',
+    householdServingFullText: '1 bar',
+    foodNutrients: [
+      nutrient(208, 540, 'kcal'),
+      nutrient(203, 8),
+      nutrient(204, 30),
+      nutrient(205, 55),
+      nutrient(307, 0.2, 'g'),
+    ],
+  };
+  const { foods } = convertUsda({ BrandedFoods: [branded] });
+  assert.deepEqual(foods[0], {
+    source: 'usda',
+    externalId: 'fdc:9',
+    name: 'Chocolate Bar With Nuts',
+    brand: 'Acme Foods',
+    barcode: '4006381333931',
+    servingG: 45,
+    servingLabel: '1 bar',
+    calories100g: 540,
+    protein100g: 8,
+    fat100g: 30,
+    carb100g: 55,
+    sodiumMg100g: 200,
+  });
+  const portion = {
+    ...usdaRice,
+    fdcId: 10,
+    foodPortions: [{ portionDescription: '1 medium', gramWeight: 118.4 }],
+  };
+  assert.equal(convertUsda([portion]).foods[0].servingLabel, '1 medium');
+  const withUnit = {
+    ...usdaRice,
+    fdcId: 11,
+    foodPortions: [{ amount: 2, measureUnit: { name: 'slice' }, modifier: 'thin', gramWeight: 40 }],
+  };
+  assert.equal(convertUsda([withUnit]).foods[0].servingLabel, '2 slice thin');
+  const noPortion = convertUsda([{ ...usdaRice, fdcId: 12, foodPortions: [] }]).foods[0];
+  assert.ok(!('servingG' in noPortion));
+});
+
+test('CSV parsing handles quotes, commas, new lines inside quotes, BOMs and blank lines', () => {
+  const text = '﻿a,b,c\r\n1,"x, y",3\r\n\r\n"he said ""hi""","line\nbreak",\n';
+  assert.deepEqual(parseCsv(text), [
+    ['a', 'b', 'c'],
+    ['1', 'x, y', '3'],
+    ['he said "hi"', 'line\nbreak', ''],
+  ]);
+});
+
+test('CSV conversion turns columns into typed fields and reports rows with bad numbers', () => {
+  const csv = [
+    'externalId,name,calories100g,protein100g,carb100g,fat100g,servingG,dishId,aliases,source',
+    'safoods:1,"Pap, stiff",96,2.1,20.5,0.4,250,pap,"mealie pap; putu",curated',
+    'safoods:2,Bad row,lots,1,1,1,,,,curated',
+    'safoods:3,Defaults to source,100,1,1,1,,,,',
+  ].join('\n');
+  const { foods, skipped } = convertCsv(csv, { source: 'curated' });
+  assert.equal(foods.length, 2);
+  assert.deepEqual(foods[0], {
+    source: 'curated',
+    externalId: 'safoods:1',
+    name: 'Pap, stiff',
+    calories100g: 96,
+    protein100g: 2.1,
+    carb100g: 20.5,
+    fat100g: 0.4,
+    servingG: 250,
+    dishId: 'pap',
+    aliases: ['mealie pap', 'putu'],
+  });
+  assert.equal(foods[1].source, 'curated');
+  assert.deepEqual(skipped, [{ id: 'safoods:2', reason: 'calories100g is not a number' }]);
+  assert.deepEqual(convertCsv(''), { foods: [], skipped: [] });
+});
+
+test('JSON conversion accepts a list or an object and applies defaults without overriding', () => {
+  assert.deepEqual(convertJson([{ name: 'a' }], { source: 'curated' }).foods, [
+    { source: 'curated', name: 'a' },
+  ]);
+  assert.deepEqual(convertJson({ foods: [{ name: 'a', source: 'usda' }] }, { source: 'curated' }).foods, [
+    { source: 'usda', name: 'a' },
+  ]);
+  assert.deepEqual(convertJson({}).foods, []);
+});
+
+test('foods are sent 100 at a time, results are added up, and positions are reported across calls', async () => {
+  assert.deepEqual(chunks([1, 2, 3, 4, 5], 2), [[1, 2], [3, 4], [5]]);
+  const calls = [];
+  const fetcher = async (url, init) => {
+    const body = JSON.parse(init.body);
+    calls.push({ url, key: init.headers['x-admin-key'], n: body.foods.length, dryRun: body.dryRun });
+    return Response.json({
+      created: body.foods.length - 1,
+      updated: 0,
+      warnings: [{}],
+      dryRun: body.dryRun,
+      rejected: [{ index: 0, externalId: 'x', reason: 'because' }],
+    });
+  };
+  const foods = Array.from({ length: 230 }, (_, i) => ({ externalId: String(i) }));
+  const lines = [];
+  const total = await sendFoods(foods, {
+    base: 'https://api.example.com/',
+    key: 'k',
+    dryRun: true,
+    fetcher,
+    log: (l) => lines.push(l),
+  });
+  assert.deepEqual(
+    calls.map((c) => c.n),
+    [100, 100, 30],
+  );
+  assert.equal(calls[0].url, 'https://api.example.com/v1/admin/foods/import');
+  assert.ok(calls.every((c) => c.key === 'k' && c.dryRun === true));
+  assert.equal(total.created, 227);
+  assert.equal(total.warnings, 3);
+  assert.deepEqual(
+    total.rejected.map((r) => r.index),
+    [0, 100, 200],
+  );
+  assert.equal(lines.length, 3);
+});
+
+test('a failed call is counted and the rest still go', async () => {
+  let n = 0;
+  const fetcher = async () =>
+    ++n === 1
+      ? new Response('nope', { status: 500 })
+      : Response.json({ created: 1, updated: 0, warnings: [], rejected: [] });
+  const total = await sendFoods(
+    Array.from({ length: 150 }, () => ({})),
+    { base: 'https://x', key: 'k', fetcher, log: () => {} },
+  );
+  assert.equal(total.failedCalls, 1);
+  assert.equal(total.created, 1);
+});
+
+test('import-foods can convert a file with no server, and refuses to run without arguments', () => {
+  const dir = fileURLToPath(new URL('../tmp-foods-test/', import.meta.url));
+  mkdirSync(dir, { recursive: true });
+  try {
+    writeFileSync(
+      `${dir}in.json`,
+      JSON.stringify({
+        FoundationFoods: [usdaRice, { fdcId: 2, description: 'No data', foodNutrients: [] }],
+      }),
+    );
+    const r = run('import-foods.mjs', [
+      `${dir}in.json`,
+      '--format',
+      'usda',
+      '--convert-only',
+      '--out',
+      `${dir}out.json`,
+    ]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /1 foods ready, 1 skipped/);
+    assert.match(r.stdout, /skipped 1: no calories100g, protein100g, fat100g, carb100g figure/);
+    assert.equal(JSON.parse(readFileSync(`${dir}out.json`, 'utf8'))[0].externalId, 'fdc:168878');
+    assert.notEqual(run('import-foods.mjs').status, 0);
+    assert.notEqual(run('import-foods.mjs', [`${dir}in.json`, '--format', 'usda']).status, 0); // no API_BASE
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

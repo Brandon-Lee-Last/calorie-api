@@ -50,6 +50,7 @@ export function toFood(r: FoodRow, viewerId: string) {
     fiber100g: r.fiber_100g,
     sugar100g: r.sugar_100g,
     sodiumMg100g: r.sodium_mg_100g,
+    dishId: r.dish_id,
     perServing: per,
     clientUpdatedAt: r.client_updated_at,
     updatedAt: r.updated_at,
@@ -127,6 +128,11 @@ export class FoodsService {
     const tokens = normalizeName(q).split(' ').filter(Boolean).slice(0, 5);
     if (tokens.length === 0) return { items: [] };
     return { items: (await this.repo.search(userId, tokens, limit)).map((r) => toFood(r, userId)) };
+  }
+
+  /** Foods the catalogue holds for one dish from the model's taxonomy, for showing what a recognised dish usually contains. */
+  async forDish(userId: string, dishId: string) {
+    return { items: (await this.repo.catalogueForDish(dishId)).map((r) => toFood(r, userId)) };
   }
 
   /** Own food with this barcode, else the shared catalogue, else ask Open Food Facts and remember the answer. */
