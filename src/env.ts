@@ -19,6 +19,8 @@ export interface Bindings {
   CF_ACCESS_TEAM_DOMAIN?: string;
   CF_ACCESS_AUD?: string;
   ALERT_WEBHOOK_URL?: string;
+  FCM_PROJECT_ID?: string;
+  FCM_SERVICE_ACCOUNT_JSON?: string;
   MEDIA_SIGNING_SECRET: string;
   ADMIN_API_KEY: string;
   GOOGLE_PLAY_PACKAGE_NAME?: string;
@@ -69,6 +71,12 @@ const schema = z.object({
     )
     .optional(),
   CF_ACCESS_AUD: z.string().min(16).optional(),
+  /** Firebase project id and a service account key (JSON) allowed to send messages, for push reminders. */
+  FCM_PROJECT_ID: z
+    .string()
+    .regex(/^[a-z0-9-]{4,40}$/)
+    .optional(),
+  FCM_SERVICE_ACCOUNT_JSON: z.string().optional(),
   /** Slack, Discord or any URL that accepts a JSON POST. Gets a message when the API hits an unexpected error. */
   ALERT_WEBHOOK_URL: z
     .string()

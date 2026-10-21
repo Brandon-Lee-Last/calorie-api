@@ -19,6 +19,7 @@ import { activityRoutes } from './modules/activity/activity.routes';
 import { measurementsRoutes } from './modules/measurements/measurements.routes';
 import { progressRoutes } from './modules/progress/progress.routes';
 import { recipesRoutes } from './modules/recipes/recipes.routes';
+import { remindersRoutes } from './modules/reminders/reminders.routes';
 import { trainingRoutes } from './modules/training/training.routes';
 import { scansRoutes } from './modules/scans/scans.routes';
 import { syncRoutes } from './modules/sync/sync.routes';
@@ -117,6 +118,7 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', bodyRoutes);
   v1.route('/', diaryRoutes);
   v1.route('/', recipesRoutes);
+  v1.route('/', remindersRoutes);
   v1.route('/', activityRoutes);
   v1.route('/', measurementsRoutes);
   v1.route('/', progressRoutes);

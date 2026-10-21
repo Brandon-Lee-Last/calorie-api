@@ -42,6 +42,9 @@ import { ProgressRepo } from './modules/progress/progress.repo';
 import { ProgressService } from './modules/progress/progress.service';
 import { RecipesRepo } from './modules/recipes/recipes.repo';
 import { RecipesService } from './modules/recipes/recipes.service';
+import { FcmSender, LogSender, unconfiguredSender, type PushSender } from './modules/reminders/push';
+import { RemindersRepo } from './modules/reminders/reminders.repo';
+import { RemindersService } from './modules/reminders/reminders.service';
 import { TrainingRepo } from './modules/training/training.repo';
 import { TrainingService } from './modules/training/training.service';
 import { AuditRepo } from './modules/admin/audit.repo';
@@ -83,6 +86,7 @@ export interface Overrides {
   mailer?: Mailer;
   alerter?: Alerter;
   accessVerifier?: AccessVerifier;
+  pushSender?: PushSender;
   foodLookup?: FoodLookup;
   billing?: BillingProvider;
   ai?: AiClient;
@@ -190,6 +194,27 @@ export class Container {
         return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
       return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
     });
+  }
+
+  get pushSender(): PushSender {
+    return this.once('push', () => {
+      if (this.overrides.pushSender) return this.overrides.pushSender;
+      const auth = new GoogleServiceAccountAuth(
+        this.config.FCM_SERVICE_ACCOUNT_JSON,
+        this.clock,
+        this.overrides.fetcher,
+      );
+      const fcm = new FcmSender(auth, this.config.FCM_PROJECT_ID, this.logger, this.overrides.fetcher);
+      if (fcm.configured) return fcm;
+      return this.config.isProduction ? unconfiguredSender : new LogSender(this.logger);
+    });
+  }
+
+  get reminders(): RemindersService {
+    return this.once(
+      'reminders',
+      () => new RemindersService(new RemindersRepo(this.db), this.pushSender, this.clock, this.logger),
+    );
   }
 
   get recipes(): RecipesService {
@@ -304,7 +329,10 @@ export class Container {
   get users(): UsersService {
     return this.once(
       'users',
-      () => new UsersService(new UsersRepo(this.db), new AuthRepo(this.db), this.clock),
+      () =>
+        new UsersService(new UsersRepo(this.db), new AuthRepo(this.db), this.clock, (userId) =>
+          this.reminders.reschedule(userId),
+        ),
     );
   }
 

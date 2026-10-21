@@ -1,4 +1,5 @@
 import { DAY, type Clock } from '../../core/time';
+import { STALE_DEVICE_MS } from '../reminders/reminders.service';
 import { AUDIT_RETENTION_MS } from '../admin/audit.service';
 import type { Logger } from '../../core/logger';
 
@@ -25,6 +26,7 @@ export type MaintenanceReport = {
   rateLimitsRemoved: number;
   emailCodesRemoved: number;
   adminAuditRemoved: number;
+  devicesRemoved: number;
 };
 
 /**
@@ -47,6 +49,7 @@ export class MaintenanceService {
       rateLimitsRemoved: 0,
       emailCodesRemoved: 0,
       adminAuditRemoved: 0,
+      devicesRemoved: 0,
     };
 
     // Refresh tokens that expired a week ago, or were revoked a month ago, can no longer matter.
@@ -86,6 +89,14 @@ export class MaintenanceService {
       await this.db
         .prepare('DELETE FROM admin_audit WHERE at < ?')
         .bind(now - AUDIT_RETENTION_MS)
+        .run()
+    ).meta.changes;
+
+    // A phone that has not checked in for six months has almost certainly lost the app.
+    report.devicesRemoved = (
+      await this.db
+        .prepare('DELETE FROM devices WHERE last_seen_at < ?')
+        .bind(now - STALE_DEVICE_MS)
         .run()
     ).meta.changes;
 

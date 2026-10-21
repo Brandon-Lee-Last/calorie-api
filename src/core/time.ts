@@ -52,6 +52,40 @@ export function localDateIn(timeZone: string, ms: number): string {
   return `${get('year')}-${get('month')}-${get('day')}`;
 }
 
+/** How far ahead of UTC a timezone's wall clock is at an instant, in minutes (Johannesburg: 120). */
+function offsetMinutes(timeZone: string, ms: number): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(new Date(ms));
+  const n = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  const wallAsUtc = Date.UTC(n('year'), n('month') - 1, n('day'), n('hour'), n('minute'), n('second'));
+  return Math.round((wallAsUtc - Math.floor(ms / 1000) * 1000) / 60_000);
+}
+
+/**
+ * The instant at which the wall clock in `timeZone` reads `hour:minute` on `localDate`. A time that does not exist (the hour
+ * skipped when clocks go forward) lands within an hour of the gap; one that happens twice (clocks going back) gives the first.
+ */
+export function zonedToUtc(localDate: string, hour: number, minute: number, timeZone: string): number {
+  const [y, m, d] = localDate.split('-').map(Number) as [number, number, number];
+  const wall = Date.UTC(y, m - 1, d, hour, minute);
+  const guess = wall - offsetMinutes(timeZone, wall) * 60_000;
+  return wall - offsetMinutes(timeZone, guess) * 60_000;
+}
+
+/** 1 (Monday) to 7 (Sunday) for a calendar date. */
+export function isoWeekday(localDate: string): number {
+  const [y, m, d] = localDate.split('-').map(Number) as [number, number, number];
+  return ((new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7) + 1;
+}
+
 export function isTimeZone(tz: unknown): tz is string {
   if (typeof tz !== 'string' || tz.length === 0 || tz.length > 64) return false;
   try {

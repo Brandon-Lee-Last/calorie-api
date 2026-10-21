@@ -5,7 +5,7 @@
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true },
-  "triggers": { "crons": ["17 3 * * *"] },
+  "triggers": { "crons": ["17 3 * * *", "*/5 * * * *"] },
 
   // Local development and the test suite use this top-level block.
   "vars": {
@@ -32,7 +32,7 @@
     "stage": {
       "name": "calorie-api-stage",
       "observability": { "enabled": true },
-      "triggers": { "crons": ["17 3 * * *"] },
+      "triggers": { "crons": ["17 3 * * *", "*/5 * * * *"] },
       "routes": [{ "pattern": "__API_HOST__", "custom_domain": true }],
       "vars": {
         "ENVIRONMENT": "stage",
@@ -56,7 +56,7 @@
     "production": {
       "name": "calorie-api-production",
       "observability": { "enabled": true },
-      "triggers": { "crons": ["17 3 * * *"] },
+      "triggers": { "crons": ["17 3 * * *", "*/5 * * * *"] },
       "routes": [{ "pattern": "__API_HOST__", "custom_domain": true }],
       "vars": {
         "ENVIRONMENT": "production",

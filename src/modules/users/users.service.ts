@@ -95,6 +95,8 @@ export class UsersService {
     private repo: UsersRepo,
     private authRepo: AuthRepo,
     private clock: Clock,
+    /** Called after the person's timezone changed, so anything scheduled in local time can be worked out again. */
+    private onTimezoneChange: (userId: string) => Promise<void> = async () => {},
   ) {}
 
   async getMe(userId: string) {
@@ -170,6 +172,8 @@ export class UsersService {
       if ('inputs' in calc) Object.assign(update, goalColumns(recommendGoals(calc.inputs, now)));
     }
     await this.repo.updateProfile(userId, update, now);
+    if (patch.timezone !== undefined && patch.timezone !== current.timezone)
+      await this.onTimezoneChange(userId);
     return this.getProfile(userId);
   }
 
