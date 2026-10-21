@@ -85,6 +85,36 @@ export class SubscriptionsRepo {
     );
   }
 
+  async userExists(userId: string): Promise<boolean> {
+    return (
+      (await first(
+        this.db.prepare('SELECT 1 AS x FROM users WHERE id = ? AND deleted_at IS NULL').bind(userId),
+      )) !== null
+    );
+  }
+
+  async hasEvent(eventKey: string): Promise<boolean> {
+    return (
+      (await first(
+        this.db.prepare('SELECT 1 AS x FROM subscription_events WHERE event_key = ?').bind(eventKey),
+      )) !== null
+    );
+  }
+
+  /** Subscriptions to re-read: ones in a shaky state, and ones whose period ends before `until`. Oldest check first. */
+  dueForReconcile(provider: string, until: number, limit: number): Promise<SubscriptionRow[]> {
+    return all<SubscriptionRow>(
+      this.db
+        .prepare(
+          `SELECT * FROM subscriptions WHERE provider = ?
+             AND (status IN ('in_grace', 'on_hold', 'paused') OR (status IN ('active', 'trialing', 'canceled') AND current_period_end < ?))
+             AND status NOT IN ('expired', 'refunded')
+           ORDER BY updated_at LIMIT ?`,
+        )
+        .bind(provider, until, limit),
+    );
+  }
+
   /** Record a store notification once. Returns false if this exact notification was already recorded. */
   async recordEvent(
     id: string,

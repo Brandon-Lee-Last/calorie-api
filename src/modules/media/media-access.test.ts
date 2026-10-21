@@ -112,7 +112,7 @@ describe('media access', () => {
     await env.MEDIA.delete('media/gone');
     expect((await fetchLink(link)).status).toBe(404);
   });
-  it('hands out external links directly and says Stream is not set up yet', async () => {
+  it('hands out external links directly', async () => {
     const { admin, access, s } = await setup();
     const ext = await body(
       await admin.call('PUT', '/v1/admin/media/yt', {
@@ -128,16 +128,6 @@ describe('media access', () => {
       expiresAt: null,
       provider: 'external',
     });
-    const stream = await body(
-      await admin.call('PUT', '/v1/admin/media/st', {
-        kind: 'video',
-        provider: 'stream',
-        location: 'abc123',
-        tier: 'free',
-      }),
-    );
-    const res = await access(stream.id);
-    expect(res.status).toBe(501);
     (void s, authed);
   });
 });

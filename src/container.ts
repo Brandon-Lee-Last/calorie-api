@@ -57,6 +57,7 @@ import { MaintenanceService } from './modules/maintenance/maintenance.service';
 import { WorkersAiClient, type AiClient } from './modules/ai/ai.client';
 import { AiService } from './modules/ai/ai.service';
 import { InsightsService } from './modules/insights/insights.service';
+import { CloudflareStreamSigner, noStream, type StreamSigner } from './modules/media/stream';
 import { ObjectStorage } from './modules/media/object-storage';
 import { FoodsRepo } from './modules/foods/foods.repo';
 import { FoodsService } from './modules/foods/foods.service';
@@ -64,6 +65,8 @@ import { OpenFoodFactsClient, type FoodLookup } from './modules/foods/off';
 import { ScansRepo } from './modules/scans/scans.repo';
 import { ScansService } from './modules/scans/scans.service';
 import { SyncService } from './modules/sync/sync.service';
+import { GooglePlayNotifications } from './modules/subscriptions/billing/notifications';
+import { PubSubPushVerifier } from './modules/subscriptions/billing/rtdn';
 import { GooglePlayBillingProvider } from './modules/subscriptions/billing/google-play';
 import { MockBillingProvider } from './modules/subscriptions/billing/mock';
 import type { BillingProvider } from './modules/subscriptions/billing/provider';
@@ -87,6 +90,8 @@ export interface Overrides {
   alerter?: Alerter;
   accessVerifier?: AccessVerifier;
   pushSender?: PushSender;
+  streamSigner?: StreamSigner;
+  pubSubVerifier?: PubSubPushVerifier;
   foodLookup?: FoodLookup;
   billing?: BillingProvider;
   ai?: AiClient;
@@ -193,6 +198,18 @@ export class Container {
       if (RESEND_API_KEY && EMAIL_FROM)
         return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
       return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
+    });
+  }
+
+  get streamSigner(): StreamSigner {
+    return this.once('stream', () => {
+      if (this.overrides.streamSigner) return this.overrides.streamSigner;
+      const {
+        STREAM_CUSTOMER_CODE: code,
+        STREAM_SIGNING_KEY_ID: id,
+        STREAM_SIGNING_KEY_PEM: pem,
+      } = this.config;
+      return code && id && pem ? new CloudflareStreamSigner(code, id, pem, this.clock) : noStream;
     });
   }
 
@@ -344,13 +361,44 @@ export class Container {
     return this.once('storage', () => new ObjectStorage(this.env.MEDIA));
   }
 
+  get googlePlayAuth(): GoogleServiceAccountAuth {
+    return this.googleServiceAccount;
+  }
+
+  get googlePlayNotifications(): GooglePlayNotifications {
+    return this.once(
+      'playNotifications',
+      () =>
+        new GooglePlayNotifications(
+          this.overrides.pubSubVerifier ??
+            new PubSubPushVerifier(
+              this.config.GOOGLE_PLAY_RTDN_AUDIENCE,
+              this.config.GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT,
+              this.clock,
+            ),
+          this.subscriptions,
+          new SubscriptionsRepo(this.db),
+          this.config.GOOGLE_PLAY_PACKAGE_NAME,
+          this.billing.name === 'google_play',
+          this.clock,
+          this.logger,
+        ),
+    );
+  }
+
   get billing(): BillingProvider {
     return this.once(
       'billing',
       () =>
         this.overrides.billing ??
         (this.config.BILLING_PROVIDER === 'google_play'
-          ? new GooglePlayBillingProvider()
+          ? new GooglePlayBillingProvider(
+              this.googlePlayAuth,
+              this.config.GOOGLE_PLAY_PACKAGE_NAME,
+              this.clock,
+              this.logger,
+              this.overrides.fetcher,
+            )
           : new MockBillingProvider(this.clock)),
     );
   }
@@ -380,6 +428,7 @@ export class Container {
           this.clock,
           this.config.MEDIA_SIGNING_SECRET,
           async (userId) => (await this.subscriptions.entitlement(userId)).plan,
+          this.streamSigner,
         ),
     );
   }
@@ -427,7 +476,10 @@ export class Container {
   }
 
   get maintenance(): MaintenanceService {
-    return this.once('maintenance', () => new MaintenanceService(this.db, this.clock, this.logger));
+    return this.once(
+      'maintenance',
+      () => new MaintenanceService(this.db, this.clock, this.logger, () => this.subscriptions.reconcile()),
+    );
   }
 
   get aiClient(): AiClient {

@@ -1,9 +1,10 @@
-import { notConfigured, notFound, subscriptionRequired } from '../../core/errors';
+import { notFound, subscriptionRequired } from '../../core/errors';
 import { timingSafeEqual } from '../../core/crypto';
 import type { Clock } from '../../core/time';
 import type { MediaRepo } from './media.repo';
 import { MEDIA_URL_TTL_SECONDS, assertMediaAccess, signMediaAccess } from './media.signing';
 import type { ObjectStorage } from './object-storage';
+import { noStream, type StreamSigner } from './stream';
 
 export const r2Key = (mediaKey: string) => `media/${mediaKey}`;
 
@@ -38,6 +39,7 @@ export class MediaService {
     private clock: Clock,
     private secret: string,
     private planOf: (userId: string) => Promise<'free' | 'pro'>,
+    private stream: StreamSigner = noStream,
   ) {}
 
   /** A link the app can hand to a video or image player. Pro media needs a Pro account. */
@@ -57,7 +59,11 @@ export class MediaService {
       if (!media.location) throw notFound('Media');
       return { ...base, url: media.location, expiresAt: null };
     }
-    if (media.provider === 'stream') throw notConfigured('Cloudflare Stream playback');
+    if (media.provider === 'stream') {
+      if (!media.location) throw notFound('Media');
+      const link = await this.stream.sign(media.location, MEDIA_URL_TTL_SECONDS);
+      return { ...base, url: link.url, expiresAt: link.expiresAt }; // an HLS playlist (.m3u8)
+    }
 
     const expires = Math.floor(this.clock.now() / 1000) + MEDIA_URL_TTL_SECONDS;
     const sig = await signMediaAccess(this.secret, media.id, expires);

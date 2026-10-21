@@ -20,12 +20,16 @@ export interface Bindings {
   CF_ACCESS_AUD?: string;
   ALERT_WEBHOOK_URL?: string;
   FCM_PROJECT_ID?: string;
+  STREAM_CUSTOMER_CODE?: string;
+  STREAM_SIGNING_KEY_ID?: string;
+  STREAM_SIGNING_KEY_PEM?: string;
   FCM_SERVICE_ACCOUNT_JSON?: string;
   MEDIA_SIGNING_SECRET: string;
   ADMIN_API_KEY: string;
   GOOGLE_PLAY_PACKAGE_NAME?: string;
   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON?: string;
   GOOGLE_PLAY_RTDN_AUDIENCE?: string;
+  GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT?: string;
   OFF_USER_AGENT?: string;
   AI_DAILY_BUDGET?: string;
   REQUIRE_INTEGRITY?: string;
@@ -71,6 +75,16 @@ const schema = z.object({
     )
     .optional(),
   CF_ACCESS_AUD: z.string().min(16).optional(),
+  /** Cloudflare Stream signed playback: the customer code from your Stream player URLs and a signing key created for the account. */
+  STREAM_CUSTOMER_CODE: z
+    .string()
+    .regex(/^[a-z0-9]{8,40}$/)
+    .optional(),
+  STREAM_SIGNING_KEY_ID: z
+    .string()
+    .regex(/^[a-f0-9]{16,64}$/)
+    .optional(),
+  STREAM_SIGNING_KEY_PEM: z.string().min(100).optional(),
   /** Firebase project id and a service account key (JSON) allowed to send messages, for push reminders. */
   FCM_PROJECT_ID: z
     .string()
@@ -96,6 +110,8 @@ const schema = z.object({
   GOOGLE_PLAY_PACKAGE_NAME: z.string().optional(),
   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: z.string().optional(),
   GOOGLE_PLAY_RTDN_AUDIENCE: z.string().optional(),
+  /** Email of the service account the Pub/Sub push subscription signs as. */
+  GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT: z.string().email().optional(),
   OFF_USER_AGENT: z.string().optional(),
   /** Most AI calls the whole service will make in a day, so a bug or an attack cannot run up the bill. */
   AI_DAILY_BUDGET: z.coerce.number().int().min(0).default(20000),
@@ -150,6 +166,12 @@ export function getConfig(env: Bindings): Config {
   }
   if (Boolean(config.CF_ACCESS_TEAM_DOMAIN) !== Boolean(config.CF_ACCESS_AUD)) {
     throw new Error('Invalid configuration: CF_ACCESS_TEAM_DOMAIN and CF_ACCESS_AUD must be set together');
+  }
+  const stream = [config.STREAM_CUSTOMER_CODE, config.STREAM_SIGNING_KEY_ID, config.STREAM_SIGNING_KEY_PEM];
+  if (stream.some(Boolean) && !stream.every(Boolean)) {
+    throw new Error(
+      'Invalid configuration: STREAM_CUSTOMER_CODE, STREAM_SIGNING_KEY_ID and STREAM_SIGNING_KEY_PEM must be set together',
+    );
   }
   cache.set(env, config);
   return config;

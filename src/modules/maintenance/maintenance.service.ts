@@ -27,6 +27,7 @@ export type MaintenanceReport = {
   emailCodesRemoved: number;
   adminAuditRemoved: number;
   devicesRemoved: number;
+  subscriptionsReconciled: number;
 };
 
 /**
@@ -38,6 +39,8 @@ export class MaintenanceService {
     private db: D1Database,
     private clock: Clock,
     private logger: Logger,
+    /** Re-reads store state for subscriptions that may have changed unnoticed. */
+    private reconcileSubscriptions: () => Promise<number> = async () => 0,
   ) {}
 
   async run(): Promise<MaintenanceReport> {
@@ -50,6 +53,7 @@ export class MaintenanceService {
       emailCodesRemoved: 0,
       adminAuditRemoved: 0,
       devicesRemoved: 0,
+      subscriptionsReconciled: 0,
     };
 
     // Refresh tokens that expired a week ago, or were revoked a month ago, can no longer matter.
@@ -99,6 +103,8 @@ export class MaintenanceService {
         .bind(now - STALE_DEVICE_MS)
         .run()
     ).meta.changes;
+
+    report.subscriptionsReconciled = await this.reconcileSubscriptions();
 
     this.logger.info('maintenance finished', { ...report });
     return report;

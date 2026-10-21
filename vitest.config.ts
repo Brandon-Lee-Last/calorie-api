@@ -15,6 +15,7 @@ export default defineConfig(async () => {
             JWT_SECRET: 'test-jwt-secret-0123456789-abcdefghijklmnop',
             MEDIA_SIGNING_SECRET: 'test-media-secret-0123456789-abcdefghijklm',
             ADMIN_API_KEY: 'test-admin-api-key-0123456789',
+            GOOGLE_PLAY_PACKAGE_NAME: 'za.co.example.calories',
           },
         },
       }),

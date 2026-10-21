@@ -134,7 +134,7 @@ export class SubscriptionsService {
   /** Check a purchase the app just made with the store, and attach it to this account. */
   async verify(userId: string, input: { productId: string; purchaseToken: string }) {
     this.assertProviderUsable();
-    const state = await this.billing.verify(input);
+    const state = await this.billing.verify({ ...input, userId });
     if (!state)
       throw badRequest('The store does not recognise this purchase', { reason: 'purchase_not_found' });
     await this.store(userId, state);
@@ -150,6 +150,74 @@ export class SubscriptionsService {
       if (fresh) await this.repo.applyState(row.id, fresh, this.clock.now());
     }
     return this.current(userId);
+  }
+
+  // ---- store notifications and housekeeping -------------------------------------------------------------------
+
+  /**
+   * Re-read one purchase from the store and bring our copy up to date. A purchase we have not seen yet (the app crashed
+   * before telling us) is attached to the account the store says made it, if that account exists.
+   */
+  async syncFromStore(
+    externalId: string,
+    productHint: string | null,
+  ): Promise<'updated' | 'created' | 'unknown_purchase' | 'unknown_account'> {
+    const existing = await this.repo.findByExternal(this.billing.name, externalId);
+    const state = await this.billing.refresh(externalId, existing?.product_id ?? productHint ?? '');
+    if (!state) return 'unknown_purchase';
+    const now = this.clock.now();
+    if (existing) {
+      await this.repo.applyState(existing.id, state, now);
+      return 'updated';
+    }
+    if (!state.accountId || !(await this.repo.userExists(state.accountId))) return 'unknown_account';
+    await this.repo.insert(newId(now), state.accountId, state, now);
+    return 'created';
+  }
+
+  /** The store refunded or revoked a purchase: access ends now. */
+  async markRefunded(externalId: string): Promise<boolean> {
+    const row = await this.repo.findByExternal(this.billing.name, externalId);
+    if (!row) return false;
+    const now = this.clock.now();
+    await this.repo.applyState(
+      row.id,
+      {
+        provider: row.provider,
+        externalId,
+        productId: row.product_id,
+        status: 'refunded',
+        autoRenew: false,
+        startedAt: row.started_at,
+        currentPeriodEnd: Math.min(row.current_period_end, now),
+        graceUntil: null,
+        canceledAt: now,
+        environment: row.environment,
+      },
+      now,
+    ); // fmt: skip
+    return true;
+  }
+
+  /**
+   * Safety net for missed notifications: re-read the subscriptions most likely to have changed (about to renew, in grace, or on
+   * hold). Runs with the nightly maintenance, a few at a time.
+   */
+  async reconcile(limit = 40): Promise<number> {
+    if (this.billing.name === 'mock') return 0;
+    let refreshed = 0;
+    for (const row of await this.repo.dueForReconcile(this.billing.name, this.clock.now() + DAY, limit)) {
+      try {
+        const fresh = await this.billing.refresh(row.external_id, row.product_id);
+        if (fresh) {
+          await this.repo.applyState(row.id, fresh, this.clock.now());
+          refreshed++;
+        }
+      } catch {
+        // the store is having a bad day; the next night will try again
+      }
+    }
+    return refreshed;
   }
 
   private async store(userId: string, state: ProviderSubscription): Promise<SubscriptionRow> {

@@ -1,6 +1,5 @@
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import type { AppEnv } from '../../app-types';
-import { notConfigured } from '../../core/errors';
 import { authErrors, bearer, commonErrors, json, jsonBody } from '../../core/openapi';
 import { requireAuth } from '../../middleware/auth';
 import { rateLimit } from '../../middleware/rate-limit';
@@ -101,19 +100,30 @@ subscriptionsRoutes.openapi(
   },
 );
 
-// The store calls this when a subscription changes (renewal, cancellation, payment failure). Wired up when the Play account exists.
+// Google Pub/Sub pushes here when a subscription changes (renewal, cancellation, payment failure, refund).
 subscriptionsRoutes.openapi(
   createRoute({
     method: 'post',
     path: '/webhooks/google-play',
     tags: ['Subscription'],
-    summary: 'Google Play real-time developer notifications (not enabled yet)',
+    summary: 'Google Play real-time developer notifications (called by Google Pub/Sub, not by the app)',
+    description:
+      'Needs the OpenID Connect token Pub/Sub adds to push requests (audience `GOOGLE_PLAY_RTDN_AUDIENCE`). The state of the purchase is always re-read from the Play API. 204 means handled or safely ignored; an error status makes Pub/Sub send the message again.',
     responses: {
-      204: { description: 'Processed (what the store expects once this is enabled)' },
+      204: { description: 'Handled (or deliberately ignored)' },
+      401: commonErrors[400],
       501: commonErrors[400],
+      502: commonErrors[500],
     },
   }), // fmt: skip
-  () => {
-    throw notConfigured('Google Play notifications');
+  async (c) => {
+    let envelope: unknown = null;
+    try {
+      envelope = await c.req.json();
+    } catch {
+      // not JSON: treated as an ignorable message once the caller is proven genuine
+    }
+    await c.get('deps').googlePlayNotifications.handle(c.req.header('authorization'), envelope);
+    return c.body(null, 204);
   },
 );

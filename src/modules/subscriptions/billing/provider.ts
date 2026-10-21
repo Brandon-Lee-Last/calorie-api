@@ -13,6 +13,8 @@ export type ProviderSubscription = {
   graceUntil: number | null;
   canceledAt: number | null;
   environment: 'sandbox' | 'production';
+  /** Which of our accounts the store says made the purchase (Google: the obfuscated account id the app set), if it says. */
+  accountId?: string | null;
 };
 
 /**
@@ -22,6 +24,10 @@ export type ProviderSubscription = {
  */
 export interface BillingProvider {
   readonly name: 'mock' | 'google_play';
-  verify(input: { productId: string; purchaseToken: string }): Promise<ProviderSubscription | null>;
+  verify(input: {
+    productId: string;
+    purchaseToken: string;
+    userId: string;
+  }): Promise<ProviderSubscription | null>;
   refresh(externalId: string, productId: string): Promise<ProviderSubscription | null>;
 }
