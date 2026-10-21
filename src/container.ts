@@ -34,6 +34,14 @@ import { SettingsRepo } from './modules/settings/settings.repo';
 import { SettingsService } from './modules/settings/settings.service';
 import { CatalogueRepo } from './modules/foods/catalogue.repo';
 import { CatalogueService } from './modules/foods/catalogue.service';
+import { ActivityRepo } from './modules/activity/activity.repo';
+import { ActivityService } from './modules/activity/activity.service';
+import { MeasurementsRepo } from './modules/measurements/measurements.repo';
+import { MeasurementsService } from './modules/measurements/measurements.service';
+import { ProgressRepo } from './modules/progress/progress.repo';
+import { ProgressService } from './modules/progress/progress.service';
+import { RecipesRepo } from './modules/recipes/recipes.repo';
+import { RecipesService } from './modules/recipes/recipes.service';
 import { TrainingRepo } from './modules/training/training.repo';
 import { TrainingService } from './modules/training/training.service';
 import { AuditRepo } from './modules/admin/audit.repo';
@@ -182,6 +190,45 @@ export class Container {
         return new ResendMailer(RESEND_API_KEY, EMAIL_FROM, this.overrides.fetcher);
       return isProduction ? unconfiguredMailer : new LogMailer(this.logger);
     });
+  }
+
+  get recipes(): RecipesService {
+    return this.once(
+      'recipes',
+      () =>
+        new RecipesService(
+          new RecipesRepo(this.db),
+          this.clock,
+          async (userId) => (await this.subscriptions.limitsFor(userId)).recipes,
+        ),
+    );
+  }
+
+  get activity(): ActivityService {
+    return this.once(
+      'activity',
+      () => new ActivityService(new ActivityRepo(this.db), new UsersRepo(this.db), this.clock),
+    );
+  }
+
+  get measurements(): MeasurementsService {
+    return this.once(
+      'measurements',
+      () => new MeasurementsService(new MeasurementsRepo(this.db), this.clock),
+    );
+  }
+
+  get progress(): ProgressService {
+    return this.once(
+      'progress',
+      () =>
+        new ProgressService(
+          new ProgressRepo(this.db),
+          this.storage,
+          this.clock,
+          async (userId) => (await this.subscriptions.limitsFor(userId)).progressPhotos,
+        ),
+    );
   }
 
   get training(): TrainingService {
@@ -423,7 +470,19 @@ export class Container {
   get sync(): SyncService {
     return this.once(
       'sync',
-      () => new SyncService(this.db, this.diary, this.body, this.foods, this.sessions, this.logger),
+      () =>
+        new SyncService(
+          this.db,
+          this.diary,
+          this.body,
+          this.foods,
+          this.sessions,
+          this.recipes,
+          this.activity,
+          this.measurements,
+          this.progress,
+          this.logger,
+        ),
     );
   }
 

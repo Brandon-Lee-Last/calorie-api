@@ -6,7 +6,17 @@ export const TOMBSTONE_RETENTION_MS = 30 * DAY;
 const BATCH = 500;
 const MAX_BATCHES_PER_TABLE = 40;
 
-const SYNCED_TABLES = ['diary_entries', 'weight_logs', 'water_logs', 'foods', 'workout_sessions'] as const;
+const SYNCED_TABLES = [
+  'diary_entries',
+  'weight_logs',
+  'water_logs',
+  'foods',
+  'workout_sessions',
+  'recipes',
+  'activity_logs',
+  'body_measurements',
+  'progress_photos',
+] as const;
 
 export type MaintenanceReport = {
   refreshTokensRemoved: number;

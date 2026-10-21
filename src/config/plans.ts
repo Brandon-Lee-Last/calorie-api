@@ -13,6 +13,10 @@ export type PlanLimits = {
   aiTextPerDay: number;
   /** Meal photos kept on the server. */
   mealPhotos: number;
+  /** Saved recipes. */
+  recipes: number;
+  /** Progress photos kept on the server. */
+  progressPhotos: number;
 };
 
 export type Plan = {
@@ -32,12 +36,18 @@ export const ANONYMOUS_AI_TEXT_PER_DAY = 2;
 export const PLANS: Record<PlanId, Plan> = {
   free: {
     id: 'free',
-    limits: { scansPerDay: 3, aiTextPerDay: 5, mealPhotos: 30 },
+    limits: { scansPerDay: 3, aiTextPerDay: 5, mealPhotos: 30, recipes: 10, progressPhotos: 12 },
     features: { workouts: 'free', insights: 'basic', export: true },
   },
   pro: {
     id: 'pro',
-    limits: { scansPerDay: UNLIMITED, aiTextPerDay: 100, mealPhotos: UNLIMITED },
+    limits: {
+      scansPerDay: UNLIMITED,
+      aiTextPerDay: 100,
+      mealPhotos: UNLIMITED,
+      recipes: UNLIMITED,
+      progressPhotos: UNLIMITED,
+    },
     features: { workouts: 'all', insights: 'full', export: true },
   },
 };

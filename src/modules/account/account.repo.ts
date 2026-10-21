@@ -63,6 +63,33 @@ export class AccountRepo {
       'started_at',
     );
   }
+  recipes(userId: string) {
+    return this.rows<Record<string, unknown>>('recipes', userId, 'AND deleted_at IS NULL', 'name');
+  }
+  activity(userId: string) {
+    return this.rows<Record<string, unknown>>(
+      'activity_logs',
+      userId,
+      'AND deleted_at IS NULL',
+      'local_date, logged_at',
+    );
+  }
+  measurements(userId: string) {
+    return this.rows<Record<string, unknown>>(
+      'body_measurements',
+      userId,
+      'AND deleted_at IS NULL',
+      'local_date, logged_at',
+    );
+  }
+  progressPhotos(userId: string) {
+    return this.rows<Record<string, unknown>>(
+      'progress_photos',
+      userId,
+      'AND deleted_at IS NULL',
+      'local_date, logged_at',
+    );
+  }
   subscriptions(userId: string) {
     return all<Record<string, unknown>>(
       this.db

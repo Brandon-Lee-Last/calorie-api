@@ -22,7 +22,13 @@ export const entitlementSchema = z
     willRenew: z.boolean(),
     inGrace: z.boolean().describe('The payment failed and the store is retrying; Pro still works'),
     isTrial: z.boolean(),
-    limits: z.object({ scansPerDay: z.number(), aiTextPerDay: z.number(), mealPhotos: z.number() }),
+    limits: z.object({
+      scansPerDay: z.number(),
+      aiTextPerDay: z.number(),
+      mealPhotos: z.number(),
+      recipes: z.number(),
+      progressPhotos: z.number(),
+    }),
     features: z.object({
       workouts: z.enum(['free', 'all']),
       insights: z.enum(['basic', 'full']),

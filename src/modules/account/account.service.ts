@@ -28,19 +28,37 @@ export class AccountService {
   async export(userId: string) {
     const user = await this.repo.user(userId);
     if (!user) throw notFound('Account');
-    const [profile, identities, diary, weight, water, foods, scans, sessions, subscriptions, enrollments] =
-      await Promise.all([
-        this.repo.profile(userId),
-        this.repo.identities(userId),
-        this.repo.diary(userId),
-        this.repo.weight(userId),
-        this.repo.water(userId),
-        this.repo.foods(userId),
-        this.repo.scans(userId),
-        this.repo.sessions(userId),
-        this.repo.subscriptions(userId),
-        this.repo.enrollments(userId),
-      ]); // fmt: skip
+    const [
+      profile,
+      identities,
+      diary,
+      weight,
+      water,
+      foods,
+      scans,
+      sessions,
+      subscriptions,
+      enrollments,
+      recipes,
+      activity,
+      measurements,
+      progress,
+    ] = await Promise.all([
+      this.repo.profile(userId),
+      this.repo.identities(userId),
+      this.repo.diary(userId),
+      this.repo.weight(userId),
+      this.repo.water(userId),
+      this.repo.foods(userId),
+      this.repo.scans(userId),
+      this.repo.sessions(userId),
+      this.repo.subscriptions(userId),
+      this.repo.enrollments(userId),
+      this.repo.recipes(userId),
+      this.repo.activity(userId),
+      this.repo.measurements(userId),
+      this.repo.progressPhotos(userId),
+    ]); // fmt: skip
     return {
       format: 1,
       exportedAt: this.clock.now(),
@@ -55,6 +73,10 @@ export class AccountService {
       workoutSessions: sessions.map((s) => ({ ...tidy(s), sets: safeJson(s.sets) })),
       subscriptions: subscriptions.map(tidy),
       programEnrollments: enrollments.map(tidy),
+      recipes: recipes.map((r) => ({ ...tidy(r), ingredients: safeJson(r.ingredients) })),
+      activityLogs: activity.map(tidy),
+      bodyMeasurements: measurements.map(tidy),
+      progressPhotos: progress.map(tidy),
     };
   }
 

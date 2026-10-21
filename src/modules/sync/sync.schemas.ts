@@ -2,10 +2,24 @@ import { z } from '../../core/openapi';
 import { clientIdSchema, timestampSchema } from '../../core/schemas';
 import { entryRecordSchema } from '../diary/diary.schemas';
 import { waterRecordSchema, weightRecordSchema } from '../body/body.schemas';
+import { activityRecordSchema } from '../activity/activity.schemas';
+import { measurementRecordSchema } from '../measurements/measurements.schemas';
+import { progressRecordSchema } from '../progress/progress.schemas';
+import { recipeRecordSchema } from '../recipes/recipes.schemas';
 import { foodRecordSchema } from '../foods/foods.schemas';
 import { sessionRecordSchema } from '../workouts/sessions.schemas';
 
-export const SYNC_TYPES = ['diary_entry', 'weight', 'water', 'food', 'workout_session'] as const;
+export const SYNC_TYPES = [
+  'diary_entry',
+  'weight',
+  'water',
+  'food',
+  'workout_session',
+  'recipe',
+  'activity',
+  'measurement',
+  'progress_photo',
+] as const;
 export const syncTypeSchema = z.enum(SYNC_TYPES);
 
 export const changeSchema = z
@@ -15,6 +29,10 @@ export const changeSchema = z
     z.object({ type: z.literal('water'), record: waterRecordSchema }),
     z.object({ type: z.literal('food'), record: foodRecordSchema }),
     z.object({ type: z.literal('workout_session'), record: sessionRecordSchema }),
+    z.object({ type: z.literal('recipe'), record: recipeRecordSchema }),
+    z.object({ type: z.literal('activity'), record: activityRecordSchema }),
+    z.object({ type: z.literal('measurement'), record: measurementRecordSchema }),
+    z.object({ type: z.literal('progress_photo'), record: progressRecordSchema }),
   ])
   .openapi('SyncChange');
 

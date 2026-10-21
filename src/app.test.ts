@@ -131,6 +131,10 @@ describe('OpenAPI document', () => {
       new Set([
         'Health',
         'Config',
+        'Recipes',
+        'Activity',
+        'Measurements',
+        'Progress',
         'Auth',
         'Me',
         'Weight',

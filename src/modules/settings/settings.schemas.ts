@@ -51,7 +51,13 @@ export const publicConfigSchema = z
     plans: z.record(
       z.string(),
       z.object({
-        limits: z.object({ scansPerDay: z.number(), aiTextPerDay: z.number(), mealPhotos: z.number() }),
+        limits: z.object({
+          scansPerDay: z.number(),
+          aiTextPerDay: z.number(),
+          mealPhotos: z.number(),
+          recipes: z.number(),
+          progressPhotos: z.number(),
+        }),
         features: z.object({ workouts: z.string(), insights: z.string(), export: z.boolean() }),
       }),
     ),

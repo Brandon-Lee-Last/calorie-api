@@ -76,8 +76,40 @@ async function populated(t: ReturnType<typeof makeApp>) {
     sets: [{ exercise: 'squat', setNo: 1, reps: 5, weightKg: 100 }],
     clientUpdatedAt: T0,
   });
+  await send('PUT', `/v1/recipes/${newId()}`, {
+    name: 'Pap and wors',
+    servings: 2,
+    ingredients: [{ name: 'Pap', calories: 300, proteinG: 8, carbG: 60, fatG: 2 }],
+    clientUpdatedAt: T0,
+  });
+  await send('PUT', `/v1/activity/${newId()}`, {
+    loggedAt: T0,
+    localDate: TODAY,
+    kind: 'walking',
+    durationMin: 45,
+    clientUpdatedAt: T0,
+  });
+  await send('PUT', `/v1/measurements/${newId()}`, {
+    loggedAt: T0,
+    localDate: TODAY,
+    type: 'waist',
+    value: 90,
+    clientUpdatedAt: T0,
+  });
+  const progress = newId();
+  await send('PUT', `/v1/progress/${progress}`, {
+    loggedAt: T0,
+    localDate: TODAY,
+    pose: 'side',
+    clientUpdatedAt: T0,
+  });
+  await t.request(`/v1/progress/${progress}/photo`, {
+    method: 'PUT',
+    headers: { 'content-type': 'image/jpeg', ...authed(s.accessToken) },
+    body: jpeg as BodyInit,
+  });
   await send('PATCH', '/v1/me', { displayName: 'Thandi' });
-  return { s, send, meal, scan };
+  return { s, send, meal, scan, progress };
 }
 
 const USER_TABLES = [
@@ -87,6 +119,10 @@ const USER_TABLES = [
   'foods',
   'scan_events',
   'workout_sessions',
+  'recipes',
+  'activity_logs',
+  'body_measurements',
+  'progress_photos',
   'subscriptions',
   'usage_counters',
   'program_enrollments',
@@ -117,6 +153,14 @@ describe('data export', () => {
     expect(data.customFoods[0].name).toBe('Gran’s rusks');
     expect(data.scanEvents[0]).toMatchObject({ modelVersion: 'nutrition_v1', contributeConsent: 1 });
     expect(data.workoutSessions[0]).toMatchObject({ title: 'Legs', sets: [{ exercise: 'squat', reps: 5 }] });
+    expect(data.recipes[0]).toMatchObject({
+      name: 'Pap and wors',
+      servings: 2,
+      ingredients: [{ name: 'Pap', calories: 300 }],
+    });
+    expect(data.activityLogs[0]).toMatchObject({ kind: 'walking', durationMin: 45, caloriesEstimated: 1 });
+    expect(data.bodyMeasurements[0]).toMatchObject({ type: 'waist', value: 90 });
+    expect(data.progressPhotos[0]).toMatchObject({ pose: 'side', hasPhoto: true });
   });
   it('leaves out deleted items and other people', async () => {
     const t = makeApp();
@@ -150,7 +194,7 @@ describe('deleting the account', () => {
   });
   it('erases every row and every stored file, and ends all sessions', async () => {
     const t = makeApp();
-    const { s, send, meal, scan } = await populated(t);
+    const { s, send, meal, scan, progress } = await populated(t);
     expect(await env.MEDIA.head(`users/${s.userId}/meals/${meal}.jpg`)).not.toBeNull();
     expect(await env.MEDIA.head(`contrib/${s.userId}/${scan}.jpg`)).not.toBeNull();
 
@@ -172,6 +216,7 @@ describe('deleting the account', () => {
     ).toBe(0);
     expect(await env.MEDIA.head(`users/${s.userId}/meals/${meal}.jpg`)).toBeNull();
     expect(await env.MEDIA.head(`contrib/${s.userId}/${scan}.jpg`)).toBeNull();
+    expect(await env.MEDIA.head(`users/${s.userId}/progress/${progress}.jpg`)).toBeNull();
 
     // the old tokens are dead straight away, not after 15 minutes
     const me = await send('GET', '/v1/me');

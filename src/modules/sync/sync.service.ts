@@ -11,6 +11,18 @@ import { foodsTable } from '../foods/foods.repo';
 import { foodInputSchema } from '../foods/foods.schemas';
 import { toFood, type FoodsService } from '../foods/foods.service';
 import { waterInputSchema, weightInputSchema } from '../body/body.schemas';
+import { activityTable } from '../activity/activity.repo';
+import { activityInputSchema } from '../activity/activity.schemas';
+import { toActivity, type ActivityService } from '../activity/activity.service';
+import { measurementsTable } from '../measurements/measurements.repo';
+import { measurementInputSchema } from '../measurements/measurements.schemas';
+import { toMeasurement, type MeasurementsService } from '../measurements/measurements.service';
+import { progressTable } from '../progress/progress.repo';
+import { progressInputSchema } from '../progress/progress.schemas';
+import { toProgress, type ProgressService } from '../progress/progress.service';
+import { recipesTable } from '../recipes/recipes.repo';
+import { recipeInputSchema } from '../recipes/recipes.schemas';
+import { toRecipe, type RecipesService } from '../recipes/recipes.service';
 import { sessionsTable } from '../workouts/sessions.repo';
 import { sessionInputSchema } from '../workouts/sessions.schemas';
 import { toSession, type SessionsService } from '../workouts/sessions.service';
@@ -38,7 +50,11 @@ export type Change =
   | { type: 'weight'; record: ReturnType<typeof toWeight> }
   | { type: 'water'; record: ReturnType<typeof toWater> }
   | { type: 'food'; record: ReturnType<typeof toFood> }
-  | { type: 'workout_session'; record: ReturnType<typeof toSession> };
+  | { type: 'workout_session'; record: ReturnType<typeof toSession> }
+  | { type: 'recipe'; record: ReturnType<typeof toRecipe> }
+  | { type: 'activity'; record: ReturnType<typeof toActivity> }
+  | { type: 'measurement'; record: ReturnType<typeof toMeasurement> }
+  | { type: 'progress_photo'; record: ReturnType<typeof toProgress> };
 
 export class SyncService {
   constructor(
@@ -47,6 +63,10 @@ export class SyncService {
     private body: BodyService,
     private foods: FoodsService,
     private sessions: SessionsService,
+    private recipes: RecipesService,
+    private activity: ActivityService,
+    private measurements: MeasurementsService,
+    private progress: ProgressService,
     private logger: Logger,
   ) {}
 
@@ -68,12 +88,26 @@ export class SyncService {
     const upper = head?.sync_rev ?? 0;
     if (since >= upper) return { changes: [], rev: Math.max(upper, 0), hasMore: false };
 
-    const [entries, weights, waters, foods, sessionRows] = await Promise.all([
+    const [
+      entries,
+      weights,
+      waters,
+      foods,
+      sessionRows,
+      recipeRows,
+      activityRows,
+      measurementRows,
+      progressRows,
+    ] = await Promise.all([
       entriesTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
       weightTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
       waterTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
       foodsTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
       sessionsTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
+      recipesTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
+      activityTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
+      measurementsTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
+      progressTable.changesSince<never>(this.db, userId, since, limit + 1, upper),
     ]);
     const all: Change[] = [
       ...entries.map((r) => ({ type: 'diary_entry' as const, record: toEntry(r) })),
@@ -81,6 +115,10 @@ export class SyncService {
       ...waters.map((r) => ({ type: 'water' as const, record: toWater(r) })),
       ...foods.map((r) => ({ type: 'food' as const, record: toFood(r, userId) })),
       ...sessionRows.map((r) => ({ type: 'workout_session' as const, record: toSession(r) })),
+      ...recipeRows.map((r) => ({ type: 'recipe' as const, record: toRecipe(r) })),
+      ...activityRows.map((r) => ({ type: 'activity' as const, record: toActivity(r) })),
+      ...measurementRows.map((r) => ({ type: 'measurement' as const, record: toMeasurement(r) })),
+      ...progressRows.map((r) => ({ type: 'progress_photo' as const, record: toProgress(r) })),
     ].sort((a, b) => a.record.rev - b.record.rev);
 
     if (all.length > limit) {
@@ -171,6 +209,30 @@ export class SyncService {
         result = await this.sessions.put(userId, op.id, d);
         break;
       }
+      case 'recipe': {
+        const d = parse(recipeInputSchema);
+        if (isFailure(d)) return d;
+        result = await this.recipes.put(userId, op.id, d);
+        break;
+      }
+      case 'activity': {
+        const d = parse(activityInputSchema);
+        if (isFailure(d)) return d;
+        result = await this.activity.put(userId, op.id, d);
+        break;
+      }
+      case 'measurement': {
+        const d = parse(measurementInputSchema);
+        if (isFailure(d)) return d;
+        result = await this.measurements.put(userId, op.id, d);
+        break;
+      }
+      case 'progress_photo': {
+        const d = parse(progressInputSchema);
+        if (isFailure(d)) return d;
+        result = await this.progress.put(userId, op.id, d);
+        break;
+      }
     }
     return { type: op.type, id: op.id, status: result.applied ? 'applied' : 'stale', record: result.record };
   }
@@ -192,6 +254,18 @@ export class SyncService {
         break;
       case 'workout_session':
         outcome = (await this.sessions.delete(userId, op.id, op.clientUpdatedAt)).outcome;
+        break;
+      case 'recipe':
+        outcome = (await this.recipes.delete(userId, op.id, op.clientUpdatedAt)).outcome;
+        break;
+      case 'activity':
+        outcome = (await this.activity.delete(userId, op.id, op.clientUpdatedAt)).outcome;
+        break;
+      case 'measurement':
+        outcome = (await this.measurements.delete(userId, op.id, op.clientUpdatedAt)).outcome;
+        break;
+      case 'progress_photo':
+        outcome = (await this.progress.delete(userId, op.id, op.clientUpdatedAt)).outcome;
         break;
     }
     return { type: op.type, id: op.id, status: outcome };

@@ -243,7 +243,7 @@ describe('sync push', () => {
     }));
     expect((await send('POST', '/v1/sync/push', { ops: tooMany })).status).toBe(422);
     expect(
-      (await send('POST', '/v1/sync/push', { ops: [{ type: 'recipe', id: newId(), op: 'upsert' }] })).status,
+      (await send('POST', '/v1/sync/push', { ops: [{ type: 'banana', id: newId(), op: 'upsert' }] })).status,
     ).toBe(422);
     expect(
       (await send('POST', '/v1/sync/push', { ops: [{ type: 'water', id: 'bad id', op: 'upsert' }] })).status,
@@ -293,5 +293,120 @@ describe('two devices', () => {
       fresh.changes.filter((c: { record: { deletedAt: number | null } }) => c.record.deletedAt === null),
     ).toHaveLength(1);
     void DAY;
+  });
+});
+
+describe('the newer record types', () => {
+  const recipeData = (over: Record<string, unknown> = {}) => ({
+    name: 'Chicken and rice',
+    servings: 2,
+    ingredients: [{ name: 'Rice', calories: 260, proteinG: 5, carbG: 56, fatG: 1 }],
+    clientUpdatedAt: T0,
+    ...over,
+  });
+  const activityData = (over: Record<string, unknown> = {}) => ({
+    loggedAt: T0,
+    localDate: TODAY,
+    kind: 'running',
+    durationMin: 30,
+    clientUpdatedAt: T0,
+    ...over,
+  });
+  const measurementData = (over: Record<string, unknown> = {}) => ({
+    loggedAt: T0,
+    localDate: TODAY,
+    type: 'waist',
+    value: 84,
+    clientUpdatedAt: T0,
+    ...over,
+  });
+  const progressData = (over: Record<string, unknown> = {}) => ({
+    loggedAt: T0,
+    localDate: TODAY,
+    pose: 'front',
+    clientUpdatedAt: T0,
+    ...over,
+  });
+
+  it('are pulled alongside the rest, in revision order', async () => {
+    const { send, pull } = await setup();
+    await send('PUT', `/v1/recipes/${newId()}`, recipeData());
+    await send('PUT', `/v1/activity/${newId()}`, activityData());
+    await send('PUT', `/v1/measurements/${newId()}`, measurementData());
+    await send('PUT', `/v1/progress/${newId()}`, progressData());
+    const r = await pull();
+    expect(r.changes.map((c: { type: string }) => c.type)).toEqual([
+      'recipe',
+      'activity',
+      'measurement',
+      'progress_photo',
+    ]);
+    expect(r.changes[0].record.perServing.calories).toBe(130);
+    expect(r.changes[1].record.caloriesEstimated).toBe(true);
+    expect(r).toMatchObject({ rev: 4, hasMore: false });
+  });
+  it('can be pushed from a second device, and a delete comes back as a tombstone', async () => {
+    const { push, pull } = await setup();
+    const ids = [newId(), newId(), newId(), newId()];
+    const res = await push([
+      { type: 'recipe', id: ids[0], op: 'upsert', data: recipeData() },
+      { type: 'activity', id: ids[1], op: 'upsert', data: activityData() },
+      { type: 'measurement', id: ids[2], op: 'upsert', data: measurementData() },
+      { type: 'progress_photo', id: ids[3], op: 'upsert', data: progressData() },
+    ]);
+    expect(res.results.map((r: { status: string }) => r.status)).toEqual([
+      'applied',
+      'applied',
+      'applied',
+      'applied',
+    ]);
+    const del = await push([
+      { type: 'recipe', id: ids[0], op: 'delete', clientUpdatedAt: T0 + 10 },
+      { type: 'activity', id: ids[1], op: 'delete', clientUpdatedAt: T0 + 10 },
+      { type: 'measurement', id: ids[2], op: 'delete', clientUpdatedAt: T0 + 10 },
+      { type: 'progress_photo', id: ids[3], op: 'delete', clientUpdatedAt: T0 + 10 },
+    ]);
+    expect(del.results.map((r: { status: string }) => r.status)).toEqual([
+      'applied',
+      'applied',
+      'applied',
+      'applied',
+    ]);
+    const changes = (await pull(4)).changes;
+    expect(changes).toHaveLength(4);
+    expect(changes.every((c: { record: { deletedAt: number | null } }) => c.record.deletedAt !== null)).toBe(
+      true,
+    );
+  });
+  it('report a bad record without stopping the others', async () => {
+    const { push } = await setup();
+    const res = await push([
+      { type: 'recipe', id: newId(), op: 'upsert', data: recipeData({ servings: 0 }) },
+      { type: 'activity', id: newId(), op: 'upsert', data: activityData({ durationMin: undefined }) },
+      { type: 'measurement', id: newId(), op: 'upsert', data: measurementData({ value: 9999 }) },
+      { type: 'progress_photo', id: newId(), op: 'upsert', data: progressData({ pose: 'x' }) },
+      { type: 'measurement', id: newId(), op: 'upsert', data: measurementData() },
+    ]);
+    expect(res.results.map((r: { status: string }) => r.status)).toEqual([
+      'error',
+      'error',
+      'error',
+      'error',
+      'applied',
+    ]);
+    expect(res.results[0].error.code).toBe('validation_failed');
+  });
+  it('respect the recipe limit even when pushed through sync', async () => {
+    const { push } = await setup();
+    const ops = Array.from({ length: 11 }, (_, i) => ({
+      type: 'recipe',
+      id: newId(),
+      op: 'upsert',
+      data: recipeData({ name: `R${i}` }),
+    }));
+    const res = await push(ops.slice(0, 10));
+    expect(res.results.every((r: { status: string }) => r.status === 'applied')).toBe(true);
+    const more = await push(ops.slice(10));
+    expect(more.results[0]).toMatchObject({ status: 'error', error: { code: 'quota_exceeded' } });
   });
 });
