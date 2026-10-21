@@ -1,0 +1,4 @@
+# Copy to .dev.vars for `npm run dev`. Never commit .dev.vars.
+JWT_SECRET=local-dev-secret-change-me-at-least-32-chars
+MEDIA_SIGNING_SECRET=local-media-secret-change-me-at-least-32
+ADMIN_API_KEY=local-admin-key-change-me-at-least-24

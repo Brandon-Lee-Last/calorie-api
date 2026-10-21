@@ -1,0 +1,62 @@
+name: Deploy production
+
+# Manual, or when a version tag is pushed. The "production" GitHub environment should have required reviewers,
+# so nothing reaches production without a person approving this job.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to deploy
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      D1_DATABASE_ID: ${{ vars.D1_DATABASE_ID }}
+      API_HOST: ${{ vars.API_HOST }}
+      GOOGLE_CLIENT_IDS: ${{ vars.GOOGLE_CLIENT_IDS }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      MEDIA_SIGNING_SECRET: ${{ secrets.MEDIA_SIGNING_SECRET }}
+      ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+      GOOGLE_PLAY_PACKAGE_NAME: ${{ secrets.GOOGLE_PLAY_PACKAGE_NAME }}
+      GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+      GOOGLE_PLAY_RTDN_AUDIENCE: ${{ secrets.GOOGLE_PLAY_RTDN_AUDIENCE }}
+      OFF_USER_AGENT: ${{ vars.OFF_USER_AGENT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Fill in this environment's ids and hostnames
+        run: node scripts/render-wrangler.mjs
+      - name: Apply database migrations
+        run: npx wrangler d1 migrations apply DB --remote --config wrangler.rendered.jsonc --env production
+      - name: Deploy the Worker
+        run: npx wrangler deploy --config wrangler.rendered.jsonc --env production
+      - name: Push secrets to the Worker
+        run: node scripts/sync-secrets.mjs production
+      - name: Smoke test
+        run: node scripts/smoke-test.mjs "https://${API_HOST}"

@@ -1,0 +1,81 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "calorie-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+  "triggers": { "crons": ["17 3 * * *"] },
+
+  // Local development and the test suite use this top-level block.
+  "vars": {
+    "ENVIRONMENT": "local",
+    "GOOGLE_CLIENT_IDS": "",
+    "BILLING_PROVIDER": "mock",
+    "AI_TEXT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "CORS_ORIGINS": "",
+    "SIMULATE_ENABLED": "true",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "calorie-local",
+      "database_id": "local-only",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "calorie-media-local" }],
+
+  // Wrangler does not inherit bindings or vars into environments, so each one is spelled out.
+  // Values written like double-underscore NAME double-underscore are replaced from GitHub environment variables by scripts/render-wrangler.mjs at deploy time.
+  "env": {
+    "stage": {
+      "name": "calorie-api-stage",
+      "observability": { "enabled": true },
+      "triggers": { "crons": ["17 3 * * *"] },
+      "routes": [{ "pattern": "__API_HOST__", "custom_domain": true }],
+      "vars": {
+        "ENVIRONMENT": "stage",
+        "GOOGLE_CLIENT_IDS": "__GOOGLE_CLIENT_IDS__",
+        "BILLING_PROVIDER": "mock",
+        "AI_TEXT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+        "CORS_ORIGINS": "",
+        "SIMULATE_ENABLED": "true",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "calorie-stage",
+          "database_id": "__D1_DATABASE_ID__",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "calorie-media-stage" }],
+      "ai": { "binding": "AI" },
+    },
+    "production": {
+      "name": "calorie-api-production",
+      "observability": { "enabled": true },
+      "triggers": { "crons": ["17 3 * * *"] },
+      "routes": [{ "pattern": "__API_HOST__", "custom_domain": true }],
+      "vars": {
+        "ENVIRONMENT": "production",
+        "GOOGLE_CLIENT_IDS": "__GOOGLE_CLIENT_IDS__",
+        "BILLING_PROVIDER": "mock",
+        "AI_TEXT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+        "CORS_ORIGINS": "",
+        "SIMULATE_ENABLED": "false",
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "calorie-production",
+          "database_id": "__D1_DATABASE_ID__",
+          "migrations_dir": "migrations",
+        },
+      ],
+      "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "calorie-media-production" }],
+      "ai": { "binding": "AI" },
+    },
+  },
+}
