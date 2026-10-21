@@ -239,7 +239,7 @@ describe('restore purchases', () => {
 
 describe('daily allowances', () => {
   it('stop at the plan limit and cannot be raced past it', async () => {
-    const { t, send } = await setup();
+    const { send } = await setup();
     const results = await Promise.all(Array.from({ length: 12 }, () => send('POST', '/v1/test/ai')));
     const statuses = results.map((r) => r.status).sort();
     expect(statuses.filter((s) => s === 200)).toHaveLength(PLANS.free.limits.aiTextPerDay);
@@ -262,7 +262,7 @@ describe('daily allowances', () => {
     expect((await ent()).usage).toEqual({ date: '2026-10-22', scans: 0, aiText: 1 });
   });
   it('are bigger on Pro', async () => {
-    const { t, send, verify } = await setup();
+    const { send, verify } = await setup();
     await verify('mock_pro_monthly_active_big');
     let ok = 0;
     for (let i = 0; i < 8; i++) if ((await send('POST', '/v1/test/ai')).status === 200) ok++;

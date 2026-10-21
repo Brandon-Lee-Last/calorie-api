@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { adminClient, exerciseBody, resetContent, seedLibrary } from '../../../test/helpers/content';
+import { exerciseBody, resetContent, seedLibrary } from '../../../test/helpers/content';
 import { T0, body, jsonInit, makeApp, signUp } from '../../../test/helpers/app';
 import { newId } from '../../core/ids';
 import { DAY } from '../../core/time';

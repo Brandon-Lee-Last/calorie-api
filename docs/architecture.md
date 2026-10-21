@@ -145,17 +145,17 @@ Request ids on every response and log line, structured JSON logs with PII redact
 per-user quotas, idempotent writes, constant-time secret comparison, POPIA/GDPR export and delete
 (`GET /v1/account/export`, `DELETE /v1/account`, purge cron).
 
-## Phases
+## Status
 
-| Phase | Scope                                                               |
-| ----- | ------------------------------------------------------------------- |
-| 0     | scaffold, config, CI/CD, core + middleware, health                  |
-| 1     | auth (device, Google, refresh), users, profile and goals (BMR/TDEE) |
-| 2     | foods (custom, barcode), diary, weight, water, scans, sync          |
-| 3     | subscriptions, entitlements, usage quotas                           |
-| 4     | workouts, media (R2), admin                                         |
-| 5     | AI, insights, account export/delete, cron maintenance               |
-| later | Google Play billing, push reminders, social/leaderboards            |
+Everything in the phase plan is built and tested locally: foundation and pipeline, auth and profile, foods, diary, weight, water,
+scans and sync, subscriptions on a mock store, workouts, media and admin, AI text parsing, insights, account export and
+deletion, nightly housekeeping. The first deploy to Cloudflare, Google Play billing, Cloudflare Stream playback and content
+authoring are what remains. See [operations.md](operations.md) for the setup steps and the plain list of limits.
 
-Each phase ships with unit tests for pure logic and integration tests that run in the real Workers runtime
-against a real D1 with the real migrations.
+Decisions worth remembering:
+
+- **Sync** uses a per-user revision counter, not timestamps, so a phone with a wrong clock cannot make records appear or vanish.
+- **Deletes** from a direct `DELETE` always apply; deletes that arrive through sync lose to a newer edit like any other change.
+- **Deleted accounts** are rejected on the next request, not when their token expires.
+- **The mock store** can never grant Pro in production.
+- **AI** only ever sees the person's typed meal text (as data, with validated output) or already-computed numbers.

@@ -6,3 +6,4 @@ dist/
 .env
 *.log
 wrangler.rendered.jsonc
+scripts/.tmp-content

@@ -100,3 +100,67 @@ describe('config', () => {
     expect(c.CORS_ORIGINS).toEqual(['https://x.test']);
   });
 });
+
+describe('OpenAPI document', () => {
+  it('describes every operation well enough to generate a client from', async () => {
+    const { request } = makeApp();
+    const doc = await body(await request('/v1/openapi.json'));
+    const operations: { method: string; path: string; op: any }[] = [];
+    for (const [path, item] of Object.entries<any>(doc.paths)) {
+      for (const method of ['get', 'put', 'post', 'patch', 'delete'])
+        if (item[method]) operations.push({ method, path, op: item[method] });
+    }
+    expect(operations.length).toBeGreaterThanOrEqual(76); // a route lost by mistake would show up here
+    const problems: string[] = [];
+    for (const { method, path, op } of operations) {
+      const id = `${method.toUpperCase()} ${path}`;
+      if (!op.summary) problems.push(`${id}: no summary`);
+      if (!op.tags?.length) problems.push(`${id}: no tag`);
+      if (!Object.keys(op.responses ?? {}).some((c) => c.startsWith('2')))
+        problems.push(`${id}: no success response`);
+      const needsAuth =
+        !path.startsWith('/v1/health') &&
+        !path.startsWith('/v1/auth/') &&
+        !path.endsWith('/file') &&
+        !path.startsWith('/v1/webhooks');
+      if (needsAuth && !op.security?.length) problems.push(`${id}: not marked as needing authentication`);
+    }
+    expect(problems).toEqual([]);
+    expect(new Set(operations.map((o) => o.op.tags[0]))).toEqual(
+      new Set([
+        'Health',
+        'Auth',
+        'Me',
+        'Weight',
+        'Water',
+        'Diary',
+        'Foods',
+        'Scans',
+        'Sync',
+        'Subscription',
+        'Media',
+        'Workouts',
+        'Training',
+        'Admin',
+        'Account',
+        'AI',
+        'Insights',
+      ]),
+    );
+  });
+  it('registers the shared schemas once, by name', async () => {
+    const { request } = makeApp();
+    const schemas = Object.keys((await body(await request('/v1/openapi.json'))).components.schemas);
+    expect(schemas).toEqual(
+      expect.arrayContaining([
+        'ErrorBody',
+        'Session',
+        'DiaryEntry',
+        'Entitlement',
+        'SyncPullResult',
+        'ProgramDetail',
+        'WeeklyInsights',
+      ]),
+    );
+  });
+});

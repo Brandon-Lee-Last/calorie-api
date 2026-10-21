@@ -7,7 +7,8 @@
 #   scripts/setup-github-environments.sh stage
 #
 # JWT_SECRET, MEDIA_SIGNING_SECRET and ADMIN_API_KEY are generated here and never printed. Run it once per
-# environment; re-running rotates them (which signs everyone out), so pass KEEP_SECRETS=1 to leave them alone.
+# environment; re-running rotates them (open access tokens stop working and are replaced on the next refresh; media links already handed out
+# stop working), so pass KEEP_SECRETS=1 to leave them alone.
 set -euo pipefail
 ENV_NAME="${1:?usage: setup-github-environments.sh stage|production}"
 case "$ENV_NAME" in stage | production) ;; *) echo "environment must be stage or production" >&2; exit 1 ;; esac

@@ -27,6 +27,8 @@ export default defineConfig(async () => {
         include: ['src/**/*.ts'],
         exclude: ['src/**/*.test.ts', 'src/index.ts', 'src/**/*.d.ts'],
         reporter: ['text-summary', 'text'] as ('text-summary' | 'text')[],
+        // CI fails if coverage slips below these. They sit a little under today's numbers.
+        thresholds: { statements: 95, lines: 96, functions: 95, branches: 85 },
       },
     },
   };

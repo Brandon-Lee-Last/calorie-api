@@ -1,0 +1,11 @@
+{
+  "slug": "push-up",
+  "name": "Push-Up",
+  "muscleGroups": ["chest", "triceps", "shoulders"],
+  "equipment": ["bodyweight"],
+  "difficulty": "beginner",
+  "instructions": "Start in a high plank with your hands under your shoulders.\n\nLower your chest to just above the floor, keeping your body in one straight line.\n\nPress back up.",
+  "tips": "Start with your knees on the floor if full push-ups are too hard.",
+  "source": "Sample text written for this project",
+  "licence": "Sample content, replace with your own"
+}

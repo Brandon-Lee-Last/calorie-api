@@ -143,18 +143,4 @@ export class AuthRepo {
         .bind(now, userId),
     );
   }
-
-  deleteExpiredRefresh(before: number): Promise<number> {
-    return run(this.db.prepare('DELETE FROM refresh_tokens WHERE expires_at < ?').bind(before));
-  }
-
-  countActiveSessions(userId: string, now: number): Promise<{ n: number } | null> {
-    return first<{ n: number }>(
-      this.db
-        .prepare(
-          'SELECT COUNT(DISTINCT family_id) AS n FROM refresh_tokens WHERE user_id = ? AND revoked_at IS NULL AND expires_at > ?',
-        )
-        .bind(userId, now),
-    );
-  }
 }

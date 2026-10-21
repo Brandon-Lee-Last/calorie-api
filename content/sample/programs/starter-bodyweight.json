@@ -1,0 +1,37 @@
+{
+  "slug": "starter-bodyweight",
+  "title": "Starter Bodyweight",
+  "summary": "Two weeks of simple home workouts to get moving.",
+  "description": "# Starter Bodyweight\n\nNo equipment needed. Three short sessions a week.",
+  "level": "beginner",
+  "goal": "general",
+  "weeks": 2,
+  "daysPerWeek": 3,
+  "equipment": ["bodyweight"],
+  "tier": "free",
+  "author": "Sample",
+  "workouts": [
+    {
+      "key": "w1d1",
+      "week": 1,
+      "day": 1,
+      "title": "Day 1",
+      "estMinutes": 20,
+      "exercises": [
+        { "exerciseSlug": "push-up", "sets": 3, "repsMin": 5, "repsMax": 10, "restS": 60 },
+        { "exerciseSlug": "plank", "sets": 3, "durationS": 30, "restS": 45 }
+      ]
+    },
+    {
+      "key": "w1d2",
+      "week": 1,
+      "day": 3,
+      "title": "Day 2",
+      "estMinutes": 20,
+      "exercises": [
+        { "exerciseSlug": "barbell-back-squat", "sets": 3, "repsMin": 8, "repsMax": 10, "restS": 90 },
+        { "exerciseSlug": "plank", "sets": 3, "durationS": 40, "restS": 45 }
+      ]
+    }
+  ]
+}

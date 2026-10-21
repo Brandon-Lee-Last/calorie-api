@@ -1,7 +1,7 @@
 import { notConfigured, notFound, subscriptionRequired } from '../../core/errors';
 import { timingSafeEqual } from '../../core/crypto';
 import type { Clock } from '../../core/time';
-import type { MediaRepo, MediaRow } from './media.repo';
+import type { MediaRepo } from './media.repo';
 import { MEDIA_URL_TTL_SECONDS, assertMediaAccess, signMediaAccess } from './media.signing';
 import type { ObjectStorage } from './object-storage';
 
@@ -108,9 +108,5 @@ export class MediaService {
     headers.set('content-range', `bytes ${range.offset}-${range.offset + range.length - 1}/${head.size}`);
     headers.set('content-length', String(range.length));
     return new Response(object.body, { status: 206, headers });
-  }
-
-  isStoredHere(m: MediaRow) {
-    return m.provider === 'r2';
   }
 }

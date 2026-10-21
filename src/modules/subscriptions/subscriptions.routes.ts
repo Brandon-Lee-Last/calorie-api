@@ -108,7 +108,10 @@ subscriptionsRoutes.openapi(
     path: '/webhooks/google-play',
     tags: ['Subscription'],
     summary: 'Google Play real-time developer notifications (not enabled yet)',
-    responses: { 501: commonErrors[400] },
+    responses: {
+      204: { description: 'Processed (what the store expects once this is enabled)' },
+      501: commonErrors[400],
+    },
   }), // fmt: skip
   () => {
     throw notConfigured('Google Play notifications');

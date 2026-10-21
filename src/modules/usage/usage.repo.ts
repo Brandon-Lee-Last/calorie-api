@@ -51,8 +51,4 @@ export class UsageRepo {
     );
     return Object.fromEntries(rows.map((r) => [r.key, r.count]));
   }
-
-  deleteBefore(period: string): Promise<number> {
-    return run(this.db.prepare('DELETE FROM usage_counters WHERE period < ?').bind(period));
-  }
 }

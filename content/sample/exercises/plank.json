@@ -1,0 +1,11 @@
+{
+  "slug": "plank",
+  "name": "Plank",
+  "muscleGroups": ["abs"],
+  "equipment": ["bodyweight"],
+  "difficulty": "beginner",
+  "instructions": "Rest on your forearms and toes with your elbows under your shoulders.\n\nKeep your body in a straight line from head to heels and hold.",
+  "tips": "Squeeze your glutes and do not let your hips sag.",
+  "source": "Sample text written for this project",
+  "licence": "Sample content, replace with your own"
+}

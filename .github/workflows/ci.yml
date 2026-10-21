@@ -26,8 +26,12 @@ jobs:
         run: npm run typecheck
       - name: Formatting
         run: npm run format:check
+      - name: Deploy script tests
+        run: npm run test:scripts
       - name: Tests (real Workers runtime, real D1) with coverage thresholds
         run: npm run test:coverage
+      - name: Known vulnerabilities in what ships (high and above)
+        run: npm audit --omit=dev --audit-level=high
       - name: The Worker bundles (dry run, no Cloudflare access needed)
         env:
           D1_DATABASE_ID: 00000000-0000-0000-0000-000000000000

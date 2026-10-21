@@ -16,7 +16,9 @@
     "format:check": "prettier --check .",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "build:check": "wrangler deploy --dry-run --outdir dist",
-    "check": "npm run typecheck && npm run format:check && npm run test"
+    "check": "npm run typecheck && npm run format:check && npm run test:scripts && npm run test",
+    "test:scripts": "node --test \"scripts/*.test.mjs\"",
+    "import:content": "node scripts/import-content.mjs"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.6.3",

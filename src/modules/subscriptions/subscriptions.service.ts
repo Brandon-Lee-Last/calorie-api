@@ -231,6 +231,4 @@ export class SubscriptionsService {
     await this.repo.applyState(row.id, s, now);
     return this.current(userId);
   }
-
-  isProductId = isProductId;
 }

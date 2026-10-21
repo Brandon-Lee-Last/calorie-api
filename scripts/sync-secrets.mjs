@@ -6,9 +6,11 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const envName = process.argv[2];
+const args = process.argv.slice(2);
+const dryRun = args.includes('--dry-run');
+const envName = args.find((a) => !a.startsWith('--'));
 if (!['stage', 'production'].includes(envName ?? '')) {
-  console.error('usage: sync-secrets.mjs <stage|production>');
+  console.error('usage: sync-secrets.mjs <stage|production> [--dry-run]');
   process.exit(1);
 }
 
@@ -36,6 +38,13 @@ for (const name of OPTIONAL) if (process.env[name]) secrets[name] = process.env[
 if (problems.length) {
   console.error(problems.join('\n'));
   process.exit(1);
+}
+
+if (dryRun) {
+  console.log(
+    `Would set ${Object.keys(secrets).length} secrets on ${envName}: ${Object.keys(secrets).join(', ')}`,
+  );
+  process.exit(0);
 }
 
 const dir = mkdtempSync(join(tmpdir(), 'secrets-'));
