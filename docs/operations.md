@@ -150,6 +150,14 @@ One run handles 60 reminders; beyond roughly ten thousand active users, move sen
 - **Foods**: `node scripts/import-foods.mjs <file> --format usda|csv|json` (see the header of the script). USDA FoodData Central (CC0)
   downloads convert directly; nothing is estimated, foods missing an energy or macro figure are skipped and counted. For South African
   foods use figures from SAFOODS (SAMRC) or lab/weighed data and put the reference in `externalId`. `--dry-run` checks without writing.
+- **Food search data**: the **Food catalogue** workflow (Actions, run by hand) builds what search finds: USDA generic foods (Foundation
+  and SR Legacy, public domain) and Open Food Facts products sold in South Africa (`--format off`, streamed from the full export, same
+  reading as the barcode lookup but stricter: all macros stated, energy that agrees with them). Tick "import" to load it into stage;
+  otherwise download the `food-catalogue` artifact and run `node scripts/import-foods.mjs off.json --format json` (and `usda.json`)
+  with `API_BASE` and `ADMIN_API_KEY` set. Re-run it every month or two for new products. Open Food Facts data is ODbL: the app credits
+  it, and the Open Food Facts part of the catalogue must be shared under the ODbL if someone asks. The app also searches Open Food
+  Facts directly from the phone when someone taps "Search Open Food Facts" (their limit is 10 searches a minute per user), and a
+  product picked there is fetched through the barcode lookup, which adds it to the catalogue for everyone.
 - **Training data**: `node scripts/export-training-data.mjs --out data/app_contrib` downloads photos people agreed to contribute, with
   what they kept, as an `--extra-data` folder for the model repo (corrected photos at low weight; photos the person simply accepted are
   left out because the label would be the model's own guess). Photos are stripped of GPS and device details on upload. Keep the folder

@@ -2,14 +2,20 @@
 // Loads foods into the shared catalogue through the admin API, from a file you obtained legitimately.
 //
 //   API_BASE=https://api-stage.example.com ADMIN_API_KEY=... \
-//     node scripts/import-foods.mjs <file> --format usda|csv|json [--source curated] [--dry-run] [--limit 500]
+//     node scripts/import-foods.mjs <file> --format usda|csv|json|off [--source curated] [--dry-run] [--limit 500]
 //   node scripts/import-foods.mjs <file> --format usda --convert-only --out foods.json     (no server needed)
+//   node scripts/import-foods.mjs https://static.openfoodfacts.org/data/openfoodfacts-products.jsonl.gz \
+//     --format off --country en:south-africa --convert-only --out foods-off.json
 //
 // Formats
 //   usda  USDA FoodData Central JSON download (Foundation, SR Legacy, Survey/FNDDS, or a Branded file trimmed to a size
 //         that fits in memory). Public domain (CC0): https://fdc.nal.usda.gov/download-datasets.html
 //   csv   one food per row; header = the field names below. `aliases` separated by | or ;
 //   json  an array of foods, or { "foods": [...] }
+//   off   Open Food Facts JSONL export, one product per line, plain or .gz, a file or an https URL. ODbL: credit Open Food
+//         Facts wherever the foods are shown, and share this part of the catalogue under the ODbL if asked. It is read
+//         as a stream (the full export is many gigabytes); --country keeps products sold there (comma-separated tags,
+//         default en:south-africa, or `all`). https://world.openfoodfacts.org/data
 //
 // Fields (all nutrition is per 100 g): source, externalId, name, brand, barcode, servingG, servingLabel, calories100g,
 // protein100g, carb100g, fat100g, fiber100g, sugar100g, sodiumMg100g, dishId, aliases
@@ -17,7 +23,11 @@
 // NOTHING IS ESTIMATED. A USDA food with no energy figure, or no protein, fat or carbohydrate figure, is skipped and counted,
 // not guessed. For South African foods, bring figures from SAFOODS (the South African Food Composition Database, SAMRC) or
 // from weighed/lab data, and put the reference in externalId (for example safoods:<code>).
-import { readFileSync, writeFileSync } from 'node:fs';
+import { createReadStream, readFileSync, writeFileSync } from 'node:fs';
+import { createInterface } from 'node:readline';
+import { Readable } from 'node:stream';
+import { createGunzip } from 'node:zlib';
+import { convertOffProduct } from './off-products.mjs';
 
 const MAX_PER_CALL = 100;
 
@@ -200,6 +210,56 @@ export function convertJson(json, defaults = {}) {
   return { foods: list.map((f) => ({ ...defaults, ...f })), skipped: [] };
 }
 
+// ---- Open Food Facts -------------------------------------------------------------------------------------------
+
+/** Lines of a file or URL, gunzipped when the name ends in .gz, without holding the whole thing anywhere. */
+export async function* readLines(source, fetcher = fetch) {
+  let stream;
+  if (/^https?:\/\//.test(source)) {
+    const res = await fetcher(source, { headers: { 'user-agent': 'calorie-api food import' } });
+    if (!res.ok || !res.body) throw new Error(`HTTP ${res.status} for ${source}`);
+    stream = Readable.fromWeb(res.body);
+  } else stream = createReadStream(source);
+  if (/\.gz($|\?)/.test(source)) stream = stream.pipe(createGunzip());
+  yield* createInterface({ input: stream, crlfDelay: Infinity });
+}
+
+/**
+ * Open Food Facts products (JSON lines) -> import payloads. Only products tagged with one of `countries` are read, and
+ * the tag is looked for in the raw line first, so the millions of other products are never parsed.
+ */
+export async function convertOffLines(lines, { countries = ['en:south-africa'], onProgress } = {}) {
+  const all = countries.includes('all');
+  const foods = [];
+  const skipped = [];
+  const seen = new Set();
+  let scanned = 0;
+  let matched = 0;
+  for await (const line of lines) {
+    scanned++;
+    if (onProgress && scanned % 500_000 === 0) onProgress({ scanned, matched, kept: foods.length });
+    if (!all && !countries.some((c) => line.includes(`"${c}"`))) continue;
+    let product;
+    try {
+      product = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const tags = Array.isArray(product.countries_tags) ? product.countries_tags : [];
+    if (!all && !countries.some((c) => tags.includes(c))) continue;
+    matched++;
+    const { food, skip } = convertOffProduct(product);
+    const id = typeof product.code === 'string' ? product.code : '?';
+    if (skip) skipped.push({ id, reason: skip });
+    else if (seen.has(food.barcode)) skipped.push({ id, reason: 'barcode listed twice' });
+    else {
+      seen.add(food.barcode);
+      foods.push(food);
+    }
+  }
+  return { foods, skipped, scanned, matched };
+}
+
 // ---- sending ---------------------------------------------------------------------------------------------------
 
 export const chunks = (items, size = MAX_PER_CALL) =>
@@ -248,18 +308,35 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     console.error(m);
     process.exit(1);
   };
-  if (!file || file.startsWith('--') || !['usda', 'csv', 'json'].includes(format ?? ''))
+  if (!file || file.startsWith('--') || !['usda', 'csv', 'json', 'off'].includes(format ?? ''))
     fail(
-      'usage: node scripts/import-foods.mjs <file> --format usda|csv|json [--source curated] [--dry-run] [--limit N] [--convert-only --out file.json]',
+      'usage: node scripts/import-foods.mjs <file or URL> --format usda|csv|json|off [--country en:south-africa] [--source curated] [--dry-run] [--limit N] [--convert-only --out file.json]',
     );
   const defaults = flag('source') ? { source: flag('source') } : {};
-  const text = readFileSync(file, 'utf8');
-  const converted =
-    format === 'usda'
-      ? convertUsda(JSON.parse(text))
-      : format === 'csv'
-        ? convertCsv(text, defaults)
-        : convertJson(JSON.parse(text), defaults);
+  let converted;
+  if (format === 'off') {
+    const countries = (flag('country') ?? 'en:south-africa')
+      .split(',')
+      .map((c) => c.trim())
+      .filter(Boolean);
+    const started = Date.now();
+    converted = await convertOffLines(readLines(file), {
+      countries,
+      onProgress: ({ scanned, matched, kept }) =>
+        console.log(
+          `  read ${scanned.toLocaleString('en')} products, ${matched} in ${countries.join(', ')}, ${kept} usable (${Math.round((Date.now() - started) / 1000)} s)`,
+        ),
+    });
+    console.log(`read ${converted.scanned} products, ${converted.matched} sold in ${countries.join(', ')}`);
+  } else {
+    const text = readFileSync(file, 'utf8');
+    converted =
+      format === 'usda'
+        ? convertUsda(JSON.parse(text))
+        : format === 'csv'
+          ? convertCsv(text, defaults)
+          : convertJson(JSON.parse(text), defaults);
+  }
   const limit = Number(flag('limit') ?? Infinity);
   const foods = converted.foods.slice(0, limit);
   console.log(`${foods.length} foods ready, ${converted.skipped.length} skipped`);

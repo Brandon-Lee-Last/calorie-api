@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { convertOffProduct } from '../../../scripts/off-products.mjs';
 import { OpenFoodFactsClient, mapOffProduct } from './off';
 
 const product = (over: Record<string, unknown> = {}, nutriments: Record<string, unknown> = {}) => ({
@@ -116,6 +117,25 @@ describe('OpenFoodFactsClient', () => {
         status: 502,
         code: 'upstream_failed',
       });
+    }
+  });
+});
+
+describe('bulk import from the Open Food Facts export (scripts/off-products.mjs)', () => {
+  it('reads a product exactly as the barcode lookup does, so either can fill the same catalogue row', () => {
+    const cases = [
+      product(),
+      product({ brands: undefined, serving_size: undefined, serving_quantity: undefined }),
+      product({}, { 'energy-kcal_100g': undefined, energy_100g: 2510, sodium_100g: undefined }),
+      product({ product_name: undefined, product_name_en: 'Peanut butter' }, { fiber_100g: '7.25' }),
+    ];
+    for (const p of cases) {
+      const bulk = convertOffProduct({ ...p, code: '3017620422003' }).food!;
+      const one = mapOffProduct('3017620422003', p)!;
+      expect(bulk).toBeDefined();
+      for (const [key, value] of Object.entries(one)) {
+        expect([key, (bulk as Record<string, unknown>)[key] ?? null]).toEqual([key, value]);
+      }
     }
   });
 });

@@ -1,0 +1,120 @@
+# Builds the shared food catalogue that food search reads, from two open sources:
+#   - Open Food Facts: packaged products sold in the chosen countries (barcode, brand, label nutrition). ODbL: the app
+#     credits Open Food Facts, and this part of the catalogue must be shared under the ODbL if anyone asks for it.
+#   - USDA FoodData Central: generic foods such as "Apples, raw, with skin" (Foundation and SR Legacy). Public domain.
+# The files are kept as the run's artifact "food-catalogue". Run it by hand with "import" ticked to load them into
+# stage too (needs the stage environment's API_HOST variable and ADMIN_API_KEY secret, and no admin IP allowlist that
+# shuts out GitHub's runners). Re-running is safe: foods are updated in place by source and id.
+name: Food catalogue
+
+on:
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: Open Food Facts country tags, comma-separated (or "all")
+        default: en:south-africa
+      import:
+        description: Load the result into stage
+        type: boolean
+        default: false
+  push:
+    branches: ['claude/**']
+    paths:
+      - scripts/import-foods.mjs
+      - scripts/off-products.mjs
+      - .github/workflows/food-catalogue.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: food-catalogue-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      COUNTRIES: ${{ inputs.countries || 'en:south-africa' }}
+      NODE_OPTIONS: --max-old-space-size=6144 # USDA's files are a few hundred MB of JSON each
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: mkdir -p catalogue
+
+      - name: USDA generic foods
+        run: |
+          page=$(curl -fsSL https://fdc.nal.usda.gov/download-datasets || true)
+          for kind in foundation_food sr_legacy_food; do
+            url=$(printf '%s' "$page" | grep -oE "[^\"' ]*FoodData_Central_${kind}_json_[0-9-]+\.zip" | sort -u | tail -1)
+            case "$url" in /*) url="https://fdc.nal.usda.gov$url" ;; "") ;; http*) ;; *) url="https://fdc.nal.usda.gov/$url" ;; esac
+            if [ -z "$url" ]; then
+              # The page did not list it; try the names of the last releases we know of.
+              for name in foundation_food_json_2025-04-24 foundation_food_json_2024-10-31 sr_legacy_food_json_2018-04; do
+                case "$name" in ${kind}_*) ;; *) continue ;; esac
+                if curl -fsIL "https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_${name}.zip" >/dev/null; then
+                  url="https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_${name}.zip"; break
+                fi
+              done
+            fi
+            [ -n "$url" ] || { echo "::error::Could not find the USDA $kind download"; exit 1; }
+            echo "USDA $kind: $url"
+            curl -fsSL "$url" -o "$kind.zip"
+            unzip -o -q "$kind.zip" -d "usda-$kind"
+            json=$(find "usda-$kind" -name '*.json' | head -1)
+            node scripts/import-foods.mjs "$json" --format usda --convert-only --out "catalogue/usda-$kind.json"
+          done
+          node -e "
+            const fs = require('fs');
+            const all = ['foundation_food', 'sr_legacy_food'].flatMap((k) => JSON.parse(fs.readFileSync('catalogue/usda-' + k + '.json')));
+            const seen = new Set();
+            const foods = all.filter((f) => !seen.has(f.externalId) && seen.add(f.externalId));
+            fs.writeFileSync('catalogue/usda.json', JSON.stringify(foods));
+            console.log('USDA foods:', foods.length);
+          "
+          rm catalogue/usda-*.json
+
+      - name: Open Food Facts products sold in ${{ env.COUNTRIES }}
+        run: >
+          node scripts/import-foods.mjs https://static.openfoodfacts.org/data/openfoodfacts-products.jsonl.gz
+          --format off --country "$COUNTRIES" --convert-only --out catalogue/off.json
+
+      - name: Summary
+        run: |
+          node -e "
+            const fs = require('fs');
+            const n = (f) => JSON.parse(fs.readFileSync('catalogue/' + f)).length;
+            const text = '### Food catalogue\n\n| Source | Foods |\n|---|---|\n| USDA (generic foods) | ' + n('usda.json') + ' |\n| Open Food Facts (' + process.env.COUNTRIES + ') | ' + n('off.json') + ' |\n';
+            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);
+            console.log(text);
+          "
+      - uses: actions/upload-artifact@v4
+        with:
+          name: food-catalogue
+          path: catalogue/
+          retention-days: 30
+
+  import:
+    needs: build
+    if: ${{ inputs.import }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: stage
+    env:
+      API_BASE: https://${{ vars.API_HOST }}
+      ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@v4
+        with:
+          name: food-catalogue
+          path: catalogue
+      - run: node scripts/import-foods.mjs catalogue/usda.json --format json
+      - if: ${{ !cancelled() }} # a few rejected USDA foods should not stop the products going in
+        run: node scripts/import-foods.mjs catalogue/off.json --format json

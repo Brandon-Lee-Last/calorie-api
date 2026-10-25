@@ -14,7 +14,18 @@ import {
   trainRow,
 } from './export-training-data.mjs';
 import { scanRepo, scanText } from './secret-scan.mjs';
-import { chunks, convertCsv, convertJson, convertUsda, parseCsv, sendFoods } from './import-foods.mjs';
+import { gzipSync } from 'node:zlib';
+import {
+  chunks,
+  convertCsv,
+  convertJson,
+  convertOffLines,
+  convertUsda,
+  parseCsv,
+  readLines,
+  sendFoods,
+} from './import-foods.mjs';
+import { convertOffProduct } from './off-products.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const run = (script, args = [], env = {}) =>
@@ -427,6 +438,151 @@ test('import-foods can convert a file with no server, and refuses to run without
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+const offProduct = (over = {}, nutriments = {}) => ({
+  code: '6001007200015',
+  product_name: 'Ouma Buttermilk Rusks',
+  brands: 'Ouma, Pioneer Foods',
+  countries_tags: ['en:south-africa'],
+  serving_size: '1 rusk (32 g)',
+  serving_quantity: 32,
+  nutriments: {
+    'energy-kcal_100g': 430,
+    proteins_100g: 8.5,
+    carbohydrates_100g: 68,
+    fat_100g: 13.4,
+    fiber_100g: 3,
+    sugars_100g: 20,
+    sodium_100g: 0.35,
+    ...nutriments,
+  },
+  ...over,
+});
+
+test('Open Food Facts: a product becomes a catalogue food keyed by its barcode', () => {
+  assert.deepEqual(convertOffProduct(offProduct()), {
+    food: {
+      source: 'openfoodfacts',
+      externalId: '6001007200015',
+      barcode: '6001007200015',
+      name: 'Ouma Buttermilk Rusks',
+      brand: 'Ouma',
+      servingG: 32,
+      servingLabel: '1 rusk (32 g)',
+      calories100g: 430,
+      protein100g: 8.5,
+      carb100g: 68,
+      fat100g: 13.4,
+      fiber100g: 3,
+      sugar100g: 20,
+      sodiumMg100g: 350,
+    },
+  });
+  // UPC-A is stored as EAN-13, kJ is used when kcal is missing, strings are numbers too
+  const upc = convertOffProduct(
+    offProduct(
+      { code: '600100005556', serving_quantity: '' },
+      { 'energy-kcal_100g': undefined, energy_100g: '1799' },
+    ),
+  ).food;
+  assert.equal(upc.barcode, '0600100005556');
+  assert.equal(upc.calories100g, 429.97);
+  assert.equal(upc.servingG, undefined);
+});
+
+test('Open Food Facts: nothing is assumed, and implausible numbers are left out', () => {
+  const skip = (over, n) => convertOffProduct(offProduct(over, n)).skip;
+  assert.equal(skip({ code: '6001007200016' }), 'no valid barcode');
+  assert.equal(skip({ product_name: ' ', product_name_en: undefined }), 'no name');
+  assert.equal(skip({}, { 'energy-kcal_100g': undefined }), 'no energy figure');
+  assert.equal(skip({}, { proteins_100g: undefined }), 'no protein, carbohydrate or fat figure');
+  assert.equal(skip({}, { 'energy-kcal_100g': 1800 }), 'more than 900 kcal per 100 g');
+  assert.equal(
+    skip({}, { carbohydrates_100g: 95 }),
+    'protein, carbohydrate and fat add up to more than 100 g',
+  );
+  assert.equal(skip({}, { 'energy-kcal_100g': 150 }), 'energy does not match protein, carbohydrate and fat');
+  // alcohol counts towards the energy, so a beer is kept
+  const beer = convertOffProduct(
+    offProduct(
+      { product_name: 'Lager' },
+      { 'energy-kcal_100g': 41, proteins_100g: 0.4, carbohydrates_100g: 3, fat_100g: 0, alcohol_100g: 4 },
+    ),
+  );
+  assert.equal(beer.food?.calories100g, 41);
+  // an out-of-range optional figure is dropped, not the food
+  assert.equal(convertOffProduct(offProduct({}, { sugars_100g: 300 })).food.sugar100g, undefined);
+});
+
+test('Open Food Facts: reads only products sold in the chosen countries, from a gzipped file', async () => {
+  const dir = fileURLToPath(new URL('../tmp-off-test/', import.meta.url));
+  mkdirSync(dir, { recursive: true });
+  try {
+    const lines = [
+      offProduct(),
+      offProduct({ code: '3017620422003', countries_tags: ['en:france'] }),
+      offProduct(
+        { code: '6009300001230', countries_tags: ['en:namibia', 'en:south-africa'] },
+        { fat_100g: undefined },
+      ),
+      offProduct({ code: '6007000000010', countries_tags: ['en:namibia'] }),
+      offProduct(), // listed twice
+    ].map((p) => JSON.stringify(p));
+    writeFileSync(`${dir}products.jsonl.gz`, gzipSync(lines.join('\n') + '\nnot json en:south-africa\n'));
+
+    const za = await convertOffLines(readLines(`${dir}products.jsonl.gz`));
+    assert.equal(za.scanned, 6);
+    assert.equal(za.matched, 3);
+    assert.deepEqual(
+      za.foods.map((f) => f.barcode),
+      ['6001007200015'],
+    );
+    assert.deepEqual(
+      za.skipped.map((s) => s.reason),
+      ['no protein, carbohydrate or fat figure', 'barcode listed twice'],
+    );
+
+    const two = await convertOffLines(readLines(`${dir}products.jsonl.gz`), {
+      countries: ['en:south-africa', 'en:namibia'],
+    });
+    assert.deepEqual(
+      two.foods.map((f) => f.barcode),
+      ['6001007200015', '6007000000010'],
+    );
+
+    const r = run('import-foods.mjs', [
+      `${dir}products.jsonl.gz`,
+      '--format',
+      'off',
+      '--convert-only',
+      '--out',
+      `${dir}out.json`,
+    ]);
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stdout, /read 6 products, 3 sold in en:south-africa/);
+    assert.match(r.stdout, /1 foods ready, 2 skipped/);
+    assert.equal(JSON.parse(readFileSync(`${dir}out.json`, 'utf8'))[0].name, 'Ouma Buttermilk Rusks');
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('Open Food Facts: the export can be streamed straight from a URL', async () => {
+  const body = gzipSync(JSON.stringify(offProduct()) + '\n');
+  let asked;
+  const fetcher = async (url, init) => {
+    asked = { url, ua: init.headers['user-agent'] };
+    return new Response(body);
+  };
+  const out = await convertOffLines(readLines('https://example.org/products.jsonl.gz', fetcher));
+  assert.equal(out.foods.length, 1);
+  assert.equal(asked.url, 'https://example.org/products.jsonl.gz');
+  assert.ok(asked.ua);
+  await assert.rejects(
+    convertOffLines(readLines('https://example.org/x.jsonl', async () => new Response('', { status: 404 }))),
+    /HTTP 404/,
+  );
 });
 
 // ---- export-training-data --------------------------------------------------------------------------------------
