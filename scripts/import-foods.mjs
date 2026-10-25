@@ -269,15 +269,34 @@ export async function convertOffLines(lines, { countries = ['en:south-africa'], 
 export const chunks = (items, size = MAX_PER_CALL) =>
   Array.from({ length: Math.ceil(items.length / size) }, (_, i) => items.slice(i * size, (i + 1) * size));
 
-export async function sendFoods(foods, { base, key, dryRun = false, fetcher = fetch, log = console.log }) {
+export async function sendFoods(
+  foods,
+  {
+    base,
+    key,
+    dryRun = false,
+    fetcher = fetch,
+    log = console.log,
+    wait = (ms) => new Promise((r) => setTimeout(r, ms)),
+  },
+) {
   const total = { created: 0, updated: 0, rejected: [], warnings: 0, failedCalls: 0 };
   let offset = 0;
   for (const part of chunks(foods)) {
-    const res = await fetcher(base.replace(/\/$/, '') + '/v1/admin/foods/import', {
-      method: 'POST',
-      headers: { 'x-admin-key': key, 'content-type': 'application/json' },
-      body: JSON.stringify({ foods: part, dryRun }),
-    });
+    const send = () =>
+      fetcher(base.replace(/\/$/, '') + '/v1/admin/foods/import', {
+        method: 'POST',
+        headers: { 'x-admin-key': key, 'content-type': 'application/json' },
+        body: JSON.stringify({ foods: part, dryRun }),
+      });
+    let res = await send();
+    // The admin API allows 120 calls a minute; a big catalogue goes past that, so wait as long as it says and go on.
+    for (let tries = 0; (res.status === 429 || res.status === 503) && tries < 5; tries++) {
+      const seconds = Math.min(Number(res.headers.get('retry-after')) || 30, 120);
+      log(`wait  ${seconds} s (HTTP ${res.status})`);
+      await wait(seconds * 1000);
+      res = await send();
+    }
     if (!res.ok) {
       total.failedCalls++;
       log(

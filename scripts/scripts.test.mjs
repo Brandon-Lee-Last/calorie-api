@@ -420,6 +420,26 @@ test('a failed call is counted and the rest still go', async () => {
   assert.equal(total.created, 1);
 });
 
+test('foods wait out the admin rate limit instead of losing a batch', async () => {
+  const answers = [
+    new Response('{}', { status: 429, headers: { 'retry-after': '7' } }),
+    new Response(JSON.stringify({ created: 2, updated: 0, rejected: [], warnings: [] })),
+  ];
+  const waits = [];
+  const lines = [];
+  const total = await sendFoods([{ a: 1 }, { a: 2 }], {
+    base: 'https://api.example.org',
+    key: 'k',
+    fetcher: async () => answers.shift(),
+    log: (l) => lines.push(l),
+    wait: async (ms) => waits.push(ms),
+  });
+  assert.deepEqual(waits, [7000]);
+  assert.equal(total.created, 2);
+  assert.equal(total.failedCalls, 0);
+  assert.match(lines[0], /wait {2}7 s \(HTTP 429\)/);
+});
+
 test('import-foods can convert a file with no server, and refuses to run without arguments', () => {
   const dir = fileURLToPath(new URL('../tmp-foods-test/', import.meta.url));
   mkdirSync(dir, { recursive: true });
