@@ -3,7 +3,7 @@
 #     credits Open Food Facts, and this part of the catalogue must be shared under the ODbL if anyone asks for it.
 #   - USDA FoodData Central: generic foods such as "Apples, raw, with skin" (Foundation and SR Legacy). Public domain.
 # The files are kept as the run's artifact "food-catalogue". Run it by hand with "import" ticked to load them into
-# stage too (needs the stage environment's API_HOST variable and ADMIN_API_KEY secret, and no admin IP allowlist that
+# stage too (needs the stage environment's ADMIN_API_KEY secret, and no admin IP allowlist that
 # shuts out GitHub's runners). Re-running is safe: foods are updated in place by source and id.
 name: Food catalogue
 
@@ -106,7 +106,7 @@ jobs:
     timeout-minutes: 60
     environment: stage
     env:
-      API_BASE: https://${{ vars.API_HOST }}
+      API_BASE: https://pango-api-stage.lightarch.io
       ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
     steps:
       - uses: actions/checkout@v4

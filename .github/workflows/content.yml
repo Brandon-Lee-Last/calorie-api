@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 15
     environment: stage
     env:
-      API_BASE: https://${{ vars.API_HOST }}
+      API_BASE: https://pango-api-stage.lightarch.io
       ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
     steps:
       - uses: actions/checkout@v4

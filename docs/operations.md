@@ -2,29 +2,40 @@
 
 ## One-time setup
 
-### Quick start: stage in the browser, no domain needed
+### Addresses
+
+The API lives under the `lightarch.io` zone on Cloudflare, one prefix per app, so other apps can sit beside it:
+
+| Environment | Address                                | Set in                                                  |
+| ----------- | -------------------------------------- | ------------------------------------------------------- |
+| stage       | `https://pango-api-stage.lightarch.io` | `deploy-stage.yml`, `content.yml`, `food-catalogue.yml` |
+| production  | `https://pango-api.lightarch.io`       | `deploy-production.yml`                                 |
+
+Keep them one level under `lightarch.io` (not `api.pango.lightarch.io`): Cloudflare's free certificate covers
+`*.lightarch.io` only. The deploy makes the DNS record and certificate itself (a Worker custom domain). The Worker's
+`workers.dev` address stays on as well, so app builds made before the domain still reach it.
+
+### Quick start: stage in the browser
 
 Everything below happens in the Cloudflare and GitHub websites; nothing to install.
 
 1. **Cloudflare** (dash.cloudflare.com):
    - Delete any API token that was ever pasted into a chat (My Profile > API Tokens).
-   - Workers & Pages: if asked, pick your free `workers.dev` subdomain. Your stage address will be
-     `calorie-api-stage.<subdomain>.workers.dev`.
    - R2: turn it on (it asks for a card; the free allowance is plenty for testing).
    - Recommended: the Workers Paid plan (US$5 a month). The free plan caps calls per request, and a big sync can hit it.
    - Create an API token (My Profile > API Tokens > Create Token > Custom): Account > Workers Scripts: Edit, D1: Edit,
-     Workers R2 Storage: Edit, Account Settings: Read. Copy it straight into GitHub (next step), nowhere else.
+     Workers R2 Storage: Edit, Account Settings: Read; Zone (`lightarch.io` only) > Zone: Read, Workers Routes: Edit,
+     DNS: Edit. Copy it straight into GitHub (next step), nowhere else.
 2. **GitHub** (this repo > Settings > Environments > New environment `stage`):
    - Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (Cloudflare dashboard, right-hand side of the account home),
      and `JWT_SECRET`, `MEDIA_SIGNING_SECRET`, `ADMIN_API_KEY`: three different long random strings, for example from
      `python -c "import secrets; print(secrets.token_urlsafe(48))"`, run once for each.
-   - Variables: `API_HOST` = `calorie-api-stage.<subdomain>.workers.dev`, and `OFF_USER_AGENT` =
-     `CalorieApp/1.0 (your contact email)`.
+   - Variable: `OFF_USER_AGENT` = `Pango/1.0 (your contact email)`.
 3. **Deploy**: push to `main` (or Actions > Deploy stage > Run workflow). The first deploy creates the D1 database and
    the R2 bucket itself and prints the database id; `D1_DATABASE_ID` only needs setting if you want to pin it.
 4. **Food list**: Actions > Food catalogue > Run workflow, tick "import".
 
-The longer route below (scripts, a custom domain) is the same thing done from a terminal.
+The longer route below is the same thing done from a terminal.
 
 ### 1. Cloudflare
 
@@ -40,7 +51,8 @@ scripts/bootstrap-cloudflare.sh production
 ```
 
 **API token for the pipeline** (Dashboard > My Profile > API Tokens > Create). Give it, for this account:
-Workers Scripts: Edit, D1: Edit, Workers R2 Storage: Edit, Account Settings: Read; and for the zone: Workers Routes: Edit.
+Workers Scripts: Edit, D1: Edit, Workers R2 Storage: Edit, Account Settings: Read; and for the zone: Zone: Read, Workers
+Routes: Edit, DNS: Edit.
 Use a **separate token per environment** if you can, and never paste one into chat or a file. (A token was shared in the chat
 while this was built: rotate it.)
 
@@ -50,23 +62,23 @@ Create the repository, push this code, then create the two environments and fill
 (needs `gh auth login` as a repo admin):
 
 ```bash
-CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... D1_DATABASE_ID=<from step 1> API_HOST=api-stage.example.com \
+CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... D1_DATABASE_ID=<from step 1> \
   scripts/setup-github-environments.sh stage
-# repeat for production with its own values, API_HOST=api.example.com
+# repeat for production with its own values
 ```
 
 That script generates `JWT_SECRET`, `MEDIA_SIGNING_SECRET` and `ADMIN_API_KEY` itself and stores them only in GitHub.
 Afterwards open **Settings > Environments > production** and add **Required reviewers**; without that, pushing a version tag
 deploys to production with no approval.
 
-| GitHub environment value                              | Kind     | What it is                                                                          |
-| ----------------------------------------------------- | -------- | ----------------------------------------------------------------------------------- |
-| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`       | secret   | how the pipeline signs in                                                           |
-| `JWT_SECRET`, `MEDIA_SIGNING_SECRET`, `ADMIN_API_KEY` | secret   | generated; pushed to the Worker as secrets                                          |
-| `GOOGLE_PLAY_*`                                       | secret   | later, for real billing                                                             |
-| `D1_DATABASE_ID`, `API_HOST`                          | variable | substituted into `wrangler.jsonc` at deploy time                                    |
-| `GOOGLE_CLIENT_IDS`                                   | variable | comma separated Google OAuth client ids (empty until Google sign-in is set up)      |
-| `OFF_USER_AGENT`                                      | variable | e.g. `CalorieApp/1.0 (you@example.com)`, which Open Food Facts asks callers to send |
+| GitHub environment value                              | Kind     | What it is                                                                      |
+| ----------------------------------------------------- | -------- | ------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`       | secret   | how the pipeline signs in                                                       |
+| `JWT_SECRET`, `MEDIA_SIGNING_SECRET`, `ADMIN_API_KEY` | secret   | generated; pushed to the Worker as secrets                                      |
+| `GOOGLE_PLAY_*`                                       | secret   | later, for real billing                                                         |
+| `D1_DATABASE_ID`                                      | variable | substituted into `wrangler.jsonc` at deploy time (optional: else found or made) |
+| `GOOGLE_CLIENT_IDS`                                   | variable | comma separated Google OAuth client ids (empty until Google sign-in is set up)  |
+| `OFF_USER_AGENT`                                      | variable | e.g. `Pango/1.0 (you@example.com)`, which Open Food Facts asks callers to send  |
 
 ### 3. First deploy
 
@@ -74,10 +86,10 @@ Push to `main`. `deploy-stage` runs CI, applies migrations, deploys, pushes secr
 `/v1/health/ready`. Then load some content and look around:
 
 ```bash
-API_BASE=https://api-stage.example.com ADMIN_API_KEY=<the stage key> npm run import:content -- content/sample --publish
+API_BASE=https://pango-api-stage.lightarch.io ADMIN_API_KEY=<the stage key> npm run import:content -- content/sample --publish
 ```
 
-Open `https://api-stage.example.com/v1/openapi.json`. Things to check on stage, because they have only been tested against fakes:
+Open `https://pango-api-stage.lightarch.io/v1/openapi.json`. Things to check on stage, because they have only been tested against fakes:
 
 1. `POST /v1/ai/parse-meal` returns sensible items (Workers AI and the model id in `AI_TEXT_MODEL`).
 2. `GET /v1/foods/barcode/<a real barcode>` returns a product (Open Food Facts).
@@ -199,7 +211,7 @@ Secrets (GitHub environment **secrets**): `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_AC
 (required), and when needed `JWT_SECRET_PREVIOUS`, `RESEND_API_KEY`, `FCM_SERVICE_ACCOUNT_JSON`, `STREAM_SIGNING_KEY_PEM`,
 `ALERT_WEBHOOK_URL`, `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `GOOGLE_PLAY_PACKAGE_NAME`, `GOOGLE_PLAY_RTDN_AUDIENCE`.
 
-Variables (GitHub environment **variables**): `D1_DATABASE_ID`, `API_HOST` (required); `GOOGLE_CLIENT_IDS`, `BILLING_PROVIDER` (`mock` or
+Variables (GitHub environment **variables**): `D1_DATABASE_ID` (the first deploy finds or makes the database when unset); `GOOGLE_CLIENT_IDS`, `BILLING_PROVIDER` (`mock` or
 `google_play`), `REQUIRE_INTEGRITY`, `AI_DAILY_BUDGET`, `EMAIL_FROM`, `FCM_PROJECT_ID`, `STREAM_CUSTOMER_CODE`, `STREAM_SIGNING_KEY_ID`,
 `MIN_APP_VERSION`, `LATEST_APP_VERSION`, `STORE_URL`, `PRIVACY_URL`, `TERMS_URL`, `SUPPORT_EMAIL`, `ADMIN_ALLOWED_IPS`,
 `CF_ACCESS_TEAM_DOMAIN`, `CF_ACCESS_AUD`, `GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT`, `MAINTENANCE_MODE`, `MAINTENANCE_MESSAGE`, `OFF_USER_AGENT`.

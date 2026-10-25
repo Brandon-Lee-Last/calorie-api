@@ -528,7 +528,7 @@ export class Container {
       () =>
         this.overrides.foodLookup ??
         new OpenFoodFactsClient(
-          this.config.OFF_USER_AGENT ?? 'CalorieApp/0.1 (https://github.com/Brandon-Lee-Last)',
+          this.config.OFF_USER_AGENT ?? 'Pango/0.1 (https://github.com/Brandon-Lee-Last)',
         ),
     );
   }

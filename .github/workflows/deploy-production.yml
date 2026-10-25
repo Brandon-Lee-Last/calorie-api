@@ -32,7 +32,8 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       D1_DATABASE_ID: ${{ vars.D1_DATABASE_ID }}
-      API_HOST: ${{ vars.API_HOST }}
+      # One level under lightarch.io, so Cloudflare's free *.lightarch.io certificate covers it; each app has its own prefix.
+      API_HOST: pango-api.lightarch.io
       GOOGLE_CLIENT_IDS: ${{ vars.GOOGLE_CLIENT_IDS }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       MEDIA_SIGNING_SECRET: ${{ secrets.MEDIA_SIGNING_SECRET }}

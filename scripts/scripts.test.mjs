@@ -47,6 +47,8 @@ test('render-wrangler fills the placeholders for an environment', () => {
   const text = readFileSync(out, 'utf8');
   assert.ok(text.includes('"database_id": "abc-123"'));
   assert.ok(text.includes('"pattern": "api-stage.example.com"'));
+  // The workers.dev address stays on beside the domain, for app builds made before it.
+  assert.ok(text.includes('"workers_dev": true'));
   assert.ok(text.includes('one.apps,two.apps'));
   assert.ok(!/__[A-Z0-9_]+__/.test(text), 'no placeholder left');
   rmSync(out, { force: true });

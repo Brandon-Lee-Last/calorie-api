@@ -82,7 +82,7 @@ export class OpenFoodFactsClient implements FoodLookup {
     private timeoutMs = 4000,
   ) {
     // A setting pasted with a line break would make every request throw; header values must be one line.
-    this.userAgent = userAgent.replace(/[\r\n\t]+/g, ' ').trim() || 'CalorieApp';
+    this.userAgent = userAgent.replace(/[\r\n\t]+/g, ' ').trim() || 'Pango';
   }
 
   async findByBarcode(barcode: string): Promise<ExternalFood | null> {
