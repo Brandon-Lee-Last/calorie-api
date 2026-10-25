@@ -73,11 +73,16 @@ const FIELDS = 'product_name,product_name_en,generic_name,brands,serving_size,se
 
 /** Open Food Facts v2 API. Its terms ask for a descriptive User-Agent; the data is ODbL, so the app should credit it. */
 export class OpenFoodFactsClient implements FoodLookup {
+  private userAgent: string;
+
   constructor(
-    private userAgent: string,
+    userAgent: string,
     private fetcher: typeof fetch = fetch,
     private timeoutMs = 4000,
-  ) {}
+  ) {
+    // A setting pasted with a line break would make every request throw; header values must be one line.
+    this.userAgent = userAgent.replace(/[\r\n\t]+/g, ' ').trim() || 'CalorieApp';
+  }
 
   async findByBarcode(barcode: string): Promise<ExternalFood | null> {
     const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${FIELDS}`;
@@ -88,7 +93,7 @@ export class OpenFoodFactsClient implements FoodLookup {
         signal: AbortSignal.timeout(this.timeoutMs),
       });
     } catch (e) {
-      const why = e instanceof Error ? e.name : 'error';
+      const why = e instanceof Error ? `${e.name}: ${e.message}`.slice(0, 160) : 'error';
       console.warn(`Open Food Facts could not be reached: ${why}`);
       throw upstreamFailed('Open Food Facts', `Open Food Facts could not be reached (${why})`);
     }

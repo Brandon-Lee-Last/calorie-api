@@ -124,6 +124,18 @@ describe('OpenFoodFactsClient', () => {
   });
 });
 
+describe('OpenFoodFactsClient user agent', () => {
+  it('sends the configured name on one line, whatever was pasted', async () => {
+    let sent = '';
+    const f = (async (_url: string, init: RequestInit) => {
+      sent = (init.headers as Record<string, string>)['user-agent']!;
+      return new Response(JSON.stringify({ status: 0 }));
+    }) as unknown as typeof fetch;
+    await new OpenFoodFactsClient('CalorieApp/1.0 (me@example.com)\n', f).findByBarcode('1');
+    expect(sent).toBe('CalorieApp/1.0 (me@example.com)');
+  });
+});
+
 describe('bulk import from the Open Food Facts export (scripts/off-products.mjs)', () => {
   it('reads a product exactly as the barcode lookup does, so either can fill the same catalogue row', () => {
     const cases = [
