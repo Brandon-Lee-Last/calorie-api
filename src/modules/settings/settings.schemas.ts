@@ -44,7 +44,9 @@ export const publicConfigSchema = z
     integrity: z.object({ required: z.boolean() }),
     testPurchases: z
       .boolean()
-      .describe('A test server: `POST /subscription/simulate` works, so the app may offer to try Plus. Never true in production'),
+      .describe(
+        'A test server: `POST /subscription/simulate` works, so the app may offer to try Plus. Never true in production',
+      ),
     urls: z.object({
       store: z.string().nullable(),
       privacy: z.string().nullable(),
