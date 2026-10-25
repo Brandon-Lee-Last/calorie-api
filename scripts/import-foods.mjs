@@ -85,6 +85,9 @@ function servingOf(food) {
   };
 }
 
+/** A serving over 5 kg is a whole case or carcass, not a portion: leave it out and keep the food. */
+const sensibleServing = (s) => (s.servingG > 5000 ? {} : s);
+
 /** USDA foods -> import payloads, plus why each skipped food was skipped. Pure. */
 export function convertUsda(json) {
   const list = Array.isArray(json)
@@ -120,6 +123,11 @@ export function convertUsda(json) {
       skipped.push({ id, reason: `no ${missing.join(', ')} figure` });
       continue;
     }
+    // The catalogue's limits: nothing is above pure fat's ~900 kcal per 100 g, so a higher figure is a data error.
+    if (got.calories100g > 900) {
+      skipped.push({ id, reason: 'more than 900 kcal per 100 g' });
+      continue;
+    }
     const gtin = typeof f.gtinUpc === 'string' && /^\d{8,14}$/.test(f.gtinUpc) ? f.gtinUpc : undefined;
     foods.push({
       source: 'usda',
@@ -127,7 +135,7 @@ export function convertUsda(json) {
       name: niceName(f.description).slice(0, 200),
       ...(f.brandOwner || f.brandName ? { brand: String(f.brandName || f.brandOwner).slice(0, 100) } : {}),
       ...(gtin ? { barcode: gtin } : {}),
-      ...servingOf(f),
+      ...sensibleServing(servingOf(f)),
       ...Object.fromEntries(
         Object.entries(got)
           .filter(([, v]) => v !== null)

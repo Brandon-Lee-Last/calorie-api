@@ -240,6 +240,29 @@ test('USDA conversion maps nutrient numbers to our fields and keeps a serving', 
   ]);
 });
 
+test('USDA conversion keeps to the catalogue limits', () => {
+  const kcal = (n) =>
+    usdaRice.foodNutrients.map((x) =>
+      String(x.nutrient?.number ?? x.nutrientNumber) === '208' ? { ...x, amount: n } : x,
+    );
+  const out = convertUsda({
+    SRLegacyFoods: [
+      { ...usdaRice, fdcId: 1, foodNutrients: kcal(902) },
+      {
+        ...usdaRice,
+        fdcId: 2,
+        foodPortions: [{ gramWeight: 11340, amount: 1, portionDescription: '1 case' }],
+      },
+    ],
+  });
+  assert.deepEqual(
+    out.skipped.map((s) => s.reason),
+    ['more than 900 kcal per 100 g'],
+  );
+  assert.equal(out.foods.length, 1);
+  assert.equal(out.foods[0].servingG, undefined);
+});
+
 test('USDA conversion skips empty entries in a download instead of stopping', () => {
   const out = convertUsda({ FoundationFoods: [null, usdaRice, 'x'] });
   assert.equal(out.foods.length, 1);
