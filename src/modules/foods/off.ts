@@ -87,11 +87,17 @@ export class OpenFoodFactsClient implements FoodLookup {
         headers: { 'user-agent': this.userAgent, accept: 'application/json' },
         signal: AbortSignal.timeout(this.timeoutMs),
       });
-    } catch {
-      throw upstreamFailed('Open Food Facts');
+    } catch (e) {
+      const why = e instanceof Error ? e.name : 'error';
+      console.warn(`Open Food Facts could not be reached: ${why}`);
+      throw upstreamFailed('Open Food Facts', `Open Food Facts could not be reached (${why})`);
     }
     if (res.status === 404) return null;
-    if (!res.ok) throw upstreamFailed('Open Food Facts');
+    if (!res.ok) {
+      // Say what they answered: a 403 or 429 means they are refusing this server, not that they are down.
+      console.warn(`Open Food Facts answered HTTP ${res.status}`);
+      throw upstreamFailed('Open Food Facts', `Open Food Facts answered HTTP ${res.status}`);
+    }
     let data: { status?: number; product?: Record<string, unknown> };
     try {
       data = (await res.json()) as typeof data;

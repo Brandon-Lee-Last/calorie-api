@@ -118,6 +118,9 @@ describe('OpenFoodFactsClient', () => {
         code: 'upstream_failed',
       });
     }
+    await expect(new OpenFoodFactsClient('ua', respond(403, {})).findByBarcode('1')).rejects.toMatchObject({
+      message: 'Open Food Facts answered HTTP 403',
+    });
   });
 });
 
