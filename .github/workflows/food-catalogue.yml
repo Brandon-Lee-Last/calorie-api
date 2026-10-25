@@ -64,7 +64,9 @@ jobs:
             echo "USDA $kind: $url"
             curl -fsSL "$url" -o "$kind.zip"
             unzip -o -q "$kind.zip" -d "usda-$kind"
-            json=$(find "usda-$kind" -name '*.json' | head -1)
+            unzip -l "$kind.zip"
+            json=$(find "usda-$kind" -name '*.json' -printf '%s %p\n' | sort -n | tail -1 | cut -d' ' -f2-)
+            node -e "const j = JSON.parse(require('fs').readFileSync(process.argv[1])); const ks = Array.isArray(j) ? ['(array)'] : Object.keys(j); console.log('top level:', ks.join(', ')); for (const k of ks) { const v = k === '(array)' ? j : j[k]; if (Array.isArray(v)) console.log(k, v.length, 'items; first has', Object.keys(v.find(Boolean) ?? {}).slice(0, 12).join(', '), '; empty:', v.filter((x) => !x).length); }" "$json"
             node scripts/import-foods.mjs "$json" --format usda --convert-only --out "catalogue/usda-$kind.json"
           done
           node -e "

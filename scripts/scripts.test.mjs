@@ -226,6 +226,15 @@ test('USDA conversion maps nutrient numbers to our fields and keeps a serving', 
   ]);
 });
 
+test('USDA conversion skips empty entries in a download instead of stopping', () => {
+  const out = convertUsda({ FoundationFoods: [null, usdaRice, 'x'] });
+  assert.equal(out.foods.length, 1);
+  assert.deepEqual(
+    out.skipped.map((s) => s.reason),
+    ['not a food record', 'not a food record'],
+  );
+});
+
 test('USDA conversion never estimates: a food missing energy or a macro is skipped, with the reason', () => {
   const noEnergy = {
     ...usdaRice,

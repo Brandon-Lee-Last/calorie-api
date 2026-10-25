@@ -98,6 +98,10 @@ export function convertUsda(json) {
   const foods = [];
   const skipped = [];
   for (const f of list) {
+    if (!f || typeof f !== 'object') {
+      skipped.push({ id: '?', reason: 'not a food record' });
+      continue;
+    }
     const id = `fdc:${f.fdcId}`;
     if (!f.fdcId || !f.description) {
       skipped.push({ id, reason: 'no id or description' });
