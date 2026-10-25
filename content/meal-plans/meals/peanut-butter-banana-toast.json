@@ -1,0 +1,27 @@
+{
+  "slug": "peanut-butter-banana-toast",
+  "title": "Peanut butter and banana toast",
+  "summary": "Cheap, quick and plant-based.",
+  "slots": ["breakfast"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian"],
+  "minutes": 4,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "brown-bread",
+      "grams": 70,
+      "measure": "2 slices"
+    },
+    {
+      "id": "peanut-butter",
+      "grams": 20,
+      "measure": "1 heaped tbsp"
+    },
+    {
+      "id": "banana",
+      "grams": 100,
+      "measure": "1 medium"
+    }
+  ],
+  "steps": ["Toast the bread, spread the peanut butter and top with sliced banana."]
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "veggie-omelette",
+  "title": "Veggie omelette with cheese",
+  "summary": "Low in carbs, big on protein.",
+  "slots": ["breakfast"],
+  "diets": ["low-carb", "high-protein", "vegetarian"],
+  "minutes": 12,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 150,
+      "measure": "3 eggs"
+    },
+    {
+      "id": "mushrooms",
+      "grams": 50,
+      "measure": "3 mushrooms"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 30,
+      "measure": "¼ pepper"
+    },
+    {
+      "id": "spinach",
+      "grams": 30,
+      "measure": "a handful"
+    },
+    {
+      "id": "cheddar",
+      "grams": 20,
+      "measure": "a small matchbox"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Soften the sliced mushrooms and pepper in the oil, add the spinach.",
+    "Pour over the beaten eggs, cook until nearly set, add grated cheese, fold and serve."
+  ]
+}

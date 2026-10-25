@@ -1,0 +1,27 @@
+{
+  "slug": "cheese-cucumber-tomato",
+  "title": "Cheese with cucumber and tomato",
+  "summary": "A low-carb nibble.",
+  "slots": ["snack"],
+  "diets": ["low-carb", "vegetarian"],
+  "minutes": 3,
+  "tags": ["no-cook", "quick"],
+  "ingredients": [
+    {
+      "id": "cheddar",
+      "grams": 25,
+      "measure": "a matchbox"
+    },
+    {
+      "id": "cucumber",
+      "grams": 100,
+      "measure": "a third of a cucumber"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    }
+  ],
+  "steps": ["Slice and eat together."]
+}

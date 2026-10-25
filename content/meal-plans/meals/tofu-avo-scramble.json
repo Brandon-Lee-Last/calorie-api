@@ -1,0 +1,40 @@
+{
+  "slug": "tofu-avo-scramble",
+  "title": "Tofu scramble with avo, no toast",
+  "summary": "Plant-based and low carb.",
+  "slots": ["breakfast"],
+  "diets": ["plant-based", "vegetarian", "low-carb", "high-protein"],
+  "minutes": 12,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "tofu",
+      "grams": 150,
+      "measure": "½ block"
+    },
+    {
+      "id": "avocado",
+      "grams": 60,
+      "measure": "⅓ avo"
+    },
+    {
+      "id": "spinach",
+      "grams": 40,
+      "measure": "a handful"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Crumble the tofu into the hot oil with a pinch of turmeric and salt, add spinach and tomato.",
+    "Serve with sliced avo."
+  ]
+}

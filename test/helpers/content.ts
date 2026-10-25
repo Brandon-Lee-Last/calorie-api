@@ -10,6 +10,8 @@ export async function resetContent() {
     env.DB.prepare('DELETE FROM programs'),
     env.DB.prepare('DELETE FROM exercises'),
     env.DB.prepare('DELETE FROM media'),
+    env.DB.prepare('DELETE FROM meals'),
+    env.DB.prepare('DELETE FROM diets'),
   ]);
 }
 

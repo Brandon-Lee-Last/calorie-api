@@ -1,0 +1,17 @@
+{
+  "slug": "banana",
+  "title": "A banana",
+  "summary": "Nature's grab-and-go snack.",
+  "slots": ["snack"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian"],
+  "minutes": 0,
+  "tags": ["no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "banana",
+      "grams": 120,
+      "measure": "1 large"
+    }
+  ],
+  "steps": ["Peel and eat."]
+}

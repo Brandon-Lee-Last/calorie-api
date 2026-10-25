@@ -1,0 +1,46 @@
+{
+  "slug": "lentil-curry-rice",
+  "title": "Lentil and spinach curry with rice",
+  "summary": "Cheap, warming and plant-based.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian"],
+  "minutes": 30,
+  "tags": ["batch-cook"],
+  "ingredients": [
+    {
+      "id": "lentils",
+      "grams": 150,
+      "measure": "⅔ cup cooked"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 100,
+      "measure": "¼ tin"
+    },
+    {
+      "id": "onion",
+      "grams": 50,
+      "measure": "½ onion"
+    },
+    {
+      "id": "spinach-cooked",
+      "grams": 60,
+      "measure": "½ cup"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    },
+    {
+      "id": "white-rice",
+      "grams": 150,
+      "measure": "1 cup cooked"
+    }
+  ],
+  "steps": [
+    "Fry the onion in the oil with curry powder, garlic and ginger.",
+    "Add the tomatoes and lentils and simmer 15 minutes, stir in the spinach.",
+    "Serve with rice."
+  ]
+}

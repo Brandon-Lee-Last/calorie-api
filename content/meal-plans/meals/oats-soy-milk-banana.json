@@ -1,0 +1,35 @@
+{
+  "slug": "oats-soy-milk-banana",
+  "title": "Soya milk oats with banana and peanut butter",
+  "summary": "The plant-based way to start the day.",
+  "slots": ["breakfast"],
+  "diets": ["plant-based", "vegetarian", "balanced"],
+  "minutes": 8,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "oats",
+      "grams": 50,
+      "measure": "½ cup"
+    },
+    {
+      "id": "soy-milk",
+      "grams": 200,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "banana",
+      "grams": 100,
+      "measure": "1 medium"
+    },
+    {
+      "id": "peanut-butter",
+      "grams": 15,
+      "measure": "1 tbsp"
+    }
+  ],
+  "steps": [
+    "Cook the oats in the soya milk for 3 to 4 minutes, stirring.",
+    "Top with the sliced banana and the peanut butter."
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "slug": "egg-avo-feta-salad",
+  "title": "Egg, avo and feta salad",
+  "summary": "Low carb and vegetarian.",
+  "slots": ["lunch"],
+  "diets": ["low-carb", "vegetarian", "mediterranean"],
+  "minutes": 12,
+  "tags": ["packable"],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 100,
+      "measure": "2 eggs"
+    },
+    {
+      "id": "avocado",
+      "grams": 60,
+      "measure": "⅓ avo"
+    },
+    {
+      "id": "lettuce",
+      "grams": 50,
+      "measure": "2 handfuls"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "cucumber",
+      "grams": 50,
+      "measure": "5 slices"
+    },
+    {
+      "id": "feta",
+      "grams": 20,
+      "measure": "⅓ round"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Boil the eggs for 8 minutes, cool and halve.",
+    "Toss the salad with olive oil and lemon, top with egg, avo and feta."
+  ]
+}

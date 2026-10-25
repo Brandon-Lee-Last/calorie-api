@@ -1,0 +1,40 @@
+{
+  "slug": "egg-scramble-spinach-toast",
+  "title": "Three-egg scramble with spinach on toast",
+  "summary": "High in protein, low in cost.",
+  "slots": ["breakfast"],
+  "diets": ["balanced", "budget", "vegetarian", "high-protein"],
+  "minutes": 10,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 150,
+      "measure": "3 eggs"
+    },
+    {
+      "id": "brown-bread",
+      "grams": 35,
+      "measure": "1 slice"
+    },
+    {
+      "id": "spinach-cooked",
+      "grams": 60,
+      "measure": "½ cup"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Wilt the spinach in the oil, then add the beaten eggs and stir gently until just set.",
+    "Serve on toast with sliced tomato."
+  ]
+}

@@ -1,16 +1,21 @@
-# Publishes the workout content (exercises and programs) to stage: by hand, or whenever it changes on main.
-# Re-running is safe: content is matched by slug and updated in place.
+# Publishes content to stage: the workout library (exercises and programs) and the meal plans (diets and meals).
+# Runs by hand, or whenever content changes on main. Re-running is safe: content is matched by slug and updated in place.
+# The meal plans' ingredient figures are checked against USDA FoodData Central first; nothing is published if one is off.
 name: Publish content
 
 on:
   workflow_dispatch:
     inputs:
       folder:
-        description: Content folder to publish
+        description: Workout content folder to publish
         default: content/sample
   push:
     branches: [main]
-    paths: ['content/**']
+    paths:
+      - 'content/**'
+      - scripts/import-content.mjs
+      - scripts/check-ingredients.mjs
+      - .github/workflows/content.yml
 
 permissions:
   contents: read
@@ -20,9 +25,24 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish:
+  ingredients:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NODE_OPTIONS: --max-old-space-size=6144 # USDA's files are a few hundred MB of JSON
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: scripts/download-usda.sh usda
+      - name: Ingredient figures match USDA
+        run: node scripts/check-ingredients.mjs content/meal-plans/ingredients.json usda/foundation_food.json usda/sr_legacy_food.json
+
+  publish:
+    needs: ingredients
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment: stage
     env:
       API_BASE: https://pango-api-stage.lightarch.io
@@ -32,4 +52,14 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Wait for a server that knows meal plans
+        # The same push also deploys stage; a change that needs new tables must wait for that deploy to finish.
+        run: |
+          for i in $(seq 1 40); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -H "x-admin-key: $ADMIN_API_KEY" "$API_BASE/v1/admin/meal-plans" || true)
+            [ "$code" = 200 ] && exit 0
+            echo "HTTP $code, waiting ($i/40)"; sleep 15
+          done
+          echo "::error::Stage never answered /v1/admin/meal-plans"; exit 1
       - run: node scripts/import-content.mjs "${{ inputs.folder || 'content/sample' }}" --publish
+      - run: node scripts/import-content.mjs content/meal-plans --prune

@@ -1,0 +1,45 @@
+{
+  "slug": "mince-cauli-rice",
+  "title": "Beef mince with cauliflower rice",
+  "summary": "All the comfort, fewer carbs.",
+  "slots": ["dinner"],
+  "diets": ["low-carb", "high-protein"],
+  "minutes": 25,
+  "tags": ["batch-cook"],
+  "ingredients": [
+    {
+      "id": "beef-mince",
+      "grams": 120,
+      "measure": "a generous portion"
+    },
+    {
+      "id": "cauliflower",
+      "grams": 150,
+      "measure": "1½ cups grated"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 100,
+      "measure": "¼ tin"
+    },
+    {
+      "id": "onion",
+      "grams": 40,
+      "measure": "⅓ onion"
+    },
+    {
+      "id": "spinach",
+      "grams": 50,
+      "measure": "a big handful"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Brown the mince with the onion in the oil, add the tomatoes and simmer 10 minutes, stir in the spinach.",
+    "Grate the cauliflower and microwave or pan-fry it 4 minutes. Serve the mince on top."
+  ]
+}

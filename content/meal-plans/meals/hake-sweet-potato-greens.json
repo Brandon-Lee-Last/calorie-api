@@ -1,0 +1,36 @@
+{
+  "slug": "hake-sweet-potato-greens",
+  "title": "Grilled hake with sweet potato and green beans",
+  "summary": "Light, lean and full of flavour.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "high-protein", "mediterranean"],
+  "minutes": 30,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "hake",
+      "grams": 150,
+      "measure": "1 fillet"
+    },
+    {
+      "id": "sweet-potato",
+      "grams": 150,
+      "measure": "1 medium"
+    },
+    {
+      "id": "green-beans",
+      "grams": 100,
+      "measure": "1 cup"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    }
+  ],
+  "steps": [
+    "Bake the sweet potato at 200 °C for 35 to 40 minutes (or microwave 6 to 8 minutes).",
+    "Brush the hake with olive oil, lemon and garlic and grill 4 minutes a side.",
+    "Steam the beans and serve together."
+  ]
+}

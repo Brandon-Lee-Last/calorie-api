@@ -1,0 +1,40 @@
+{
+  "slug": "baked-potato-cottage-beans",
+  "title": "Baked potato with cottage cheese, beans and salad",
+  "summary": "Simple, filling and vegetarian.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "budget", "vegetarian"],
+  "minutes": 15,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "potato",
+      "grams": 250,
+      "measure": "1 large"
+    },
+    {
+      "id": "cottage-cheese",
+      "grams": 150,
+      "measure": "⅔ cup"
+    },
+    {
+      "id": "baked-beans",
+      "grams": 100,
+      "measure": "½ cup"
+    },
+    {
+      "id": "lettuce",
+      "grams": 40,
+      "measure": "a handful"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    }
+  ],
+  "steps": [
+    "Microwave the potato 8 to 10 minutes (or bake an hour at 200 °C).",
+    "Split it, fill with warm beans and cottage cheese, and serve with salad."
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "chickpea-butternut-tagine",
+  "title": "Chickpea and butternut stew with couscous",
+  "summary": "A Moroccan-style one-pot.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "plant-based", "vegetarian", "mediterranean"],
+  "minutes": 35,
+  "tags": ["batch-cook"],
+  "ingredients": [
+    {
+      "id": "chickpeas",
+      "grams": 120,
+      "measure": "½ cup"
+    },
+    {
+      "id": "butternut",
+      "grams": 120,
+      "measure": "1 cup cubed"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 100,
+      "measure": "¼ tin"
+    },
+    {
+      "id": "onion",
+      "grams": 40,
+      "measure": "⅓ onion"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    },
+    {
+      "id": "couscous",
+      "grams": 120,
+      "measure": "¾ cup cooked"
+    }
+  ],
+  "steps": [
+    "Fry the onion in the oil with cumin, cinnamon and paprika.",
+    "Add the butternut, tomatoes, chickpeas and a little water and simmer 20 minutes until soft.",
+    "Serve on the couscous."
+  ]
+}

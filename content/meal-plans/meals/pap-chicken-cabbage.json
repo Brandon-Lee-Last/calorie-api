@@ -1,0 +1,41 @@
+{
+  "slug": "pap-chicken-cabbage",
+  "title": "Pap, chicken and cabbage",
+  "summary": "Sunday-style dinner any night.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "budget", "high-protein"],
+  "minutes": 35,
+  "tags": ["sa-classic"],
+  "ingredients": [
+    {
+      "id": "maize-meal",
+      "grams": 75,
+      "measure": "½ cup dry"
+    },
+    {
+      "id": "chicken-drumstick",
+      "grams": 120,
+      "measure": "2 drumsticks, meat only"
+    },
+    {
+      "id": "cabbage-cooked",
+      "grams": 100,
+      "measure": "1 cup"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Cook stiff pap: stir the maize meal into about 1 cup of boiling salted water, cover and steam on low for 20 minutes, stirring now and then.",
+    "Season and roast or grill the drumsticks (skin off).",
+    "Braise the shredded cabbage and tomato in the oil until soft."
+  ]
+}

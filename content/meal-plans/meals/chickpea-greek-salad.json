@@ -1,0 +1,50 @@
+{
+  "slug": "chickpea-greek-salad",
+  "title": "Chickpea Greek salad with pita",
+  "summary": "Fresh, filling and no cooking.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "vegetarian", "mediterranean"],
+  "minutes": 10,
+  "tags": ["no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "chickpeas",
+      "grams": 120,
+      "measure": "½ cup"
+    },
+    {
+      "id": "cucumber",
+      "grams": 80,
+      "measure": "¼ cucumber"
+    },
+    {
+      "id": "tomato",
+      "grams": 80,
+      "measure": "1 small"
+    },
+    {
+      "id": "feta",
+      "grams": 30,
+      "measure": "½ round"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 10,
+      "measure": "2 tsp"
+    },
+    {
+      "id": "onion",
+      "grams": 20,
+      "measure": "a few rings"
+    },
+    {
+      "id": "pita",
+      "grams": 40,
+      "measure": "½ pita"
+    }
+  ],
+  "steps": [
+    "Chop the vegetables and toss with the chickpeas, olive oil, lemon and oregano.",
+    "Crumble over the feta and serve with pita."
+  ]
+}

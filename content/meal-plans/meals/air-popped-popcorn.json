@@ -1,0 +1,19 @@
+{
+  "slug": "air-popped-popcorn",
+  "title": "Air-popped popcorn",
+  "summary": "A big bowl for few calories.",
+  "slots": ["snack"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian"],
+  "minutes": 5,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "popcorn",
+      "grams": 25,
+      "measure": "4 cups popped"
+    }
+  ],
+  "steps": [
+    "Pop the kernels in a covered pot with no oil (or in the microwave in a paper bag). Season with salt or paprika."
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "biltong",
+  "title": "Lean biltong",
+  "summary": "The original South African protein snack.",
+  "slots": ["snack"],
+  "diets": ["balanced", "high-protein", "low-carb"],
+  "minutes": 0,
+  "tags": ["no-cook", "packable", "sa-classic"],
+  "ingredients": [
+    {
+      "id": "biltong",
+      "grams": 50,
+      "measure": "a handful"
+    }
+  ],
+  "steps": ["Choose lean biltong; fatty pieces have about twice the calories."]
+}

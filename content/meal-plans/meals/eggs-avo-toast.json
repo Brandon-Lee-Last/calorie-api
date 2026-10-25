@@ -1,0 +1,35 @@
+{
+  "slug": "eggs-avo-toast",
+  "title": "Two eggs on toast with avo and tomato",
+  "summary": "Ready in 10 minutes.",
+  "slots": ["breakfast"],
+  "diets": ["balanced", "vegetarian", "mediterranean"],
+  "minutes": 10,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 100,
+      "measure": "2 eggs"
+    },
+    {
+      "id": "brown-bread",
+      "grams": 70,
+      "measure": "2 slices"
+    },
+    {
+      "id": "avocado",
+      "grams": 50,
+      "measure": "¼ avo"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    }
+  ],
+  "steps": [
+    "Poach, boil or dry-fry the eggs.",
+    "Toast the bread, spread the avo, add the eggs and sliced tomato. Black pepper on top."
+  ]
+}

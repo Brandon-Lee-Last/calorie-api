@@ -1,0 +1,27 @@
+{
+  "slug": "yoghurt-almonds-berries",
+  "title": "Greek yoghurt with almonds and berries",
+  "summary": "Low carb, no cooking.",
+  "slots": ["breakfast", "snack"],
+  "diets": ["low-carb", "high-protein", "vegetarian", "mediterranean"],
+  "minutes": 2,
+  "tags": ["no-cook", "quick"],
+  "ingredients": [
+    {
+      "id": "greek-yoghurt",
+      "grams": 200,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "almonds",
+      "grams": 20,
+      "measure": "15 almonds"
+    },
+    {
+      "id": "strawberries",
+      "grams": 60,
+      "measure": "4 or 5"
+    }
+  ],
+  "steps": ["Top the yoghurt with chopped almonds and berries."]
+}

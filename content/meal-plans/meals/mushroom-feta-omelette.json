@@ -1,0 +1,40 @@
+{
+  "slug": "mushroom-feta-omelette",
+  "title": "Mushroom and feta omelette",
+  "summary": "Low carb with a Mediterranean twist.",
+  "slots": ["breakfast"],
+  "diets": ["low-carb", "high-protein", "vegetarian", "mediterranean"],
+  "minutes": 12,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 150,
+      "measure": "3 eggs"
+    },
+    {
+      "id": "mushrooms",
+      "grams": 60,
+      "measure": "4 mushrooms"
+    },
+    {
+      "id": "feta",
+      "grams": 25,
+      "measure": "½ round"
+    },
+    {
+      "id": "spinach",
+      "grams": 30,
+      "measure": "a handful"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Fry the sliced mushrooms in the oil, add the spinach.",
+    "Pour in the beaten eggs, crumble over the feta, cook until set and fold."
+  ]
+}

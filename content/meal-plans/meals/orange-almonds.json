@@ -1,0 +1,22 @@
+{
+  "slug": "orange-almonds",
+  "title": "An orange and a few almonds",
+  "summary": "Vitamin C and healthy fats.",
+  "slots": ["snack"],
+  "diets": ["balanced", "plant-based", "vegetarian", "mediterranean"],
+  "minutes": 2,
+  "tags": ["no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "orange",
+      "grams": 150,
+      "measure": "1 medium"
+    },
+    {
+      "id": "almonds",
+      "grams": 10,
+      "measure": "8 almonds"
+    }
+  ],
+  "steps": ["Peel the orange and enjoy with the almonds."]
+}

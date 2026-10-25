@@ -1,0 +1,22 @@
+{
+  "slug": "vegetarian",
+  "title": "Vegetarian",
+  "tier": "pro",
+  "position": 6,
+  "goals": ["lose", "maintain", "gain"],
+  "summary": "No meat or fish. Eggs, dairy, beans, lentils and plenty of veg.",
+  "description": "All the protein you need without meat or fish: eggs, yoghurt, cheese, beans, lentils, chickpeas and tofu. Pair beans or lentils with a vitamin C food (tomato, pepper, orange) to help your body take up their iron.",
+  "highlights": ["No meat or fish", "Eggs and dairy for protein", "Beans and lentils most days"],
+  "split": {
+    "breakfast": 0.25,
+    "lunch": 0.3,
+    "dinner": 0.3,
+    "snack": 0.15
+  },
+  "macros": {
+    "proteinPct": 18,
+    "carbPct": 52,
+    "fatPct": 30
+  },
+  "caution": null
+}

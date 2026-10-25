@@ -1,0 +1,46 @@
+{
+  "slug": "steak-mushrooms-greens",
+  "title": "Steak with mushrooms, green beans and salad",
+  "summary": "Low carb, high protein.",
+  "slots": ["dinner"],
+  "diets": ["low-carb", "high-protein"],
+  "minutes": 20,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "beef-steak",
+      "grams": 150,
+      "measure": "1 steak"
+    },
+    {
+      "id": "mushrooms",
+      "grams": 80,
+      "measure": "5 mushrooms"
+    },
+    {
+      "id": "green-beans",
+      "grams": 100,
+      "measure": "1 cup"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    },
+    {
+      "id": "lettuce",
+      "grams": 40,
+      "measure": "a handful"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    }
+  ],
+  "steps": [
+    "Grill or pan-fry the steak to your liking and rest it 5 minutes.",
+    "Fry the mushrooms in the oil with garlic. Steam the beans.",
+    "Serve with a simple salad."
+  ]
+}

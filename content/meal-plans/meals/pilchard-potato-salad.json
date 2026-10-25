@@ -1,0 +1,40 @@
+{
+  "slug": "pilchard-potato-salad",
+  "title": "Pilchard and potato salad",
+  "summary": "Budget-friendly and full of omega-3.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "budget", "high-protein", "mediterranean"],
+  "minutes": 20,
+  "tags": ["packable"],
+  "ingredients": [
+    {
+      "id": "pilchards",
+      "grams": 100,
+      "measure": "½ small tin"
+    },
+    {
+      "id": "potato",
+      "grams": 150,
+      "measure": "1 medium"
+    },
+    {
+      "id": "onion",
+      "grams": 20,
+      "measure": "a few rings"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "lettuce",
+      "grams": 30,
+      "measure": "a handful"
+    }
+  ],
+  "steps": [
+    "Boil the potato in its skin, cool and cube.",
+    "Toss with the pilchards, onion, tomato and lettuce, with lemon and pepper."
+  ]
+}

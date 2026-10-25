@@ -1,0 +1,50 @@
+{
+  "slug": "tofu-avo-salad",
+  "title": "Tofu, avo and almond salad",
+  "summary": "Plant-based, low carb, high protein.",
+  "slots": ["lunch"],
+  "diets": ["plant-based", "vegetarian", "low-carb", "high-protein"],
+  "minutes": 12,
+  "tags": ["packable"],
+  "ingredients": [
+    {
+      "id": "tofu",
+      "grams": 150,
+      "measure": "½ block"
+    },
+    {
+      "id": "avocado",
+      "grams": 60,
+      "measure": "⅓ avo"
+    },
+    {
+      "id": "spinach",
+      "grams": 40,
+      "measure": "a handful"
+    },
+    {
+      "id": "cucumber",
+      "grams": 60,
+      "measure": "6 slices"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    },
+    {
+      "id": "almonds",
+      "grams": 10,
+      "measure": "8 almonds"
+    }
+  ],
+  "steps": [
+    "Pan-fry the cubed tofu until golden, with a splash of soy sauce.",
+    "Toss the salad with olive oil and lemon, top with tofu, avo and chopped almonds."
+  ]
+}

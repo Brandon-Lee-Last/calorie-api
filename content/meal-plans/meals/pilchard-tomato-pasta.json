@@ -1,0 +1,45 @@
+{
+  "slug": "pilchard-tomato-pasta",
+  "title": "Pilchard and tomato pasta",
+  "summary": "Pantry dinner in 15 minutes.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "budget", "high-protein", "mediterranean"],
+  "minutes": 15,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "spaghetti-wholewheat",
+      "grams": 150,
+      "measure": "1 cup cooked"
+    },
+    {
+      "id": "pilchards",
+      "grams": 100,
+      "measure": "½ small tin"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 100,
+      "measure": "¼ tin"
+    },
+    {
+      "id": "onion",
+      "grams": 30,
+      "measure": "¼ onion"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    },
+    {
+      "id": "spinach",
+      "grams": 40,
+      "measure": "a handful"
+    }
+  ],
+  "steps": [
+    "Fry the onion and garlic in the oil, add the tomatoes and pilchards and break them up.",
+    "Simmer 5 minutes, stir in the spinach and toss with the spaghetti."
+  ]
+}

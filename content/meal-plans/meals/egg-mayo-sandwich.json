@@ -1,0 +1,40 @@
+{
+  "slug": "egg-mayo-sandwich",
+  "title": "Egg mayo sandwich",
+  "summary": "Cheap and quick.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "budget", "vegetarian"],
+  "minutes": 12,
+  "tags": ["packable"],
+  "ingredients": [
+    {
+      "id": "brown-bread",
+      "grams": 70,
+      "measure": "2 slices"
+    },
+    {
+      "id": "egg",
+      "grams": 100,
+      "measure": "2 eggs"
+    },
+    {
+      "id": "light-mayo",
+      "grams": 10,
+      "measure": "2 tsp"
+    },
+    {
+      "id": "lettuce",
+      "grams": 20,
+      "measure": "2 leaves"
+    },
+    {
+      "id": "tomato",
+      "grams": 50,
+      "measure": "½ tomato"
+    }
+  ],
+  "steps": [
+    "Boil the eggs for 9 minutes, cool, peel and mash with the mayo and pepper.",
+    "Fill the bread with egg, lettuce and tomato."
+  ]
+}

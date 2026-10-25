@@ -1,0 +1,45 @@
+{
+  "slug": "tofu-scramble-toast",
+  "title": "Tofu scramble on toast",
+  "summary": "A plant-based scrambled egg.",
+  "slots": ["breakfast"],
+  "diets": ["plant-based", "vegetarian", "high-protein"],
+  "minutes": 12,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "tofu",
+      "grams": 150,
+      "measure": "½ block"
+    },
+    {
+      "id": "spinach",
+      "grams": 40,
+      "measure": "a handful"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "onion",
+      "grams": 30,
+      "measure": "¼ onion"
+    },
+    {
+      "id": "brown-bread",
+      "grams": 35,
+      "measure": "1 slice"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Fry the chopped onion in the oil, crumble in the tofu with a pinch of turmeric and salt.",
+    "Add the spinach and tomato, stir until hot, serve on toast."
+  ]
+}

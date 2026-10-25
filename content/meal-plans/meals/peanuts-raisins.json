@@ -1,0 +1,22 @@
+{
+  "slug": "peanuts-raisins",
+  "title": "Peanuts and raisins",
+  "summary": "Classic padkos.",
+  "slots": ["snack"],
+  "diets": ["budget", "plant-based", "vegetarian"],
+  "minutes": 0,
+  "tags": ["no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "peanuts",
+      "grams": 20,
+      "measure": "a small handful"
+    },
+    {
+      "id": "raisins",
+      "grams": 15,
+      "measure": "1 tbsp"
+    }
+  ],
+  "steps": ["Mix and pack."]
+}

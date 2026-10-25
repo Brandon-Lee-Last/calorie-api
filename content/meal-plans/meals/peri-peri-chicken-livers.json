@@ -1,0 +1,41 @@
+{
+  "slug": "peri-peri-chicken-livers",
+  "title": "Peri-peri chicken livers on toast",
+  "summary": "Rich in iron, cheap and quick.",
+  "slots": ["lunch", "dinner"],
+  "diets": ["balanced", "budget", "high-protein"],
+  "minutes": 15,
+  "tags": ["sa-classic", "quick"],
+  "ingredients": [
+    {
+      "id": "chicken-livers",
+      "grams": 120,
+      "measure": "⅔ cup"
+    },
+    {
+      "id": "onion",
+      "grams": 40,
+      "measure": "⅓ onion"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 80,
+      "measure": "⅕ tin"
+    },
+    {
+      "id": "brown-bread",
+      "grams": 70,
+      "measure": "2 slices"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Fry the onion in the oil, add the trimmed livers and brown them.",
+    "Add the tomatoes and peri-peri, simmer 5 minutes until the livers are just cooked through.",
+    "Serve on toast."
+  ]
+}

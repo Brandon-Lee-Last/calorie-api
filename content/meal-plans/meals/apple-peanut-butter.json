@@ -1,0 +1,22 @@
+{
+  "slug": "apple-peanut-butter",
+  "title": "Apple with peanut butter",
+  "summary": "Sweet, crunchy and filling.",
+  "slots": ["snack"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian"],
+  "minutes": 2,
+  "tags": ["no-cook", "quick"],
+  "ingredients": [
+    {
+      "id": "apple",
+      "grams": 150,
+      "measure": "1 medium"
+    },
+    {
+      "id": "peanut-butter",
+      "grams": 15,
+      "measure": "1 tbsp"
+    }
+  ],
+  "steps": ["Slice the apple and dip it in the peanut butter."]
+}

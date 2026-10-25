@@ -1,0 +1,22 @@
+{
+  "slug": "greek-yoghurt-honey",
+  "title": "Greek yoghurt with honey",
+  "summary": "High in protein.",
+  "slots": ["snack"],
+  "diets": ["balanced", "high-protein", "vegetarian", "mediterranean"],
+  "minutes": 1,
+  "tags": ["no-cook", "quick"],
+  "ingredients": [
+    {
+      "id": "greek-yoghurt",
+      "grams": 170,
+      "measure": "⅔ cup"
+    },
+    {
+      "id": "honey",
+      "grams": 10,
+      "measure": "2 tsp"
+    }
+  ],
+  "steps": ["Drizzle the honey over the yoghurt."]
+}

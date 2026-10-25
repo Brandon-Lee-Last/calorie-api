@@ -1,0 +1,35 @@
+{
+  "slug": "soft-maize-porridge",
+  "title": "Soft maize porridge with milk and honey",
+  "summary": "Mieliepap the way gogo made it.",
+  "slots": ["breakfast"],
+  "diets": ["balanced", "budget", "vegetarian"],
+  "minutes": 15,
+  "tags": ["sa-classic"],
+  "ingredients": [
+    {
+      "id": "maize-meal",
+      "grams": 50,
+      "measure": "⅓ cup dry"
+    },
+    {
+      "id": "milk",
+      "grams": 200,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "banana",
+      "grams": 50,
+      "measure": "½ banana"
+    },
+    {
+      "id": "honey",
+      "grams": 10,
+      "measure": "2 tsp"
+    }
+  ],
+  "steps": [
+    "Whisk the maize meal into about 1 cup of boiling water, simmer for 10 minutes, stirring.",
+    "Serve with the milk, sliced banana and honey."
+  ]
+}

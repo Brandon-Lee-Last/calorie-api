@@ -1,0 +1,45 @@
+{
+  "slug": "chicken-pasta-salad",
+  "title": "Chicken pasta salad",
+  "summary": "Make it the night before.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "high-protein", "mediterranean"],
+  "minutes": 15,
+  "tags": ["packable", "batch-cook"],
+  "ingredients": [
+    {
+      "id": "pasta",
+      "grams": 120,
+      "measure": "1 cup cooked"
+    },
+    {
+      "id": "chicken-breast",
+      "grams": 90,
+      "measure": "a palm-sized piece"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "cucumber",
+      "grams": 50,
+      "measure": "5 slices"
+    },
+    {
+      "id": "greek-yoghurt",
+      "grams": 40,
+      "measure": "2½ tbsp"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Toss the cooked, cooled pasta with the chopped chicken and vegetables.",
+    "Stir through the yoghurt, olive oil, lemon, salt and pepper."
+  ]
+}

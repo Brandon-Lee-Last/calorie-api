@@ -1,0 +1,17 @@
+{
+  "slug": "handful-of-almonds",
+  "title": "A handful of almonds",
+  "summary": "Healthy fats and fibre.",
+  "slots": ["snack"],
+  "diets": ["low-carb", "mediterranean", "vegetarian", "plant-based"],
+  "minutes": 0,
+  "tags": ["no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "almonds",
+      "grams": 30,
+      "measure": "about 22 almonds"
+    }
+  ],
+  "steps": ["Measure once so you know what a handful is: nuts are small but dense."]
+}

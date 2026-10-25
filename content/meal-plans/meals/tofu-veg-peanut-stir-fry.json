@@ -1,0 +1,46 @@
+{
+  "slug": "tofu-veg-peanut-stir-fry",
+  "title": "Tofu, mushroom and peanut stir-fry",
+  "summary": "Plant-based, low carb and high in protein.",
+  "slots": ["dinner"],
+  "diets": ["plant-based", "vegetarian", "low-carb", "high-protein"],
+  "minutes": 20,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "tofu",
+      "grams": 200,
+      "measure": "⅔ block"
+    },
+    {
+      "id": "broccoli",
+      "grams": 100,
+      "measure": "1¼ cups"
+    },
+    {
+      "id": "mushrooms",
+      "grams": 80,
+      "measure": "5 mushrooms"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 60,
+      "measure": "½ pepper"
+    },
+    {
+      "id": "peanuts",
+      "grams": 15,
+      "measure": "1 tbsp"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    }
+  ],
+  "steps": [
+    "Fry the cubed tofu in the oil until golden, then remove.",
+    "Stir-fry the vegetables with garlic, ginger and soy sauce, return the tofu.",
+    "Scatter over the chopped peanuts."
+  ]
+}

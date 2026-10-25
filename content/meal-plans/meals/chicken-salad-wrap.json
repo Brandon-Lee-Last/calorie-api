@@ -1,0 +1,45 @@
+{
+  "slug": "chicken-salad-wrap",
+  "title": "Chicken salad wrap with yoghurt dressing",
+  "summary": "Ready in 10 minutes with leftover chicken.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "high-protein"],
+  "minutes": 10,
+  "tags": ["packable", "quick"],
+  "ingredients": [
+    {
+      "id": "tortilla",
+      "grams": 70,
+      "measure": "1 large wrap"
+    },
+    {
+      "id": "chicken-breast",
+      "grams": 90,
+      "measure": "a palm-sized piece"
+    },
+    {
+      "id": "lettuce",
+      "grams": 30,
+      "measure": "a handful"
+    },
+    {
+      "id": "tomato",
+      "grams": 50,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "cucumber",
+      "grams": 40,
+      "measure": "4 slices"
+    },
+    {
+      "id": "greek-yoghurt",
+      "grams": 30,
+      "measure": "2 tbsp"
+    }
+  ],
+  "steps": [
+    "Slice the chicken. Mix the yoghurt with lemon, salt and pepper.",
+    "Fill the wrap with chicken, salad and dressing, and roll up."
+  ]
+}

@@ -75,6 +75,13 @@ rest), `POST /programs/{slug}/enroll`, `GET /programs/current` (progress and the
 **Video and images**: `POST /media/{id}/access` returns a `url` (valid for an hour) to give to the player; it supports seeking. Ask just before playing.
 `402` for Pro media on a free account.
 
+## Meal plans
+
+`GET /meal-plans` returns every diet style and meal in one answer (it is small), so the phone can plan any day offline: keep it and
+refresh it now and then. Pro styles have `locked: true` on a free account, and so does a meal found only in Pro styles; locked meals come
+without `ingredients` or `steps`. Each meal has `slots` (which meals of the day it can be), `nutrition` for one portion, and ingredients
+in grams with a kitchen `measure` and a shop `aisle` (for a shopping list). The phone scales portions to the person's goals.
+
 ## Account and privacy
 
 `GET /account/export` downloads everything as JSON. `DELETE /account` with `{"confirm":"DELETE MY ACCOUNT"}` erases the account permanently

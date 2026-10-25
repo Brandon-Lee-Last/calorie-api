@@ -1,0 +1,26 @@
+{
+  "slug": "plant-based",
+  "title": "Plant-based",
+  "tier": "pro",
+  "position": 7,
+  "goals": ["lose", "maintain", "gain"],
+  "summary": "Vegan: no meat, fish, eggs, dairy or honey.",
+  "description": "Every meal is made from plants: beans, lentils, chickpeas, tofu, whole grains, nuts, seeds, vegetables and fruit. Choose calcium-fortified soya milk where you can.",
+  "highlights": [
+    "No animal foods at all",
+    "Beans, lentils and tofu for protein",
+    "Fortified soya milk for calcium"
+  ],
+  "split": {
+    "breakfast": 0.25,
+    "lunch": 0.3,
+    "dinner": 0.3,
+    "snack": 0.15
+  },
+  "macros": {
+    "proteinPct": 16,
+    "carbPct": 55,
+    "fatPct": 29
+  },
+  "caution": "Eating no animal foods? Take a vitamin B12 supplement or eat B12-fortified foods every day: there is no reliable plant source of B12."
+}

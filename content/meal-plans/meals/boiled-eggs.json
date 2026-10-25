@@ -1,0 +1,17 @@
+{
+  "slug": "boiled-eggs",
+  "title": "Two boiled eggs",
+  "summary": "Cheap protein; boil a batch for the week.",
+  "slots": ["snack"],
+  "diets": ["balanced", "budget", "high-protein", "low-carb", "vegetarian"],
+  "minutes": 10,
+  "tags": ["packable", "batch-cook"],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 100,
+      "measure": "2 eggs"
+    }
+  ],
+  "steps": ["Boil for 9 minutes, cool in cold water and peel. Keeps 4 days in the fridge."]
+}

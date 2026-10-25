@@ -1,0 +1,30 @@
+{
+  "slug": "pilchards-on-toast",
+  "title": "Pilchards on toast",
+  "summary": "A South African favourite: cheap, quick, full of protein and omega-3.",
+  "slots": ["breakfast", "lunch"],
+  "diets": ["balanced", "budget", "high-protein", "mediterranean"],
+  "minutes": 8,
+  "tags": ["quick", "sa-classic"],
+  "ingredients": [
+    {
+      "id": "pilchards",
+      "grams": 100,
+      "measure": "½ small tin"
+    },
+    {
+      "id": "brown-bread",
+      "grams": 70,
+      "measure": "2 slices"
+    },
+    {
+      "id": "tomato",
+      "grams": 50,
+      "measure": "½ tomato"
+    }
+  ],
+  "steps": [
+    "Warm the pilchards and their sauce in a pan, mashing lightly.",
+    "Pile onto toast and top with chopped tomato."
+  ]
+}

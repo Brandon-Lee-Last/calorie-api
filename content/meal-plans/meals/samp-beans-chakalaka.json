@@ -1,0 +1,56 @@
+{
+  "slug": "samp-beans-chakalaka",
+  "title": "Samp and beans with chakalaka",
+  "summary": "Umngqusho, the classic. Filling and cheap.",
+  "slots": ["lunch", "dinner"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian"],
+  "minutes": 40,
+  "tags": ["sa-classic", "batch-cook"],
+  "ingredients": [
+    {
+      "id": "samp",
+      "grams": 200,
+      "measure": "1 cup cooked"
+    },
+    {
+      "id": "kidney-beans",
+      "grams": 100,
+      "measure": "½ cup cooked"
+    },
+    {
+      "id": "onion",
+      "grams": 30,
+      "measure": "¼ onion"
+    },
+    {
+      "id": "carrot",
+      "grams": 40,
+      "measure": "½ carrot"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 30,
+      "measure": "¼ pepper"
+    },
+    {
+      "id": "baked-beans",
+      "grams": 60,
+      "measure": "¼ tin"
+    },
+    {
+      "id": "tomato",
+      "grams": 40,
+      "measure": "½ small tomato"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Warm the cooked samp and beans with a little salt.",
+    "For the chakalaka, fry the onion, grated carrot and pepper in the oil with curry powder, add the tomato and baked beans and simmer 5 minutes.",
+    "Serve the chakalaka over the samp and beans."
+  ]
+}

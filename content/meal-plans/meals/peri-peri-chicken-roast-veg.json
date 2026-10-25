@@ -1,0 +1,41 @@
+{
+  "slug": "peri-peri-chicken-roast-veg",
+  "title": "Peri-peri chicken with roast butternut and broccoli",
+  "summary": "Big on flavour, low on carbs.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "low-carb", "high-protein"],
+  "minutes": 35,
+  "tags": ["sa-classic"],
+  "ingredients": [
+    {
+      "id": "chicken-breast",
+      "grams": 150,
+      "measure": "1 breast"
+    },
+    {
+      "id": "butternut",
+      "grams": 100,
+      "measure": "¾ cup cubed"
+    },
+    {
+      "id": "broccoli",
+      "grams": 80,
+      "measure": "1 cup"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 50,
+      "measure": "½ pepper"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 10,
+      "measure": "2 tsp"
+    }
+  ],
+  "steps": [
+    "Rub the chicken with peri-peri and half the oil.",
+    "Roast it with the cubed butternut and pepper at 200 °C for 25 minutes.",
+    "Add the broccoli for the last 10 minutes."
+  ]
+}

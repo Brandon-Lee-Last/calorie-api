@@ -1,0 +1,56 @@
+{
+  "slug": "pap-wors-chakalaka",
+  "title": "Pap, wors and chakalaka",
+  "summary": "Braai night, sized to your goals.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "budget"],
+  "minutes": 35,
+  "tags": ["sa-classic"],
+  "ingredients": [
+    {
+      "id": "maize-meal",
+      "grams": 60,
+      "measure": "⅓ cup dry"
+    },
+    {
+      "id": "boerewors",
+      "grams": 80,
+      "measure": "a short piece"
+    },
+    {
+      "id": "baked-beans",
+      "grams": 60,
+      "measure": "¼ tin"
+    },
+    {
+      "id": "onion",
+      "grams": 30,
+      "measure": "¼ onion"
+    },
+    {
+      "id": "carrot",
+      "grams": 30,
+      "measure": "½ carrot"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 30,
+      "measure": "¼ pepper"
+    },
+    {
+      "id": "tomato",
+      "grams": 40,
+      "measure": "½ small tomato"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Cook stiff pap as usual.",
+    "Braai or pan-fry the wors.",
+    "For the chakalaka, fry the onion, grated carrot and pepper in the oil with curry powder, add the tomato and beans and simmer 5 minutes."
+  ]
+}

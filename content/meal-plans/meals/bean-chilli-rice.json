@@ -1,0 +1,51 @@
+{
+  "slug": "bean-chilli-rice",
+  "title": "Bean and veg chilli with rice",
+  "summary": "A cheap, hearty pot that feeds the week.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian"],
+  "minutes": 30,
+  "tags": ["batch-cook"],
+  "ingredients": [
+    {
+      "id": "kidney-beans",
+      "grams": 150,
+      "measure": "⅔ cup"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 120,
+      "measure": "⅓ tin"
+    },
+    {
+      "id": "onion",
+      "grams": 50,
+      "measure": "½ onion"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 50,
+      "measure": "½ pepper"
+    },
+    {
+      "id": "sweetcorn",
+      "grams": 50,
+      "measure": "⅓ cup"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    },
+    {
+      "id": "brown-rice",
+      "grams": 120,
+      "measure": "¾ cup cooked"
+    }
+  ],
+  "steps": [
+    "Fry the onion and pepper in the oil with chilli, cumin and paprika.",
+    "Add the beans, tomatoes and corn and simmer 15 minutes.",
+    "Serve on the rice."
+  ]
+}

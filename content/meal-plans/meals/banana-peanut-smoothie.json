@@ -1,0 +1,32 @@
+{
+  "slug": "banana-peanut-smoothie",
+  "title": "Banana, oat and peanut butter smoothie",
+  "summary": "Breakfast you can drink on the way.",
+  "slots": ["breakfast"],
+  "diets": ["plant-based", "vegetarian", "balanced"],
+  "minutes": 4,
+  "tags": ["quick", "no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "soy-milk",
+      "grams": 250,
+      "measure": "1 cup"
+    },
+    {
+      "id": "banana",
+      "grams": 100,
+      "measure": "1 medium"
+    },
+    {
+      "id": "oats",
+      "grams": 30,
+      "measure": "3 tbsp"
+    },
+    {
+      "id": "peanut-butter",
+      "grams": 15,
+      "measure": "1 tbsp"
+    }
+  ],
+  "steps": ["Blend everything until smooth. Add ice if you like."]
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "tuna-nicoise-salad",
+  "title": "Tuna and egg salad",
+  "summary": "A quick niçoise-style plate.",
+  "slots": ["lunch"],
+  "diets": ["low-carb", "high-protein", "mediterranean"],
+  "minutes": 12,
+  "tags": ["packable"],
+  "ingredients": [
+    {
+      "id": "tuna",
+      "grams": 120,
+      "measure": "1 tin"
+    },
+    {
+      "id": "egg",
+      "grams": 50,
+      "measure": "1 egg"
+    },
+    {
+      "id": "lettuce",
+      "grams": 50,
+      "measure": "2 handfuls"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "cucumber",
+      "grams": 60,
+      "measure": "6 slices"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 10,
+      "measure": "2 tsp"
+    }
+  ],
+  "steps": [
+    "Boil the egg for 8 minutes, cool and quarter.",
+    "Arrange the salad, tuna and egg, and dress with olive oil, lemon and pepper."
+  ]
+}

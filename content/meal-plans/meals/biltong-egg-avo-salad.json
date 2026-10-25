@@ -1,0 +1,45 @@
+{
+  "slug": "biltong-egg-avo-salad",
+  "title": "Biltong, egg and avo salad",
+  "summary": "A low-carb lunch with a South African twist.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "low-carb", "high-protein"],
+  "minutes": 10,
+  "tags": ["packable", "sa-classic"],
+  "ingredients": [
+    {
+      "id": "biltong",
+      "grams": 40,
+      "measure": "a small handful"
+    },
+    {
+      "id": "egg",
+      "grams": 100,
+      "measure": "2 eggs"
+    },
+    {
+      "id": "avocado",
+      "grams": 50,
+      "measure": "¼ avo"
+    },
+    {
+      "id": "lettuce",
+      "grams": 50,
+      "measure": "2 handfuls"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Boil the eggs for 8 minutes, cool and halve.",
+    "Toss the salad with olive oil, top with egg, avo and sliced biltong."
+  ]
+}

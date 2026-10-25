@@ -1,0 +1,35 @@
+{
+  "slug": "eggs-avo-spinach",
+  "title": "Eggs with avo, tomato and spinach",
+  "summary": "A low-carb plate in 10 minutes.",
+  "slots": ["breakfast"],
+  "diets": ["low-carb", "vegetarian", "mediterranean"],
+  "minutes": 10,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 100,
+      "measure": "2 eggs"
+    },
+    {
+      "id": "avocado",
+      "grams": 80,
+      "measure": "½ small avo"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "spinach",
+      "grams": 30,
+      "measure": "a handful"
+    }
+  ],
+  "steps": [
+    "Boil or poach the eggs.",
+    "Serve with sliced avo, tomato and spinach, with salt, pepper and lemon."
+  ]
+}

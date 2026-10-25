@@ -1,0 +1,26 @@
+{
+  "slug": "mediterranean",
+  "title": "Mediterranean",
+  "tier": "pro",
+  "position": 4,
+  "goals": ["lose", "maintain", "gain"],
+  "summary": "Olive oil, fish, beans, vegetables and whole grains: one of the best-studied ways to eat.",
+  "description": "The Mediterranean way of eating has some of the strongest evidence for heart health and is easy to stick to. Cook with olive oil, eat fish (pilchards count) at least twice a week, beans and lentils often, plenty of vegetables, fruit, nuts and whole grains, and keep red and processed meat for now and then.",
+  "highlights": [
+    "Olive oil as the main fat",
+    "Fish at least twice a week",
+    "Beans, nuts, vegetables and whole grains"
+  ],
+  "split": {
+    "breakfast": 0.25,
+    "lunch": 0.3,
+    "dinner": 0.3,
+    "snack": 0.15
+  },
+  "macros": {
+    "proteinPct": 20,
+    "carbPct": 43,
+    "fatPct": 37
+  },
+  "caution": null
+}

@@ -1,0 +1,45 @@
+{
+  "slug": "chicken-veg-stir-fry",
+  "title": "Chicken and veg stir-fry with brown rice",
+  "summary": "Ready in 20 minutes.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "high-protein"],
+  "minutes": 20,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "chicken-breast",
+      "grams": 120,
+      "measure": "1 small breast"
+    },
+    {
+      "id": "brown-rice",
+      "grams": 150,
+      "measure": "1 cup cooked"
+    },
+    {
+      "id": "broccoli",
+      "grams": 60,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 50,
+      "measure": "½ pepper"
+    },
+    {
+      "id": "carrot",
+      "grams": 40,
+      "measure": "½ carrot"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    }
+  ],
+  "steps": [
+    "Stir-fry the sliced chicken in the oil until cooked, then add the vegetables.",
+    "Add soy sauce, garlic and ginger, toss 2 minutes and serve on the rice."
+  ]
+}

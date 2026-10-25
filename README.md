@@ -35,6 +35,7 @@ npm run check            # typecheck + formatting + secret scan + all tests
 | Sync          | `pull?since=` and `push` over all synced records                    | per-user revision counter, no clock dependence                     |
 | Subscriptions | entitlements, verify, restore, simulate (stage), Play notifications | mock store; Google Play provider tested against a fake only        |
 | Workouts      | exercise library, free and Pro programs, enrolment, session logging | per-workout free samples inside Pro programs                       |
+| Meal plans    | diet styles and the meals plans are built from                      | free and Pro styles; figures from USDA, checked on every change    |
 | Media         | signed expiring links, Range and ETag, Pro gating                   | R2; external links; Cloudflare Stream signed playback              |
 | AI            | text meal parsing                                                   | Workers AI; estimates only; metered; failed calls not charged      |
 | Insights      | overview, weekly summary                                            | Pro adds depth and an AI-written summary built from numbers only   |
@@ -62,7 +63,7 @@ src/
   modules/     <feature>/<feature>.{routes,service,repo,schemas}.ts + tests
 migrations/    numbered D1 migrations
 scripts/       bootstrap, render config, sync secrets, smoke test, content and food import, training export, secret scan (+ tests)
-content/       sample workout content for the importer
+content/       sample workout content, and the meal plans (docs/meal-plans.md), for the importer
 .github/       ci, deploy-stage, deploy-production, dependabot
 ```
 

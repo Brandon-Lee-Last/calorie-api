@@ -1,0 +1,46 @@
+{
+  "slug": "tofu-veg-stir-fry-rice",
+  "title": "Tofu and veg stir-fry with rice",
+  "summary": "Plant protein in 20 minutes.",
+  "slots": ["lunch", "dinner"],
+  "diets": ["balanced", "plant-based", "vegetarian", "high-protein"],
+  "minutes": 20,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "tofu",
+      "grams": 150,
+      "measure": "½ block"
+    },
+    {
+      "id": "broccoli",
+      "grams": 80,
+      "measure": "1 cup"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 50,
+      "measure": "½ pepper"
+    },
+    {
+      "id": "carrot",
+      "grams": 40,
+      "measure": "½ carrot"
+    },
+    {
+      "id": "brown-rice",
+      "grams": 120,
+      "measure": "¾ cup cooked"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    }
+  ],
+  "steps": [
+    "Fry the cubed tofu in the oil until golden, then remove.",
+    "Stir-fry the vegetables, return the tofu with soy sauce, garlic and ginger.",
+    "Serve on the rice."
+  ]
+}

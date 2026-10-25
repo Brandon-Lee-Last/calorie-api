@@ -1,0 +1,35 @@
+{
+  "slug": "egg-fried-rice",
+  "title": "Egg fried rice with veg",
+  "summary": "Uses up leftover rice.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "budget", "vegetarian"],
+  "minutes": 15,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 100,
+      "measure": "2 eggs"
+    },
+    {
+      "id": "brown-rice",
+      "grams": 150,
+      "measure": "1 cup cooked"
+    },
+    {
+      "id": "mixed-veg",
+      "grams": 100,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "sunflower-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    }
+  ],
+  "steps": [
+    "Scramble the eggs in half the oil and set aside.",
+    "Fry the veg and cold rice in the rest of the oil, add soy sauce and the egg, and toss."
+  ]
+}

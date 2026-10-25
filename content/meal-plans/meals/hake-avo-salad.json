@@ -1,0 +1,45 @@
+{
+  "slug": "hake-avo-salad",
+  "title": "Grilled hake and avo salad",
+  "summary": "Light and low carb.",
+  "slots": ["dinner"],
+  "diets": ["low-carb", "high-protein", "mediterranean"],
+  "minutes": 15,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "hake",
+      "grams": 180,
+      "measure": "1 large fillet"
+    },
+    {
+      "id": "spinach",
+      "grams": 50,
+      "measure": "a big handful"
+    },
+    {
+      "id": "tomato",
+      "grams": 80,
+      "measure": "1 small"
+    },
+    {
+      "id": "cucumber",
+      "grams": 60,
+      "measure": "6 slices"
+    },
+    {
+      "id": "avocado",
+      "grams": 50,
+      "measure": "¼ avo"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    }
+  ],
+  "steps": [
+    "Grill the hake with lemon, garlic and a little of the oil.",
+    "Toss the salad with the rest of the oil and lemon, top with fish and avo."
+  ]
+}

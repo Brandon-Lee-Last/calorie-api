@@ -1,0 +1,37 @@
+{
+  "slug": "hummus-veg-pita",
+  "title": "Hummus and crunchy veg in pita",
+  "summary": "Plant-based and packs well.",
+  "slots": ["lunch"],
+  "diets": ["plant-based", "vegetarian", "mediterranean"],
+  "minutes": 5,
+  "tags": ["no-cook", "packable", "quick"],
+  "ingredients": [
+    {
+      "id": "pita",
+      "grams": 70,
+      "measure": "1 pita"
+    },
+    {
+      "id": "hummus",
+      "grams": 60,
+      "measure": "¼ cup"
+    },
+    {
+      "id": "cucumber",
+      "grams": 60,
+      "measure": "6 slices"
+    },
+    {
+      "id": "carrot",
+      "grams": 60,
+      "measure": "1 small, grated"
+    },
+    {
+      "id": "tomato",
+      "grams": 60,
+      "measure": "½ tomato"
+    }
+  ],
+  "steps": ["Spread hummus inside the pita and fill with the vegetables."]
+}

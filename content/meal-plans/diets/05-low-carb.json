@@ -1,0 +1,26 @@
+{
+  "slug": "low-carb",
+  "title": "Low carb",
+  "tier": "pro",
+  "position": 5,
+  "goals": ["lose", "maintain"],
+  "summary": "Fewer starches and sugars, more protein, vegetables and healthy fats.",
+  "description": "Meals built on protein, non-starchy vegetables and healthy fats, with no more than about a quarter of their energy from carbohydrates. It is a moderate low-carb plan, not keto. Some people find it easier to eat less this way; in long trials it works about as well as other diets, so pick it if it suits you.",
+  "highlights": [
+    "At most a quarter of energy from carbs",
+    "Plenty of non-starchy vegetables",
+    "Not keto: fruit and some starch stay"
+  ],
+  "split": {
+    "breakfast": 0.25,
+    "lunch": 0.3,
+    "dinner": 0.3,
+    "snack": 0.15
+  },
+  "macros": {
+    "proteinPct": 30,
+    "carbPct": 20,
+    "fatPct": 50
+  },
+  "caution": "On diabetes medicine, especially insulin, a sulphonylurea (such as gliclazide) or an SGLT2 inhibitor (such as dapagliflozin or empagliflozin)? Talk to your doctor before cutting carbs: your doses may need to change. Not for pregnancy or breastfeeding without advice."
+}

@@ -1,0 +1,42 @@
+{
+  "slug": "chicken-avo-salad",
+  "title": "Chicken and avo salad",
+  "summary": "Low carb and high in protein.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "low-carb", "high-protein", "mediterranean"],
+  "minutes": 10,
+  "tags": ["packable"],
+  "ingredients": [
+    {
+      "id": "chicken-breast",
+      "grams": 120,
+      "measure": "1 small breast"
+    },
+    {
+      "id": "lettuce",
+      "grams": 60,
+      "measure": "2 handfuls"
+    },
+    {
+      "id": "cucumber",
+      "grams": 60,
+      "measure": "6 slices"
+    },
+    {
+      "id": "tomato",
+      "grams": 80,
+      "measure": "1 small"
+    },
+    {
+      "id": "avocado",
+      "grams": 50,
+      "measure": "¼ avo"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 10,
+      "measure": "2 tsp"
+    }
+  ],
+  "steps": ["Slice the cooked chicken.", "Toss the salad with olive oil and lemon, top with chicken and avo."]
+}

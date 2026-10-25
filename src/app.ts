@@ -26,6 +26,7 @@ import { syncRoutes } from './modules/sync/sync.routes';
 import { subscriptionsRoutes } from './modules/subscriptions/subscriptions.routes';
 import { mediaRoutes } from './modules/media/media.routes';
 import { workoutsRoutes } from './modules/workouts/workouts.routes';
+import { mealsRoutes } from './modules/meals/meals.routes';
 import { sessionsRoutes } from './modules/workouts/sessions.routes';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { accountRoutes } from './modules/account/account.routes';
@@ -129,6 +130,7 @@ export function createApp(overrides: Overrides = {}) {
   v1.route('/', subscriptionsRoutes);
   v1.route('/', mediaRoutes);
   v1.route('/', workoutsRoutes);
+  v1.route('/', mealsRoutes);
   v1.route('/', sessionsRoutes);
   v1.route('/', adminRoutes);
   v1.route('/', trainingRoutes);

@@ -1,0 +1,40 @@
+{
+  "slug": "chickpea-avo-toast",
+  "title": "Smashed chickpea and avo toast",
+  "summary": "Plant protein on toast.",
+  "slots": ["breakfast"],
+  "diets": ["plant-based", "vegetarian", "mediterranean"],
+  "minutes": 8,
+  "tags": ["quick", "no-cook"],
+  "ingredients": [
+    {
+      "id": "brown-bread",
+      "grams": 70,
+      "measure": "2 slices"
+    },
+    {
+      "id": "avocado",
+      "grams": 60,
+      "measure": "⅓ avo"
+    },
+    {
+      "id": "chickpeas",
+      "grams": 60,
+      "measure": "¼ cup"
+    },
+    {
+      "id": "tomato",
+      "grams": 50,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Mash the chickpeas and avo with the olive oil, lemon juice, salt and pepper.",
+    "Spread on toast and top with tomato."
+  ]
+}

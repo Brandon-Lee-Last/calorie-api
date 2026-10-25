@@ -1,0 +1,32 @@
+{
+  "slug": "greek-yoghurt-berries-oats",
+  "title": "Greek yoghurt with berries, oats and honey",
+  "summary": "No cooking, lots of protein.",
+  "slots": ["breakfast"],
+  "diets": ["balanced", "vegetarian", "mediterranean", "high-protein"],
+  "minutes": 3,
+  "tags": ["no-cook", "quick"],
+  "ingredients": [
+    {
+      "id": "greek-yoghurt",
+      "grams": 200,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "strawberries",
+      "grams": 100,
+      "measure": "6 to 8"
+    },
+    {
+      "id": "oats",
+      "grams": 30,
+      "measure": "3 tbsp"
+    },
+    {
+      "id": "honey",
+      "grams": 10,
+      "measure": "2 tsp"
+    }
+  ],
+  "steps": ["Spoon the yoghurt into a bowl.", "Top with the berries and oats and drizzle with honey."]
+}

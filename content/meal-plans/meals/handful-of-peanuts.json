@@ -1,0 +1,17 @@
+{
+  "slug": "handful-of-peanuts",
+  "title": "A handful of peanuts",
+  "summary": "Cheap, filling and low in carbs.",
+  "slots": ["snack"],
+  "diets": ["budget", "low-carb", "plant-based", "vegetarian"],
+  "minutes": 0,
+  "tags": ["no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "peanuts",
+      "grams": 30,
+      "measure": "a handful"
+    }
+  ],
+  "steps": ["Choose unsalted roasted peanuts."]
+}

@@ -1,0 +1,46 @@
+{
+  "slug": "spinach-feta-frittata",
+  "title": "Spinach and feta frittata",
+  "summary": "Vegetarian and low carb; good cold the next day.",
+  "slots": ["dinner", "lunch"],
+  "diets": ["low-carb", "vegetarian", "high-protein", "mediterranean"],
+  "minutes": 25,
+  "tags": ["batch-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "egg",
+      "grams": 150,
+      "measure": "3 eggs"
+    },
+    {
+      "id": "spinach-cooked",
+      "grams": 100,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "feta",
+      "grams": 40,
+      "measure": "⅔ round"
+    },
+    {
+      "id": "onion",
+      "grams": 30,
+      "measure": "¼ onion"
+    },
+    {
+      "id": "milk",
+      "grams": 50,
+      "measure": "3 tbsp"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Soften the onion in the oil in an ovenproof pan, add the spinach.",
+    "Pour over the eggs beaten with the milk, crumble in the feta.",
+    "Cook on low for 5 minutes, then grill or bake at 180 °C until set."
+  ]
+}

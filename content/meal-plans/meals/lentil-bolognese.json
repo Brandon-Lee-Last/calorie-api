@@ -1,0 +1,46 @@
+{
+  "slug": "lentil-bolognese",
+  "title": "Lentil bolognese with wholewheat spaghetti",
+  "summary": "All the comfort of bolognese, plant-based.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "plant-based", "vegetarian", "mediterranean"],
+  "minutes": 30,
+  "tags": ["batch-cook"],
+  "ingredients": [
+    {
+      "id": "spaghetti-wholewheat",
+      "grams": 150,
+      "measure": "1 cup cooked"
+    },
+    {
+      "id": "lentils",
+      "grams": 120,
+      "measure": "½ cup cooked"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 120,
+      "measure": "⅓ tin"
+    },
+    {
+      "id": "onion",
+      "grams": 40,
+      "measure": "⅓ onion"
+    },
+    {
+      "id": "carrot",
+      "grams": 40,
+      "measure": "½ carrot"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Soften the onion and grated carrot in the oil with garlic.",
+    "Add the lentils, tomatoes and herbs and simmer 15 minutes.",
+    "Serve on the spaghetti."
+  ]
+}

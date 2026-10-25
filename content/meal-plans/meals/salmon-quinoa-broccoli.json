@@ -1,0 +1,35 @@
+{
+  "slug": "salmon-quinoa-broccoli",
+  "title": "Salmon with quinoa and broccoli",
+  "summary": "Omega-3 rich and high in protein.",
+  "slots": ["dinner"],
+  "diets": ["mediterranean", "high-protein"],
+  "minutes": 25,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "salmon",
+      "grams": 120,
+      "measure": "1 fillet"
+    },
+    {
+      "id": "quinoa",
+      "grams": 120,
+      "measure": "¾ cup cooked"
+    },
+    {
+      "id": "broccoli",
+      "grams": 80,
+      "measure": "1 cup"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    }
+  ],
+  "steps": [
+    "Roast the salmon at 200 °C for 12 to 15 minutes with lemon and herbs.",
+    "Serve with the quinoa and steamed broccoli, drizzled with olive oil."
+  ]
+}

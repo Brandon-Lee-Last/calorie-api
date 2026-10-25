@@ -1,0 +1,45 @@
+{
+  "slug": "tuna-mayo-sandwich",
+  "title": "Tuna mayo sandwich and an apple",
+  "summary": "Packs for work.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "budget", "high-protein"],
+  "minutes": 5,
+  "tags": ["packable", "no-cook", "quick"],
+  "ingredients": [
+    {
+      "id": "brown-bread",
+      "grams": 70,
+      "measure": "2 slices"
+    },
+    {
+      "id": "tuna",
+      "grams": 80,
+      "measure": "½ tin"
+    },
+    {
+      "id": "light-mayo",
+      "grams": 15,
+      "measure": "1 tbsp"
+    },
+    {
+      "id": "lettuce",
+      "grams": 20,
+      "measure": "2 leaves"
+    },
+    {
+      "id": "tomato",
+      "grams": 40,
+      "measure": "3 slices"
+    },
+    {
+      "id": "apple",
+      "grams": 150,
+      "measure": "1 medium"
+    }
+  ],
+  "steps": [
+    "Mix the drained tuna with the mayo and black pepper.",
+    "Fill the bread with tuna, lettuce and tomato. Apple on the side."
+  ]
+}

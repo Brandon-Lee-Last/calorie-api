@@ -1,0 +1,40 @@
+{
+  "slug": "bean-cheese-wrap",
+  "title": "Bean and cheese wrap",
+  "summary": "Vegetarian, ready in 10 minutes.",
+  "slots": ["lunch"],
+  "diets": ["balanced", "vegetarian"],
+  "minutes": 10,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "tortilla",
+      "grams": 70,
+      "measure": "1 large wrap"
+    },
+    {
+      "id": "kidney-beans",
+      "grams": 100,
+      "measure": "½ cup"
+    },
+    {
+      "id": "cheddar",
+      "grams": 25,
+      "measure": "a matchbox"
+    },
+    {
+      "id": "tomato",
+      "grams": 50,
+      "measure": "½ tomato"
+    },
+    {
+      "id": "lettuce",
+      "grams": 20,
+      "measure": "a handful"
+    }
+  ],
+  "steps": [
+    "Warm the beans mashed with cumin and paprika.",
+    "Fill the wrap with beans, grated cheese, tomato and lettuce."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "slug": "budget",
+  "title": "Budget",
+  "tier": "free",
+  "position": 2,
+  "goals": ["lose", "maintain", "gain"],
+  "summary": "Eat well for less: pap, beans, eggs, pilchards, oats and seasonal veg.",
+  "description": "Healthy eating does not have to cost much. This plan sticks to affordable staples you can buy at any spaza or supermarket: maize meal, oats, brown bread, dried or tinned beans and lentils, eggs, pilchards, chicken pieces, cabbage, carrots, bananas and apples. Cook once, eat twice: many of these meals keep well for the next day.",
+  "highlights": [
+    "Affordable staples from any shop",
+    "Tinned fish and beans for cheap protein",
+    "Cook once, eat twice"
+  ],
+  "split": {
+    "breakfast": 0.25,
+    "lunch": 0.3,
+    "dinner": 0.3,
+    "snack": 0.15
+  },
+  "macros": {
+    "proteinPct": 20,
+    "carbPct": 52,
+    "fatPct": 28
+  },
+  "caution": null
+}

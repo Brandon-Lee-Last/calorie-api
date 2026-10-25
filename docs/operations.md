@@ -87,7 +87,11 @@ Push to `main`. `deploy-stage` runs CI, applies migrations, deploys, pushes secr
 
 ```bash
 API_BASE=https://pango-api-stage.lightarch.io ADMIN_API_KEY=<the stage key> npm run import:content -- content/sample --publish
+API_BASE=https://pango-api-stage.lightarch.io ADMIN_API_KEY=<the stage key> npm run import:content -- content/meal-plans --prune
 ```
+
+The Publish content workflow does both whenever `content/` changes on `main`, after checking the meal plans' ingredient figures against
+USDA ([meal-plans.md](meal-plans.md)).
 
 Open `https://pango-api-stage.lightarch.io/v1/openapi.json`. Things to check on stage, because they have only been tested against fakes:
 

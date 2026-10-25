@@ -1,0 +1,27 @@
+{
+  "slug": "balanced",
+  "title": "Balanced",
+  "tier": "free",
+  "position": 1,
+  "goals": ["lose", "maintain", "gain"],
+  "summary": "Everyday South African eating: a bit of everything, in the right amounts.",
+  "description": "Built on South Africa's food-based dietary guidelines. Starch at most meals (mostly whole grain or coarse maize meal), beans, lentils or peas a few times a week, plenty of vegetables and fruit, and some protein at every meal. Portions are sized to your daily calories, so the same plan works for losing, keeping or gaining weight.",
+  "highlights": [
+    "Starch at most meals, mostly whole grain",
+    "Beans, lentils or peas a few times a week",
+    "Plenty of vegetables and fruit",
+    "Some protein at every meal"
+  ],
+  "split": {
+    "breakfast": 0.25,
+    "lunch": 0.3,
+    "dinner": 0.3,
+    "snack": 0.15
+  },
+  "macros": {
+    "proteinPct": 22,
+    "carbPct": 48,
+    "fatPct": 30
+  },
+  "caution": null
+}

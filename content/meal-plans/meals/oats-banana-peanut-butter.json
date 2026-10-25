@@ -1,0 +1,35 @@
+{
+  "slug": "oats-banana-peanut-butter",
+  "title": "Oats with banana and peanut butter",
+  "summary": "Warm, filling and cheap.",
+  "slots": ["breakfast"],
+  "diets": ["balanced", "budget", "vegetarian"],
+  "minutes": 8,
+  "tags": ["quick"],
+  "ingredients": [
+    {
+      "id": "oats",
+      "grams": 50,
+      "measure": "½ cup"
+    },
+    {
+      "id": "milk",
+      "grams": 200,
+      "measure": "¾ cup"
+    },
+    {
+      "id": "banana",
+      "grams": 100,
+      "measure": "1 medium"
+    },
+    {
+      "id": "peanut-butter",
+      "grams": 15,
+      "measure": "1 tbsp"
+    }
+  ],
+  "steps": [
+    "Cook the oats in the milk for 3 to 4 minutes, stirring.",
+    "Top with the sliced banana and a spoon of peanut butter."
+  ]
+}

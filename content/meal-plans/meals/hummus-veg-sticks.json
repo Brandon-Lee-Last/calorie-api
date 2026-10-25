@@ -1,0 +1,27 @@
+{
+  "slug": "hummus-veg-sticks",
+  "title": "Hummus with carrot and cucumber sticks",
+  "summary": "Crunchy and plant-based.",
+  "slots": ["snack"],
+  "diets": ["balanced", "plant-based", "vegetarian", "mediterranean"],
+  "minutes": 5,
+  "tags": ["no-cook", "packable"],
+  "ingredients": [
+    {
+      "id": "hummus",
+      "grams": 50,
+      "measure": "3 tbsp"
+    },
+    {
+      "id": "carrot",
+      "grams": 100,
+      "measure": "1 carrot"
+    },
+    {
+      "id": "cucumber",
+      "grams": 60,
+      "measure": "a chunk"
+    }
+  ],
+  "steps": ["Cut the vegetables into sticks and dip."]
+}

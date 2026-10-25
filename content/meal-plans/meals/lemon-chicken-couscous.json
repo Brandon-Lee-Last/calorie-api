@@ -1,0 +1,41 @@
+{
+  "slug": "lemon-chicken-couscous",
+  "title": "Lemon chicken with couscous and roast veg",
+  "summary": "Bright, simple and high in protein.",
+  "slots": ["dinner"],
+  "diets": ["balanced", "high-protein", "mediterranean"],
+  "minutes": 30,
+  "tags": [],
+  "ingredients": [
+    {
+      "id": "chicken-breast",
+      "grams": 120,
+      "measure": "1 small breast"
+    },
+    {
+      "id": "couscous",
+      "grams": 120,
+      "measure": "¾ cup cooked"
+    },
+    {
+      "id": "butternut",
+      "grams": 80,
+      "measure": "½ cup cubed"
+    },
+    {
+      "id": "green-pepper",
+      "grams": 50,
+      "measure": "½ pepper"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 7,
+      "measure": "1½ tsp"
+    }
+  ],
+  "steps": [
+    "Roast the butternut and pepper with half the oil at 200 °C for 25 minutes.",
+    "Grill the chicken with lemon, garlic and oregano.",
+    "Serve on the couscous with the veg."
+  ]
+}

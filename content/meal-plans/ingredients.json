@@ -1,0 +1,920 @@
+{
+  "oats": {
+    "name": "Rolled oats",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Cereals, oats, regular and quick, not fortified, dry",
+    "per100g": {
+      "kcal": 379,
+      "protein": 13.2,
+      "carb": 67.7,
+      "fat": 6.5,
+      "fibre": 10.1
+    }
+  },
+  "brown-bread": {
+    "name": "Brown or wholewheat bread",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Bread, whole-wheat, commercially prepared",
+    "per100g": {
+      "kcal": 252,
+      "protein": 12.5,
+      "carb": 42.7,
+      "fat": 3.5,
+      "fibre": 6.0
+    }
+  },
+  "pita": {
+    "name": "Wholewheat pita",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Bread, pita, whole-wheat",
+    "per100g": {
+      "kcal": 266,
+      "protein": 9.8,
+      "carb": 55.0,
+      "fat": 2.6,
+      "fibre": 7.4
+    }
+  },
+  "tortilla": {
+    "name": "Flour tortilla wrap",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Tortillas, ready-to-bake or -fry, flour, refrigerated",
+    "per100g": {
+      "kcal": 312,
+      "protein": 8.2,
+      "carb": 49.4,
+      "fat": 8.4,
+      "fibre": 3.5
+    }
+  },
+  "crispbread": {
+    "name": "Rye crispbread",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Crispbread, rye",
+    "per100g": {
+      "kcal": 366,
+      "protein": 7.9,
+      "carb": 82.2,
+      "fat": 1.3,
+      "fibre": 16.5
+    }
+  },
+  "brown-rice": {
+    "name": "Brown rice, cooked",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Rice, brown, long-grain, cooked",
+    "per100g": {
+      "kcal": 112,
+      "protein": 2.6,
+      "carb": 23.0,
+      "fat": 0.9,
+      "fibre": 1.8
+    }
+  },
+  "white-rice": {
+    "name": "White rice, cooked",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Rice, white, long-grain, regular, enriched, cooked",
+    "per100g": {
+      "kcal": 130,
+      "protein": 2.7,
+      "carb": 28.2,
+      "fat": 0.3,
+      "fibre": 0.4
+    }
+  },
+  "maize-meal": {
+    "name": "Maize meal, dry",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Cornmeal, degermed, enriched, white",
+    "per100g": {
+      "kcal": 370,
+      "protein": 7.1,
+      "carb": 79.5,
+      "fat": 1.8,
+      "fibre": 3.9
+    }
+  },
+  "samp": {
+    "name": "Samp, cooked",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Hominy, canned, white",
+    "per100g": {
+      "kcal": 72,
+      "protein": 1.5,
+      "carb": 14.3,
+      "fat": 0.9,
+      "fibre": 2.5
+    }
+  },
+  "spaghetti-wholewheat": {
+    "name": "Wholewheat spaghetti, cooked",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Spaghetti, whole-wheat, cooked",
+    "per100g": {
+      "kcal": 124,
+      "protein": 5.3,
+      "carb": 26.5,
+      "fat": 0.5,
+      "fibre": 4.5
+    }
+  },
+  "pasta": {
+    "name": "Pasta, cooked",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "usda": "Pasta, cooked, enriched, without added salt",
+    "per100g": {
+      "kcal": 158,
+      "protein": 5.8,
+      "carb": 30.9,
+      "fat": 0.9,
+      "fibre": 1.8
+    }
+  },
+  "couscous": {
+    "name": "Couscous, cooked",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "pricey": true,
+    "usda": "Couscous, cooked",
+    "per100g": {
+      "kcal": 112,
+      "protein": 3.8,
+      "carb": 23.2,
+      "fat": 0.2,
+      "fibre": 1.4
+    }
+  },
+  "quinoa": {
+    "name": "Quinoa, cooked",
+    "kind": "plant",
+    "aisle": "bakery-grains",
+    "pricey": true,
+    "usda": "Quinoa, cooked",
+    "per100g": {
+      "kcal": 120,
+      "protein": 4.4,
+      "carb": 21.3,
+      "fat": 1.9,
+      "fibre": 2.8
+    }
+  },
+  "popcorn": {
+    "name": "Popcorn, air-popped",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Snacks, popcorn, air-popped",
+    "per100g": {
+      "kcal": 387,
+      "protein": 12.9,
+      "carb": 77.8,
+      "fat": 4.5,
+      "fibre": 14.5
+    }
+  },
+  "potato": {
+    "name": "Potato, boiled in its skin",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Potatoes, boiled, cooked in skin, flesh, without salt",
+    "per100g": {
+      "kcal": 87,
+      "protein": 1.9,
+      "carb": 20.1,
+      "fat": 0.1,
+      "fibre": 1.8
+    }
+  },
+  "sweet-potato": {
+    "name": "Sweet potato, baked",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Sweet potato, cooked, baked in skin, flesh, without salt",
+    "per100g": {
+      "kcal": 90,
+      "protein": 2.0,
+      "carb": 20.7,
+      "fat": 0.2,
+      "fibre": 3.3
+    }
+  },
+  "butternut": {
+    "name": "Butternut, roasted",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Squash, winter, butternut, cooked, baked, without salt",
+    "per100g": {
+      "kcal": 40,
+      "protein": 0.9,
+      "carb": 10.5,
+      "fat": 0.1,
+      "fibre": 3.2
+    }
+  },
+  "sweetcorn": {
+    "name": "Sweetcorn kernels, cooked",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Corn, sweet, yellow, cooked, boiled, drained, without salt",
+    "per100g": {
+      "kcal": 96,
+      "protein": 3.4,
+      "carb": 21.0,
+      "fat": 1.5,
+      "fibre": 2.4
+    }
+  },
+  "egg": {
+    "name": "Egg",
+    "kind": "egg",
+    "aisle": "dairy-eggs",
+    "usda": "Egg, whole, raw, fresh",
+    "per100g": {
+      "kcal": 143,
+      "protein": 12.6,
+      "carb": 0.7,
+      "fat": 9.5,
+      "fibre": 0.0
+    }
+  },
+  "chicken-breast": {
+    "name": "Chicken breast, cooked",
+    "kind": "meat",
+    "aisle": "meat-fish",
+    "usda": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+    "per100g": {
+      "kcal": 165,
+      "protein": 31.0,
+      "carb": 0.0,
+      "fat": 3.6,
+      "fibre": 0.0
+    }
+  },
+  "chicken-drumstick": {
+    "name": "Chicken drumstick meat, cooked",
+    "kind": "meat",
+    "aisle": "meat-fish",
+    "usda": "Chicken, broilers or fryers, drumstick, meat only, cooked, roasted",
+    "per100g": {
+      "kcal": 172,
+      "protein": 28.3,
+      "carb": 0.0,
+      "fat": 5.7,
+      "fibre": 0.0
+    }
+  },
+  "chicken-livers": {
+    "name": "Chicken livers, cooked",
+    "kind": "meat",
+    "aisle": "meat-fish",
+    "usda": "Chicken, liver, all classes, cooked, simmered",
+    "per100g": {
+      "kcal": 167,
+      "protein": 24.5,
+      "carb": 0.9,
+      "fat": 6.5,
+      "fibre": 0.0
+    }
+  },
+  "beef-mince": {
+    "name": "Lean beef mince, cooked",
+    "kind": "meat",
+    "aisle": "meat-fish",
+    "usda": "Beef, ground, 90% lean meat / 10% fat, crumbles, cooked, pan-browned",
+    "per100g": {
+      "kcal": 217,
+      "protein": 26.1,
+      "carb": 0.0,
+      "fat": 11.7,
+      "fibre": 0.0
+    }
+  },
+  "beef-steak": {
+    "name": "Lean beef steak, grilled",
+    "kind": "meat",
+    "aisle": "meat-fish",
+    "pricey": true,
+    "usda": "Beef, top sirloin, steak, separable lean only, trimmed to 1/8\" fat, choice, cooked, broiled",
+    "per100g": {
+      "kcal": 206,
+      "protein": 30.0,
+      "carb": 0.0,
+      "fat": 8.7,
+      "fibre": 0.0
+    }
+  },
+  "boerewors": {
+    "name": "Boerewors, cooked",
+    "kind": "meat",
+    "aisle": "meat-fish",
+    "usda": "Sausage, beef, fresh, cooked",
+    "per100g": {
+      "kcal": 332,
+      "protein": 18.2,
+      "carb": 0.4,
+      "fat": 28.1,
+      "fibre": 0.0
+    }
+  },
+  "biltong": {
+    "name": "Lean biltong",
+    "kind": "meat",
+    "aisle": "meat-fish",
+    "usda": "Beef, cured, dried",
+    "per100g": {
+      "kcal": 153,
+      "protein": 31.1,
+      "carb": 2.8,
+      "fat": 1.9,
+      "fibre": 0.0
+    }
+  },
+  "tuna": {
+    "name": "Tuna in water, drained",
+    "kind": "fish",
+    "aisle": "pantry",
+    "usda": "Fish, tuna, light, canned in water, drained solids",
+    "per100g": {
+      "kcal": 116,
+      "protein": 25.5,
+      "carb": 0.0,
+      "fat": 0.8,
+      "fibre": 0.0
+    }
+  },
+  "pilchards": {
+    "name": "Pilchards in tomato sauce",
+    "kind": "fish",
+    "aisle": "pantry",
+    "usda": "Fish, sardine, Pacific, canned in tomato sauce, drained solids with bone",
+    "per100g": {
+      "kcal": 186,
+      "protein": 20.9,
+      "carb": 0.7,
+      "fat": 10.5,
+      "fibre": 0.0
+    }
+  },
+  "hake": {
+    "name": "Hake or other white fish, cooked",
+    "kind": "fish",
+    "aisle": "meat-fish",
+    "usda": "Fish, cod, Atlantic, cooked, dry heat",
+    "per100g": {
+      "kcal": 105,
+      "protein": 22.8,
+      "carb": 0.0,
+      "fat": 0.9,
+      "fibre": 0.0
+    }
+  },
+  "salmon": {
+    "name": "Salmon, cooked",
+    "kind": "fish",
+    "aisle": "meat-fish",
+    "pricey": true,
+    "usda": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
+    "per100g": {
+      "kcal": 206,
+      "protein": 22.1,
+      "carb": 0.0,
+      "fat": 12.4,
+      "fibre": 0.0
+    }
+  },
+  "greek-yoghurt": {
+    "name": "Plain low-fat Greek yoghurt",
+    "kind": "dairy",
+    "aisle": "dairy-eggs",
+    "usda": "Yogurt, Greek, plain, lowfat",
+    "per100g": {
+      "kcal": 73,
+      "protein": 10.0,
+      "carb": 3.9,
+      "fat": 1.9,
+      "fibre": 0.0
+    }
+  },
+  "milk": {
+    "name": "Low-fat milk",
+    "kind": "dairy",
+    "aisle": "dairy-eggs",
+    "usda": "Milk, reduced fat, fluid, 2% milkfat, with added vitamin A and vitamin D",
+    "per100g": {
+      "kcal": 50,
+      "protein": 3.3,
+      "carb": 4.8,
+      "fat": 2.0,
+      "fibre": 0.0
+    }
+  },
+  "cottage-cheese": {
+    "name": "Low-fat cottage cheese",
+    "kind": "dairy",
+    "aisle": "dairy-eggs",
+    "usda": "Cheese, cottage, lowfat, 2% milkfat",
+    "per100g": {
+      "kcal": 84,
+      "protein": 10.5,
+      "carb": 4.8,
+      "fat": 2.3,
+      "fibre": 0.0
+    }
+  },
+  "cheddar": {
+    "name": "Cheddar cheese",
+    "kind": "dairy",
+    "aisle": "dairy-eggs",
+    "usda": "Cheese, cheddar",
+    "per100g": {
+      "kcal": 403,
+      "protein": 24.9,
+      "carb": 1.3,
+      "fat": 33.1,
+      "fibre": 0.0
+    }
+  },
+  "feta": {
+    "name": "Feta",
+    "kind": "dairy",
+    "aisle": "dairy-eggs",
+    "pricey": true,
+    "usda": "Cheese, feta",
+    "per100g": {
+      "kcal": 264,
+      "protein": 14.2,
+      "carb": 4.1,
+      "fat": 21.3,
+      "fibre": 0.0
+    }
+  },
+  "soy-milk": {
+    "name": "Unsweetened soya milk",
+    "kind": "plant",
+    "aisle": "dairy-eggs",
+    "usda": "Soymilk (all flavors), unsweetened, with added calcium, vitamins A and D",
+    "per100g": {
+      "kcal": 33,
+      "protein": 2.9,
+      "carb": 1.7,
+      "fat": 1.6,
+      "fibre": 0.6
+    }
+  },
+  "tofu": {
+    "name": "Firm tofu",
+    "kind": "plant",
+    "aisle": "dairy-eggs",
+    "pricey": true,
+    "usda": "Tofu, raw, firm, prepared with calcium sulfate",
+    "per100g": {
+      "kcal": 144,
+      "protein": 17.3,
+      "carb": 2.8,
+      "fat": 8.7,
+      "fibre": 2.3
+    }
+  },
+  "lentils": {
+    "name": "Lentils, cooked or tinned",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Lentils, mature seeds, cooked, boiled, without salt",
+    "per100g": {
+      "kcal": 116,
+      "protein": 9.0,
+      "carb": 20.1,
+      "fat": 0.4,
+      "fibre": 7.9
+    }
+  },
+  "chickpeas": {
+    "name": "Chickpeas, cooked or tinned",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+    "per100g": {
+      "kcal": 164,
+      "protein": 8.9,
+      "carb": 27.4,
+      "fat": 2.6,
+      "fibre": 7.6
+    }
+  },
+  "kidney-beans": {
+    "name": "Red kidney or sugar beans, cooked",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Beans, kidney, red, mature seeds, cooked, boiled, without salt",
+    "per100g": {
+      "kcal": 127,
+      "protein": 8.7,
+      "carb": 22.8,
+      "fat": 0.5,
+      "fibre": 6.4
+    }
+  },
+  "baked-beans": {
+    "name": "Baked beans in tomato sauce",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Beans, baked, canned, plain or vegetarian",
+    "per100g": {
+      "kcal": 94,
+      "protein": 4.8,
+      "carb": 21.1,
+      "fat": 0.4,
+      "fibre": 4.1
+    }
+  },
+  "hummus": {
+    "name": "Hummus",
+    "kind": "plant",
+    "aisle": "dairy-eggs",
+    "usda": "Hummus, commercial",
+    "per100g": {
+      "kcal": 166,
+      "protein": 7.9,
+      "carb": 14.3,
+      "fat": 9.6,
+      "fibre": 6.0
+    }
+  },
+  "peanut-butter": {
+    "name": "Peanut butter",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Peanut butter, smooth style, without salt",
+    "per100g": {
+      "kcal": 588,
+      "protein": 25.1,
+      "carb": 19.6,
+      "fat": 50.4,
+      "fibre": 6.0
+    }
+  },
+  "peanuts": {
+    "name": "Roasted peanuts, unsalted",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Peanuts, all types, dry-roasted, without salt",
+    "per100g": {
+      "kcal": 585,
+      "protein": 24.4,
+      "carb": 21.3,
+      "fat": 49.7,
+      "fibre": 8.4
+    }
+  },
+  "almonds": {
+    "name": "Almonds",
+    "kind": "plant",
+    "aisle": "pantry",
+    "pricey": true,
+    "usda": "Nuts, almonds",
+    "per100g": {
+      "kcal": 579,
+      "protein": 21.2,
+      "carb": 21.6,
+      "fat": 49.9,
+      "fibre": 12.5
+    }
+  },
+  "raisins": {
+    "name": "Raisins",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Raisins, seedless",
+    "per100g": {
+      "kcal": 299,
+      "protein": 3.1,
+      "carb": 79.2,
+      "fat": 0.5,
+      "fibre": 3.7
+    }
+  },
+  "honey": {
+    "name": "Honey",
+    "kind": "honey",
+    "aisle": "pantry",
+    "usda": "Honey",
+    "per100g": {
+      "kcal": 304,
+      "protein": 0.3,
+      "carb": 82.4,
+      "fat": 0.0,
+      "fibre": 0.2
+    }
+  },
+  "olive-oil": {
+    "name": "Olive oil",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Oil, olive, salad or cooking",
+    "per100g": {
+      "kcal": 884,
+      "protein": 0.0,
+      "carb": 0.0,
+      "fat": 100.0,
+      "fibre": 0.0
+    }
+  },
+  "sunflower-oil": {
+    "name": "Sunflower oil",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Oil, sunflower, linoleic, (approx. 65%)",
+    "per100g": {
+      "kcal": 884,
+      "protein": 0.0,
+      "carb": 0.0,
+      "fat": 100.0,
+      "fibre": 0.0
+    }
+  },
+  "light-mayo": {
+    "name": "Light mayonnaise",
+    "kind": "egg",
+    "aisle": "pantry",
+    "usda": "Salad dressing, mayonnaise, light",
+    "per100g": {
+      "kcal": 238,
+      "protein": 0.4,
+      "carb": 9.2,
+      "fat": 22.2,
+      "fibre": 0.0
+    }
+  },
+  "tinned-tomatoes": {
+    "name": "Chopped tinned tomatoes",
+    "kind": "plant",
+    "aisle": "pantry",
+    "usda": "Tomatoes, red, ripe, canned, packed in tomato juice",
+    "per100g": {
+      "kcal": 16,
+      "protein": 0.8,
+      "carb": 3.5,
+      "fat": 0.3,
+      "fibre": 1.9
+    }
+  },
+  "mixed-veg": {
+    "name": "Frozen mixed vegetables, cooked",
+    "kind": "plant",
+    "aisle": "frozen",
+    "usda": "Vegetables, mixed, frozen, cooked, boiled, drained, without salt",
+    "per100g": {
+      "kcal": 65,
+      "protein": 2.9,
+      "carb": 13.1,
+      "fat": 0.2,
+      "fibre": 4.4
+    }
+  },
+  "spinach-cooked": {
+    "name": "Spinach or morogo, cooked",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Spinach, cooked, boiled, drained, without salt",
+    "per100g": {
+      "kcal": 23,
+      "protein": 3.0,
+      "carb": 3.8,
+      "fat": 0.3,
+      "fibre": 2.4
+    }
+  },
+  "spinach": {
+    "name": "Baby spinach",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Spinach, raw",
+    "per100g": {
+      "kcal": 23,
+      "protein": 2.9,
+      "carb": 3.6,
+      "fat": 0.4,
+      "fibre": 2.2
+    }
+  },
+  "cabbage-cooked": {
+    "name": "Cabbage, cooked",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Cabbage, cooked, boiled, drained, without salt",
+    "per100g": {
+      "kcal": 23,
+      "protein": 1.3,
+      "carb": 5.5,
+      "fat": 0.1,
+      "fibre": 1.9
+    }
+  },
+  "carrot": {
+    "name": "Carrot",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Carrots, raw",
+    "per100g": {
+      "kcal": 41,
+      "protein": 0.9,
+      "carb": 9.6,
+      "fat": 0.2,
+      "fibre": 2.8
+    }
+  },
+  "tomato": {
+    "name": "Tomato",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Tomatoes, red, ripe, raw, year round average",
+    "per100g": {
+      "kcal": 18,
+      "protein": 0.9,
+      "carb": 3.9,
+      "fat": 0.2,
+      "fibre": 1.2
+    }
+  },
+  "onion": {
+    "name": "Onion",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Onions, raw",
+    "per100g": {
+      "kcal": 40,
+      "protein": 1.1,
+      "carb": 9.3,
+      "fat": 0.1,
+      "fibre": 1.7
+    }
+  },
+  "green-pepper": {
+    "name": "Green pepper",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Peppers, sweet, green, raw",
+    "per100g": {
+      "kcal": 20,
+      "protein": 0.9,
+      "carb": 4.6,
+      "fat": 0.2,
+      "fibre": 1.7
+    }
+  },
+  "cucumber": {
+    "name": "Cucumber",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Cucumber, with peel, raw",
+    "per100g": {
+      "kcal": 15,
+      "protein": 0.7,
+      "carb": 3.6,
+      "fat": 0.1,
+      "fibre": 0.5
+    }
+  },
+  "lettuce": {
+    "name": "Lettuce",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Lettuce, cos or romaine, raw",
+    "per100g": {
+      "kcal": 17,
+      "protein": 1.2,
+      "carb": 3.3,
+      "fat": 0.3,
+      "fibre": 2.1
+    }
+  },
+  "broccoli": {
+    "name": "Broccoli, cooked",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Broccoli, cooked, boiled, drained, without salt",
+    "per100g": {
+      "kcal": 35,
+      "protein": 2.4,
+      "carb": 7.2,
+      "fat": 0.4,
+      "fibre": 3.3
+    }
+  },
+  "green-beans": {
+    "name": "Green beans, cooked",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Beans, snap, green, cooked, boiled, drained, without salt",
+    "per100g": {
+      "kcal": 35,
+      "protein": 1.9,
+      "carb": 7.9,
+      "fat": 0.3,
+      "fibre": 3.2
+    }
+  },
+  "cauliflower": {
+    "name": "Cauliflower",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Cauliflower, raw",
+    "per100g": {
+      "kcal": 25,
+      "protein": 1.9,
+      "carb": 5.0,
+      "fat": 0.3,
+      "fibre": 2.0
+    }
+  },
+  "mushrooms": {
+    "name": "Mushrooms",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Mushrooms, white, raw",
+    "per100g": {
+      "kcal": 22,
+      "protein": 3.1,
+      "carb": 3.3,
+      "fat": 0.3,
+      "fibre": 1.0
+    }
+  },
+  "avocado": {
+    "name": "Avocado",
+    "kind": "plant",
+    "aisle": "produce",
+    "pricey": true,
+    "usda": "Avocados, raw, all commercial varieties",
+    "per100g": {
+      "kcal": 160,
+      "protein": 2.0,
+      "carb": 8.5,
+      "fat": 14.7,
+      "fibre": 6.7
+    }
+  },
+  "banana": {
+    "name": "Banana",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Bananas, raw",
+    "per100g": {
+      "kcal": 89,
+      "protein": 1.1,
+      "carb": 22.8,
+      "fat": 0.3,
+      "fibre": 2.6
+    }
+  },
+  "apple": {
+    "name": "Apple",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Apples, raw, with skin",
+    "per100g": {
+      "kcal": 52,
+      "protein": 0.3,
+      "carb": 13.8,
+      "fat": 0.2,
+      "fibre": 2.4
+    }
+  },
+  "orange": {
+    "name": "Orange",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Oranges, raw, all commercial varieties",
+    "per100g": {
+      "kcal": 47,
+      "protein": 0.9,
+      "carb": 11.8,
+      "fat": 0.1,
+      "fibre": 2.4
+    }
+  },
+  "strawberries": {
+    "name": "Strawberries",
+    "kind": "plant",
+    "aisle": "produce",
+    "usda": "Strawberries, raw",
+    "per100g": {
+      "kcal": 32,
+      "protein": 0.7,
+      "carb": 7.7,
+      "fat": 0.3,
+      "fibre": 2.0
+    }
+  }
+}

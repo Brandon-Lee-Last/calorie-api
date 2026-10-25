@@ -133,6 +133,7 @@ describe('OpenAPI document', () => {
         'Config',
         'Recipes',
         'Activity',
+        'Meal plans',
         'Measurements',
         'Progress',
         'Reminders',

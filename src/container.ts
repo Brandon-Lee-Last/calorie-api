@@ -30,6 +30,8 @@ import { SessionsRepo } from './modules/workouts/sessions.repo';
 import { SessionsService } from './modules/workouts/sessions.service';
 import { WorkoutsRepo } from './modules/workouts/workouts.repo';
 import { WorkoutsService } from './modules/workouts/workouts.service';
+import { MealsRepo } from './modules/meals/meals.repo';
+import { MealsService } from './modules/meals/meals.service';
 import { SettingsRepo } from './modules/settings/settings.repo';
 import { SettingsService } from './modules/settings/settings.service';
 import { CatalogueRepo } from './modules/foods/catalogue.repo';
@@ -439,6 +441,18 @@ export class Container {
       () =>
         new WorkoutsService(
           new WorkoutsRepo(this.db),
+          async (userId) => (await this.subscriptions.entitlement(userId)).plan,
+          this.clock,
+        ),
+    );
+  }
+
+  get meals(): MealsService {
+    return this.once(
+      'meals',
+      () =>
+        new MealsService(
+          new MealsRepo(this.db),
           async (userId) => (await this.subscriptions.entitlement(userId)).plan,
           this.clock,
         ),

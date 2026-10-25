@@ -1,0 +1,35 @@
+{
+  "slug": "cottage-cheese-crispbread",
+  "title": "Cottage cheese on crispbread with tomato and cucumber",
+  "summary": "Light and quick.",
+  "slots": ["breakfast", "snack"],
+  "diets": ["balanced", "vegetarian", "high-protein"],
+  "minutes": 3,
+  "tags": ["no-cook", "quick"],
+  "ingredients": [
+    {
+      "id": "cottage-cheese",
+      "grams": 150,
+      "measure": "⅔ cup"
+    },
+    {
+      "id": "crispbread",
+      "grams": 20,
+      "measure": "2 crispbreads"
+    },
+    {
+      "id": "tomato",
+      "grams": 80,
+      "measure": "1 small"
+    },
+    {
+      "id": "cucumber",
+      "grams": 50,
+      "measure": "5 slices"
+    }
+  ],
+  "steps": [
+    "Spread the cottage cheese on the crispbreads.",
+    "Top with sliced tomato and cucumber, salt and pepper."
+  ]
+}

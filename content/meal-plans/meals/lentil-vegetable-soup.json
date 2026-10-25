@@ -1,0 +1,46 @@
+{
+  "slug": "lentil-vegetable-soup",
+  "title": "Lentil and vegetable soup with bread",
+  "summary": "A big pot for the week; freezes well.",
+  "slots": ["lunch", "dinner"],
+  "diets": ["balanced", "budget", "plant-based", "vegetarian", "mediterranean"],
+  "minutes": 35,
+  "tags": ["batch-cook"],
+  "ingredients": [
+    {
+      "id": "lentils",
+      "grams": 200,
+      "measure": "¾ cup cooked"
+    },
+    {
+      "id": "carrot",
+      "grams": 60,
+      "measure": "1 small"
+    },
+    {
+      "id": "onion",
+      "grams": 50,
+      "measure": "½ onion"
+    },
+    {
+      "id": "tinned-tomatoes",
+      "grams": 100,
+      "measure": "¼ tin"
+    },
+    {
+      "id": "olive-oil",
+      "grams": 5,
+      "measure": "1 tsp"
+    },
+    {
+      "id": "brown-bread",
+      "grams": 35,
+      "measure": "1 slice"
+    }
+  ],
+  "steps": [
+    "Soften the chopped onion and carrot in the oil.",
+    "Add the lentils, tomatoes, stock or water and spices (cumin, paprika). Simmer 20 minutes.",
+    "Serve with the bread."
+  ]
+}
