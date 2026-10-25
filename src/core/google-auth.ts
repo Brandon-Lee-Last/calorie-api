@@ -1,6 +1,7 @@
 import { SignJWT, importPKCS8 } from 'jose';
 import { notConfigured, upstreamFailed } from './errors';
 import type { Clock } from './time';
+import { globalFetch } from './fetch';
 
 type ServiceAccount = { client_email: string; private_key: string; token_uri?: string };
 
@@ -15,7 +16,7 @@ export class GoogleServiceAccountAuth {
   constructor(
     json: string | undefined,
     private clock: Clock,
-    private fetcher: typeof fetch = fetch,
+    private fetcher: typeof fetch = globalFetch,
   ) {
     this.account = parse(json);
   }

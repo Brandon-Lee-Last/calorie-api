@@ -1,5 +1,6 @@
 import type { Logger } from './logger';
 import type { RateLimiter } from './rate-limiter';
+import { globalFetch } from './fetch';
 
 export type Alert = {
   /** Same key = same problem: it is sent at most once every five minutes. */
@@ -28,7 +29,7 @@ export class WebhookAlerter implements Alerter {
     private environment: string,
     private limiter: RateLimiter,
     private logger: Logger,
-    private fetcher: typeof fetch = fetch,
+    private fetcher: typeof fetch = globalFetch,
   ) {}
 
   async notify(a: Alert): Promise<void> {

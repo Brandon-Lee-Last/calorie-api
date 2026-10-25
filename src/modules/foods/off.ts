@@ -1,4 +1,5 @@
 import { upstreamFailed } from '../../core/errors';
+import { globalFetch } from '../../core/fetch';
 
 export type ExternalFood = {
   source: 'openfoodfacts';
@@ -77,7 +78,7 @@ export class OpenFoodFactsClient implements FoodLookup {
 
   constructor(
     userAgent: string,
-    private fetcher: typeof fetch = fetch,
+    private fetcher: typeof fetch = globalFetch,
     private timeoutMs = 4000,
   ) {
     // A setting pasted with a line break would make every request throw; header values must be one line.

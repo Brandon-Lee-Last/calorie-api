@@ -2,6 +2,7 @@ import { hmacSha256Base64Url, randomToken, timingSafeEqual } from '../../core/cr
 import { notConfigured, AppError } from '../../core/errors';
 import type { GoogleServiceAccountAuth } from '../../core/google-auth';
 import type { Clock } from '../../core/time';
+import { globalFetch } from '../../core/fetch';
 
 export const CHALLENGE_TTL_MS = 5 * 60_000;
 
@@ -64,7 +65,7 @@ export class PlayIntegrityVerifier implements IntegrityVerifier {
     private packageName: string | undefined,
     private secret: string,
     private clock: Clock,
-    private fetcher: typeof fetch = fetch,
+    private fetcher: typeof fetch = globalFetch,
   ) {}
 
   async verify(token: string | null, challenge: string | null): Promise<boolean> {

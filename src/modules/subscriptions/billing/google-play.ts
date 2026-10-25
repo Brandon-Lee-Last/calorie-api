@@ -4,6 +4,7 @@ import type { Logger } from '../../../core/logger';
 import { DAY, type Clock } from '../../../core/time';
 import type { SubStatus } from '../entitlements';
 import type { BillingProvider, ProviderSubscription } from './provider';
+import { globalFetch } from '../../../core/fetch';
 
 const API = 'https://androidpublisher.googleapis.com/androidpublisher/v3/applications';
 const SCOPE = 'https://www.googleapis.com/auth/androidpublisher';
@@ -95,7 +96,7 @@ export class GooglePlayBillingProvider implements BillingProvider {
     private packageName: string | undefined,
     private clock: Clock,
     private logger: Logger,
-    private fetcher: typeof fetch = fetch,
+    private fetcher: typeof fetch = globalFetch,
   ) {}
 
   async verify(input: { productId: string; purchaseToken: string; userId: string }) {

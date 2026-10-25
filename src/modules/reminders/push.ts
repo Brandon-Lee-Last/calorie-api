@@ -1,5 +1,6 @@
 import type { GoogleServiceAccountAuth } from '../../core/google-auth';
 import type { Logger } from '../../core/logger';
+import { globalFetch } from '../../core/fetch';
 
 export type PushMessage = { token: string; title: string; body: string; data: Record<string, string> };
 
@@ -42,7 +43,7 @@ export class FcmSender implements PushSender {
     private auth: GoogleServiceAccountAuth,
     private projectId: string | undefined,
     private logger: Logger,
-    private fetcher: typeof fetch = fetch,
+    private fetcher: typeof fetch = globalFetch,
   ) {}
 
   get configured() {

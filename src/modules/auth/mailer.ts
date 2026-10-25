@@ -1,5 +1,6 @@
 import { notConfigured, upstreamFailed } from '../../core/errors';
 import type { Logger } from '../../core/logger';
+import { globalFetch } from '../../core/fetch';
 
 export type Email = { to: string; subject: string; text: string };
 
@@ -13,7 +14,7 @@ export class ResendMailer implements Mailer {
   constructor(
     private apiKey: string,
     private from: string,
-    private fetcher: typeof fetch = fetch,
+    private fetcher: typeof fetch = globalFetch,
   ) {}
 
   async send(email: Email): Promise<void> {
