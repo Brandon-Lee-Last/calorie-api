@@ -2,6 +2,30 @@
 
 ## One-time setup
 
+### Quick start: stage in the browser, no domain needed
+
+Everything below happens in the Cloudflare and GitHub websites; nothing to install.
+
+1. **Cloudflare** (dash.cloudflare.com):
+   - Delete any API token that was ever pasted into a chat (My Profile > API Tokens).
+   - Workers & Pages: if asked, pick your free `workers.dev` subdomain. Your stage address will be
+     `calorie-api-stage.<subdomain>.workers.dev`.
+   - R2: turn it on (it asks for a card; the free allowance is plenty for testing).
+   - Recommended: the Workers Paid plan (US$5 a month). The free plan caps calls per request, and a big sync can hit it.
+   - Create an API token (My Profile > API Tokens > Create Token > Custom): Account > Workers Scripts: Edit, D1: Edit,
+     Workers R2 Storage: Edit, Account Settings: Read. Copy it straight into GitHub (next step), nowhere else.
+2. **GitHub** (this repo > Settings > Environments > New environment `stage`):
+   - Secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` (Cloudflare dashboard, right-hand side of the account home),
+     and `JWT_SECRET`, `MEDIA_SIGNING_SECRET`, `ADMIN_API_KEY`: three different long random strings, for example from
+     `python -c "import secrets; print(secrets.token_urlsafe(48))"`, run once for each.
+   - Variables: `API_HOST` = `calorie-api-stage.<subdomain>.workers.dev`, and `OFF_USER_AGENT` =
+     `CalorieApp/1.0 (your contact email)`.
+3. **Deploy**: push to `main` (or Actions > Deploy stage > Run workflow). The first deploy creates the D1 database and
+   the R2 bucket itself and prints the database id; `D1_DATABASE_ID` only needs setting if you want to pin it.
+4. **Food list**: Actions > Food catalogue > Run workflow, tick "import".
+
+The longer route below (scripts, a custom domain) is the same thing done from a terminal.
+
 ### 1. Cloudflare
 
 You need a Cloudflare account with a domain (zone) on it for the API hostnames, R2 turned on (Dashboard > R2), and

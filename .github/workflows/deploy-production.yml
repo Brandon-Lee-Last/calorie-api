@@ -74,6 +74,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Create the database and media bucket on the first deploy
+        # Only when D1_DATABASE_ID is not set: makes calorie-production and calorie-media-production if missing and finds the id.
+        if: env.D1_DATABASE_ID == ''
+        run: |
+          npx wrangler d1 create calorie-production || echo "(database there already)"
+          npx wrangler r2 bucket create calorie-media-production || echo "(bucket there already, or R2 is not turned on for this account)"
+          id=$(npx wrangler d1 list --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const db=JSON.parse(s).find(d=>d.name==="calorie-production");console.log(db?(db.uuid??db.id??""):"")})')
+          [ -n "$id" ] || { echo "::error::Could not find or create the D1 database calorie-production"; exit 1; }
+          echo "D1_DATABASE_ID=$id" >> "$GITHUB_ENV"
+          echo "Database calorie-production: $id"
       - name: Fill in this environment's ids and hostnames
         run: node scripts/render-wrangler.mjs
       - name: Apply database migrations

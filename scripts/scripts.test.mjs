@@ -52,6 +52,20 @@ test('render-wrangler fills the placeholders for an environment', () => {
   rmSync(out, { force: true });
 });
 
+test('render-wrangler serves on workers.dev when there is no custom domain', () => {
+  const out = fileURLToPath(new URL('../wrangler.rendered.jsonc', import.meta.url));
+  rmSync(out, { force: true });
+  const r = run('render-wrangler.mjs', [], {
+    D1_DATABASE_ID: 'abc-123',
+    API_HOST: 'calorie-api-stage.brandon.workers.dev',
+  });
+  assert.equal(r.status, 0, r.stderr);
+  const text = readFileSync(out, 'utf8');
+  assert.ok(text.includes('"workers_dev": true'));
+  assert.ok(!text.includes('custom_domain'), 'no custom domain route');
+  rmSync(out, { force: true });
+});
+
 test('render-wrangler refuses to run with a value missing', () => {
   const r = run('render-wrangler.mjs', [], { API_HOST: 'x.example.com' });
   assert.notEqual(r.status, 0);
