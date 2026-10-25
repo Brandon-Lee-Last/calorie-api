@@ -36,6 +36,7 @@ describe('GET /config', () => {
       features: { aiText: true, emailSignIn: true, workouts: true, scanContributions: true },
       signIn: { google: false, email: true },
       integrity: { required: false },
+      testPurchases: true, // the test configuration allows simulated purchases
       urls: { store: null, privacy: null, terms: null, supportEmail: null },
     });
     expect(c.plans.free.limits).toEqual(PLANS.free.limits);

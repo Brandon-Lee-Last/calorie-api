@@ -42,6 +42,9 @@ export const publicConfigSchema = z
     features: z.record(z.string(), z.boolean()).describe('false means switched off right now'),
     signIn: z.object({ google: z.boolean(), email: z.boolean() }),
     integrity: z.object({ required: z.boolean() }),
+    testPurchases: z
+      .boolean()
+      .describe('A test server: `POST /subscription/simulate` works, so the app may offer to try Plus. Never true in production'),
     urls: z.object({
       store: z.string().nullable(),
       privacy: z.string().nullable(),

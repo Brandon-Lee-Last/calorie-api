@@ -38,6 +38,7 @@ settingsRoutes.openapi(
           email: d.emailSignInAvailable && !s.disabledFeatures.includes('emailSignIn'),
         },
         integrity: { required: d.integrity.required },
+        testPurchases: cfg.SIMULATE_ENABLED,
         urls: {
           store: cfg.STORE_URL ?? null,
           privacy: cfg.PRIVACY_URL ?? null,
