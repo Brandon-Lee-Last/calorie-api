@@ -50,6 +50,10 @@ No single check is trusted to be perfect (the OWASP Top 10 for LLM applications,
 Meals from groceries go further: the model may only pick from the person's foods (by reference, `i1`, `i2`...) and
 seven zero-calorie staples. The server drops any recipe with an invented ingredient or silly amount, and works out the
 nutrition from the foods' own figures (USDA or the label), never from the model, then sizes the portion to the goal.
+The numbers are counted from the grams as listed (rounded to what a kitchen scale shows), and each ingredient carries
+its own calories, so the list adds up to the total. Because the portion is resized after the model writes, its steps
+must not name amounts: the prompt asks for clear steps without them (heat, time, how to tell it is done), and the
+server strips any weight that slips through (`withoutAmounts`).
 
 An answer that fails a check is replaced with a reply that still helps: why so few calories is unsafe, to ask a doctor
 or pharmacist about medicines, no calorie targets for under-18s. A leaked prompt gets the plain fallback.

@@ -72,9 +72,15 @@ export const pantryResultSchema = z
             name: z.string(),
             grams: z.number(),
             foodId: z.string().nullable().describe('null for a staple such as salt'),
+            calories: z
+              .number()
+              .int()
+              .describe('This ingredient at these grams, from its own figures; 0 for a staple'),
           }),
         ),
-        steps: z.array(z.string()),
+        steps: z
+          .array(z.string())
+          .describe('How to make it; amounts are in `ingredients`, never in the steps'),
         nutrition: z
           .object({ calories: z.number(), proteinG: z.number(), carbG: z.number(), fatG: z.number() })
           .describe('One portion, worked out from the foods’ own figures'),

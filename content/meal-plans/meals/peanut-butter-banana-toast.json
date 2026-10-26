@@ -23,5 +23,9 @@
       "measure": "1 medium"
     }
   ],
-  "steps": ["Toast the bread, spread the peanut butter and top with sliced banana."]
+  "steps": [
+    "Toast the bread.",
+    "Spread the peanut butter evenly while the toast is warm.",
+    "Slice the banana on top, and add a pinch of cinnamon if you like."
+  ]
 }

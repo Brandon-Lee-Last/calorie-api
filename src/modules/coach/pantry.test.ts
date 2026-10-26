@@ -3,7 +3,7 @@ import { FakeAi } from '../../../test/helpers/ai';
 import { T0, body, jsonInit, linkAccount, makeApp, signUp } from '../../../test/helpers/app';
 import { newId } from '../../core/ids';
 import type { FoodRow } from '../foods/foods.repo';
-import { buildRecipes } from './pantry';
+import { buildRecipes, withoutAmounts } from './pantry';
 
 const row = (id: string, name: string, kcal: number, p: number, c: number, f: number) =>
   ({ id, name, brand: null, calories_100g: kcal, protein_100g: p, carb_100g: c, fat_100g: f }) as FoodRow;
@@ -39,10 +39,12 @@ describe('recipes from groceries', () => {
     // 150 g rice (184.5 kcal) + 120 g chicken (198 kcal) = 382.5 kcal, so 1½ portions for 600 kcal
     expect(r!.nutrition).toEqual({ calories: 574, proteinG: 61.9, carbG: 57.6, fatG: 8.7 });
     expect(r!.ingredients).toEqual([
-      { name: 'Brown rice, cooked', grams: 225, foodId: 'rice' },
-      { name: 'Chicken breast, cooked', grams: 180, foodId: 'chicken' },
-      { name: 'Salt', grams: 2, foodId: null },
+      { name: 'Brown rice, cooked', grams: 225, foodId: 'rice', calories: 277 },
+      { name: 'Chicken breast, cooked', grams: 180, foodId: 'chicken', calories: 297 },
+      { name: 'Salt', grams: 2, foodId: null, calories: 0 },
     ]);
+    // What the list says is what is counted: the ingredients add up to the total.
+    expect(r!.ingredients.reduce((s, i) => s + i.calories, 0)).toBe(r!.nutrition.calories);
   });
 
   it('drops a recipe with an invented ingredient, a silly amount, or fewer than two of the foods', () => {
@@ -103,6 +105,29 @@ describe('recipes from groceries', () => {
     );
     expect(r!.title).toBe('Tasty bowl');
     expect(r!.steps).toEqual(['See for more', 'Serve.']);
+  });
+
+  it('takes weights out of the steps, since the portion is resized after the model writes them', () => {
+    expect(withoutAmounts('Add about 60 g of oats to the pot.')).toBe('Add oats to the pot.');
+    expect(withoutAmounts('Stir in 250ml milk and 1.5 g salt.')).toBe('Stir in milk and salt.');
+    expect(withoutAmounts('Roast at 200 °C for 25 minutes.')).toBe('Roast at 200 °C for 25 minutes.');
+    const [r] = buildRecipes(
+      {
+        recipes: [
+          recipe(
+            [
+              { ref: 'i2', grams: 120 },
+              { ref: 'i3', grams: 100 },
+            ],
+            { steps: ['Fry 120 g chicken until cooked through.', 'Serve.'] },
+          ),
+        ],
+      },
+      foods,
+      'lunch',
+      300,
+    );
+    expect(r!.steps[0]).toBe('Fry chicken until cooked through.');
   });
 });
 

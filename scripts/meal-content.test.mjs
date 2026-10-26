@@ -125,6 +125,18 @@ test('every diet has enough meals for each part of the day to vary a week', () =
   }
 });
 
+test('every meal says how to make it, step by step, without amounts that portions would make wrong', () => {
+  for (const m of meals) {
+    assert.ok(m.steps.length >= 1, `${m.slug}: no steps`);
+    if (m.minutes >= 15) assert.ok(m.steps.length >= 3, `${m.slug}: a cooked meal needs at least 3 steps`);
+    for (const s of m.steps) {
+      assert.ok(s.length <= 400 && /[.!?)]$/.test(s), `${m.slug}: "${s}" is too long or not a sentence`);
+      // The app scales portions, so a weight in a step would be wrong at any other size: use the ingredient list.
+      assert.doesNotMatch(s, /\b\d+\s?(g|kg|ml)\b/, `${m.slug}: "${s}" names an amount`);
+    }
+  }
+});
+
 test('planPrune deletes what the folder no longer has, meals before diets', () => {
   const steps = planPrune(root, { meals: ['banana', 'old-meal'], diets: ['balanced', 'old-diet'] });
   assert.deepEqual(

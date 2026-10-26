@@ -23,5 +23,8 @@
       "measure": "a chunk"
     }
   ],
-  "steps": ["Cut the vegetables into sticks and dip."]
+  "steps": [
+    "Peel the carrot, and cut it and the cucumber into finger-length sticks.",
+    "Spoon the hummus into a small bowl and dip."
+  ]
 }
