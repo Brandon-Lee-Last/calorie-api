@@ -67,7 +67,7 @@ jobs:
       MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE }}
       MAINTENANCE_MESSAGE: ${{ vars.MAINTENANCE_MESSAGE }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.inputs.ref || github.ref }}
       - uses: actions/setup-node@v4
