@@ -40,7 +40,7 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=6144 # USDA's files are a few hundred MB of JSON each
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - run: mkdir -p catalogue
@@ -110,7 +110,7 @@ jobs:
       ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - uses: actions/download-artifact@v4
