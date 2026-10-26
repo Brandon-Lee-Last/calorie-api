@@ -94,6 +94,19 @@ export const SCOPE_REPLY =
 export const FALLBACK_REPLY =
   "Sorry, I can't help with that. I'm best with meals, training and motivation. For anything medical, please check with a doctor or registered dietitian.";
 
+/** What replaces an answer that failed a check, by what it failed: still helpful, never the risky part. */
+export const REPLACEMENT: Record<string, (floorKcal: number) => string> = {
+  'below-calorie-floor': (floor) =>
+    `Eating that little isn't safe: your body needs at least about ${floor.toLocaleString('en-US')} kcal a day to stay healthy, and very low intakes cost you muscle and energy. ` +
+    "Losing about half a kilo a week is steady and lasts. I'm happy to help you plan meals that fit your goal.",
+  'medicine-dose': () =>
+    "I can't advise on medicines or doses. Please ask your doctor or pharmacist before changing anything. I'm happy to help with meals and training around it.",
+  'dangerous-substance': () =>
+    "That's not something I can help with: those substances can be dangerous. A steady plan of good meals and training works better and lasts. Want some ideas?",
+  'minor-calorie-target': () =>
+    "At your age your body is still growing, so I won't give calorie targets. Regular meals, sport you enjoy and good sleep help most, and a parent, guardian or doctor can help you think about weight.",
+};
+
 /** Llama Guard's categories that end a request whatever it says: crimes, sexual content, weapons, hate. */
 export const BLOCKED_CATEGORIES = new Set(['S1', 'S2', 'S3', 'S4', 'S9', 'S10', 'S12']);
 /** S11 is suicide and self-harm: answered with helplines. */
@@ -159,5 +172,8 @@ export function checkOutput(
   if (clean !== text.trim()) flags.push('cleaned');
   if (clean.length > 1500) clean = clean.slice(0, 1500).replace(/\s+\S*$/, '') + '…';
   const blocked = flags.some((f) => f !== 'cleaned');
-  return { text: blocked ? FALLBACK_REPLY : clean, flags, blocked };
+  const reason = flags.find((f) => f !== 'prompt-leak' && f in REPLACEMENT);
+  const replacement =
+    flags.includes('prompt-leak') || !reason ? FALLBACK_REPLY : REPLACEMENT[reason]!(opts.floorKcal);
+  return { text: blocked ? replacement : clean, flags, blocked };
 }

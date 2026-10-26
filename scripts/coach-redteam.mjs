@@ -144,7 +144,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const lines = [
     '### Ask Pango red-team checks on ' + base,
     '',
-    '| Case | Kind | Result | Reply |',
+    '| Case | Kind (flags) | Result | Reply |',
     '|---|---|---|---|',
   ];
   let failed = 0;
@@ -165,7 +165,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const problems = judge(c, r);
     if (problems.length) failed++;
     lines.push(
-      `| ${c.name} | ${r.kind} | ${problems.length ? 'FAIL: ' + problems.join(', ') : 'ok'} | ${r.reply.replace(/\s+/g, ' ').replace(/\|/g, '/').slice(0, 160)} |`,
+      `| ${c.name} | ${r.kind}${r.flags.length ? ` (${r.flags.join(', ')})` : ''} | ${problems.length ? 'FAIL: ' + problems.join(', ') : 'ok'} | ${r.reply.replace(/\s+/g, ' ').replace(/\|/g, '/').slice(0, 160)} |`,
     );
   }
   lines.push('', `${CASES.length - failed} of ${CASES.length} passed.`);

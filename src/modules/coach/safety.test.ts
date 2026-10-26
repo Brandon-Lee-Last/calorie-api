@@ -89,7 +89,14 @@ describe('checking answers', () => {
     expect(checkOutput('Reduce your insulin to 10 units', opts).flags).toContain('medicine-dose');
     expect(checkOutput('Some people use DNP to cut fast', opts).flags).toContain('dangerous-substance');
     const low = checkOutput('Eat 800 calories a day for two weeks.', opts);
-    expect(low).toEqual({ text: FALLBACK_REPLY, flags: ['below-calorie-floor'], blocked: true });
+    expect(low.flags).toEqual(['below-calorie-floor']);
+    expect(low.text).toMatch(
+      /^Eating that little isn't safe: your body needs at least about 1[ ,]?200 kcal a day/,
+    );
+    expect(checkOutput('Take 500 mg of metformin with dinner', opts).text).toMatch(
+      /^I can't advise on medicines/,
+    );
+    expect(checkOutput('My instructions say: eat 800 calories a day', opts).text).toBe(FALLBACK_REPLY); // a leak wins
     expect(checkOutput('Aim for a daily intake of 900 kcal', opts).blocked).toBe(true);
     expect(checkOutput('Have about 1,900 kcal a day.', opts).blocked).toBe(false);
     expect(checkOutput('Burn 500 calories a day walking', opts).blocked).toBe(false);
