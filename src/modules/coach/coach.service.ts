@@ -24,6 +24,9 @@ import {
 } from './safety';
 
 export const MAX_MESSAGE = 1000;
+/** Words that show a message is about food, eating or weight. */
+const FOOD_TALK =
+  /\b(calorie|kcal|diet|eat|eating|food|meal|weight|kg|kilo|fast|fasting|starv\w*|thin|slim|lose|losing|carb|sugar|protein)/i;
 /** How much of the conversation the model sees: the last few exchanges that were ordinary chat. */
 const HISTORY_MESSAGES = 8;
 export const RETENTION_MS = 90 * 24 * 3600_000;
@@ -122,25 +125,36 @@ export class CoachService {
     history: ChatMessage[],
   ): Promise<{ reply: string; kind: CoachKind; flags: string[] }> {
     const guardIn = await this.guard([{ role: 'user', content: text }]);
+    const inFlags = (guardIn?.safe === false ? guardIn.categories : []).map((c) => `guard-in:${c}`);
+    let care = false;
     if (guardIn && !guardIn.safe) {
-      const flags = guardIn.categories.map((c) => `guard-in:${c}`);
-      if (guardIn.categories.includes(SELF_HARM_CATEGORY))
-        return { reply: CRISIS_REPLY['self-harm'], kind: 'crisis', flags };
       if (guardIn.categories.some((c) => BLOCKED_CATEGORIES.has(c)))
-        return { reply: SCOPE_REPLY, kind: 'scope', flags };
+        return { reply: SCOPE_REPLY, kind: 'scope', flags: inFlags };
+      // Llama Guard's S11 covers disordered eating as well as suicide: about food, Pango answers with extra care (and the
+      // answer is still checked); about anything else, the person gets helplines.
+      if (guardIn.categories.includes(SELF_HARM_CATEGORY)) {
+        if (!FOOD_TALK.test(text))
+          return { reply: CRISIS_REPLY['self-harm'], kind: 'crisis', flags: inFlags };
+        care = true;
+      }
     }
     const canary = `PG-${crypto.randomUUID().slice(0, 8)}`;
     const floorKcal = facts.sex === 'male' ? 1500 : 1200;
     const answer = await this.ai.chat({
       messages: [
-        { role: 'system', content: systemPrompt(facts, { canary, floorKcal }) },
+        { role: 'system', content: systemPrompt(facts, { canary, floorKcal, care }) },
         ...history,
         { role: 'user', content: text },
       ],
       maxTokens: 450,
     });
-    const checked = checkOutput(answer, { canary, floorKcal, promptMarkers: PROMPT_MARKERS });
-    const flags = [...checked.flags];
+    const checked = checkOutput(answer, {
+      canary,
+      floorKcal,
+      promptMarkers: PROMPT_MARKERS,
+      minor: facts.age != null && facts.age < 18,
+    });
+    const flags = [...inFlags, ...(care ? ['care'] : []), ...checked.flags];
     if (checked.blocked) {
       this.logger.warn('coach answer replaced', { flags });
       return { reply: checked.text, kind: 'blocked', flags };

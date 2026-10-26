@@ -66,7 +66,7 @@ export function attackSignals(text: string): string[] {
 const SELF_HARM =
   /\b(kill(ing)? myself|suicid\w*|end (it all|my life)|want(ed)? to die|don'?t want to (live|be alive|be here)|self[- ]?harm\w*|cut(ting)? myself|hurt(ing)? myself|no reason to live|better off dead|selfmoord|wil (nie meer )?(leef|lewe)|maak myself dood)\b/i;
 const EATING_DISORDER =
-  /\b(make myself (sick|throw up|vomit|puke)|throw(ing)? up after (i eat|eating|meals?|food)|purg(e|es|ed|ing)\b|laxatives?|diet pills?|starv(e|ing) myself|stop eating (completely|for days|altogether)|eat(ing)? nothing (for|all)|not eat(ing)? for \d+ days|anorexi\w*|bulimi\w*|pro[- ]?ana|thinspo\w*|hate my body)\b/i;
+  /\b(make myself (sick|throw up|vomit|puke)|throw(ing)? up after (i eat|eating|meals?|food)|purg(e|es|ed|ing)\b|laxatives? (to|for) (lose|losing|weight|slim\w*)|(use|take|taking|using) laxatives?|starv(e|ing) myself|stop eating (completely|for days|altogether)|eat(ing)? nothing (for|all)|not eat(ing)? for \d+ days|anorexi\w*|bulimi\w*|pro[- ]?ana|thinspo\w*|hate my body)\b/i;
 
 export type Crisis = 'self-harm' | 'eating';
 
@@ -109,8 +109,15 @@ const DOSE = new RegExp(
 );
 const DAILY_KCAL =
   /(\d[\d ,.]{1,6})\s*(?:k?cal(?:ories)?|kcal)\s*(?:a|per|each|every)\s*day|daily\s*(?:intake|total|target|budget)?\s*(?:of|to|at)?\s*(\d[\d ,.]{1,6})\s*(?:k?cal(?:ories)?|kcal)/gi;
+/** Words before a number that mean it is not an intake being recommended ("a deficit of 500 kcal a day", "never below"). */
 const NOT_INTAKE =
-  /\b(deficit|burn\w*|cut(ting)?|fewer|less|reduc\w*|lower\w*|drop\w*|minus|under your|below your|surplus|extra|more)\b/i;
+  /\b(deficit|burn\w*|cut(ting)?|fewer|less|reduc\w*|lower\w*|drop\w*|minus|under|below|surplus|extra|more|never|don'?t|do not|avoid|not|instead of)\b/i;
+/** Words after it that mean it is a warning ("600 calories a day is too low"). */
+const WARNING_AFTER =
+  /^[^.\n]{0,60}\b(too low|too little|not (safe|enough|recommended|healthy|sustainable)|unsafe|dangerous|risky|harmful|isn'?t|is not)\b/i;
+/** An answer that describes the coach's own rules or instructions, in any words. */
+const RULES_TALK =
+  /\b(guidelines|rules|instructions|principles)\s+(that\s+)?i\s+(follow|was given|have been given|work by|operate (by|under))\b|\bhere are (my|the) (guidelines|rules|instructions)\b|\bmy (system )?(prompt|instructions|programming)\b|\bi('m| am) (programmed|instructed|told) (to|not to)\b/i;
 
 export type OutputCheck = { text: string; flags: string[]; blocked: boolean };
 
@@ -121,17 +128,22 @@ export type OutputCheck = { text: string; flags: string[]; blocked: boolean };
  */
 export function checkOutput(
   text: string,
-  opts: { canary: string; floorKcal: number; promptMarkers: string[] },
+  opts: { canary: string; floorKcal: number; promptMarkers: string[]; minor?: boolean },
 ): OutputCheck {
   const flags: string[] = [];
-  if (text.includes(opts.canary) || opts.promptMarkers.some((m) => text.includes(m)))
+  if (text.includes(opts.canary) || opts.promptMarkers.some((m) => text.includes(m)) || RULES_TALK.test(text))
     flags.push('prompt-leak');
+  // Under-18s get no calorie targets (a day's worth is 1,000 kcal or more).
+  if (opts.minor && /\b(1[ ,.]?\d{3}|[2-4][ ,.]?\d{3})\s*(k?cal|calories|kilojoules|kj)\b/i.test(text))
+    flags.push('minor-calorie-target');
   if (DOSE.test(text)) flags.push('medicine-dose');
   if (DANGEROUS_SUBSTANCES.test(text)) flags.push('dangerous-substance');
   for (const m of text.matchAll(DAILY_KCAL)) {
     const n = Number((m[1] ?? m[2] ?? '').replace(/[ ,.]/g, ''));
     const before = text.slice(Math.max(0, (m.index ?? 0) - 30), m.index ?? 0);
-    if (n >= 400 && n < opts.floorKcal && !NOT_INTAKE.test(before)) flags.push('below-calorie-floor');
+    const after = text.slice((m.index ?? 0) + m[0].length);
+    if (n >= 400 && n < opts.floorKcal && !NOT_INTAKE.test(before) && !WARNING_AFTER.test(after))
+      flags.push('below-calorie-floor');
   }
   let clean = text
     .replace(/!\[[^\]]*\]\([^)]*\)/g, '') // markdown images

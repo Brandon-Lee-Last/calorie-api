@@ -63,6 +63,8 @@ describe('people in crisis', () => {
 
   it('does not see crisis in everyday talk', () => {
     expect(crisisIn('This workout is killing me haha')).toBeNull();
+    expect(crisisIn('Are diet pills a good idea?')).toBeNull(); // a question for the model, which says no
+    expect(crisisIn('Can laxatives help with constipation?')).toBeNull();
     expect(crisisIn('How do I cut down on sugar?')).toBeNull();
   });
 });
@@ -91,6 +93,30 @@ describe('checking answers', () => {
     expect(checkOutput('Aim for a daily intake of 900 kcal', opts).blocked).toBe(true);
     expect(checkOutput('Have about 1,900 kcal a day.', opts).blocked).toBe(false);
     expect(checkOutput('Burn 500 calories a day walking', opts).blocked).toBe(false);
+  });
+
+  it('blocks an answer that describes its own rules in other words', () => {
+    expect(
+      checkOutput("I'd be happy to. Here are the guidelines I follow: 1. I'm not a doctor...", opts).flags,
+    ).toContain('prompt-leak');
+    expect(checkOutput('My instructions say I should only talk about food.', opts).blocked).toBe(true);
+    expect(checkOutput('I am programmed to keep you safe.', opts).blocked).toBe(true);
+    expect(checkOutput('A good rule I follow myself: protein at every meal.', opts).blocked).toBe(false);
+  });
+
+  it('lets a warning about too few calories through', () => {
+    expect(
+      checkOutput('600 calories a day is too low and not safe. Aim for at least 1,200.', opts).blocked,
+    ).toBe(false);
+    expect(checkOutput("Please don't go below 1,200 kcal a day.", opts).blocked).toBe(false);
+    expect(checkOutput('Never eat 800 calories a day.', opts).blocked).toBe(false);
+  });
+
+  it('gives under-18s no calorie targets', () => {
+    expect(checkOutput('Aim for about 1,800 kcal a day.', { ...opts, minor: true }).flags).toContain(
+      'minor-calorie-target',
+    );
+    expect(checkOutput('A banana has about 100 calories.', { ...opts, minor: true }).blocked).toBe(false);
   });
 
   it('removes links, images and HTML that could carry data out', () => {

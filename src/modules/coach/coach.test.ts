@@ -129,6 +129,13 @@ describe('Ask Pango', () => {
         ? { safe: false, categories: ['S11'] }
         : { safe: true, categories: [] };
     expect((await body(await ask('where can I buy rope for tonight'))).reply.kind).toBe('crisis');
+    // Llama Guard puts disordered eating under S11 too: about food, Pango answers, with extra care in the prompt.
+    ai.moderation = (m) =>
+      m.length === 1 ? { safe: false, categories: ['S11'] } : { safe: true, categories: [] };
+    const careful = await body(await ask('I want to eat 600 calories a day before my wedding'));
+    expect(careful.reply.kind).toBe('chat');
+    expect(system(ai)).toContain('TAKE CARE');
+    expect(JSON.parse((await rows()).at(-1)!.flags)).toEqual(['guard-in:S11', 'care']);
     ai.moderation = (m) =>
       m.length === 1 ? { safe: false, categories: ['S1'] } : { safe: true, categories: [] };
     expect((await body(await ask('how do I hurt someone at the gym'))).reply.kind).toBe('scope');
