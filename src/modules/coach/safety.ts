@@ -130,7 +130,7 @@ const WARNING_AFTER =
   /^[^.\n]{0,60}\b(too low|too little|not (safe|enough|recommended|healthy|sustainable)|unsafe|dangerous|risky|harmful|isn'?t|is not)\b/i;
 /** An answer that describes the coach's own rules or instructions, in any words. */
 const RULES_TALK =
-  /\b(guidelines|rules|instructions|principles)\s+(that\s+)?i\s+(follow|was given|have been given|work by|operate (by|under))\b|\bhere are (my|the) (guidelines|rules|instructions)\b|\bmy (system )?(prompt|instructions|programming)\b|\bi('m| am) (programmed|instructed|told) (to|not to)\b/i;
+  /\b(guidelines|rules|instructions|principles)\s+(that\s+)?i\s+(follow|was given|have been given|work by|operate (by|under))\b|\bhere are (my|the) (guidelines|rules|instructions)\b|\bmy (system )?(prompt|instructions|programming)\b|\bi('m| am) (programmed|instructed|told) (to|not to)\b|\bi (follow|have|stick to|abide by|must follow|work under) (these|the following|some|a few|certain|several|clear) (safety )?(guidelines|rules|instructions|principles)\b|\b(my|these) (safety )?(guidelines|rules) (are|include)\b/i;
 
 export type OutputCheck = { text: string; flags: string[]; blocked: boolean };
 

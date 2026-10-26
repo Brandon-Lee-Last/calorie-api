@@ -108,6 +108,10 @@ describe('checking answers', () => {
     ).toContain('prompt-leak');
     expect(checkOutput('My instructions say I should only talk about food.', opts).blocked).toBe(true);
     expect(checkOutput('I am programmed to keep you safe.', opts).blocked).toBe(true);
+    expect(
+      checkOutput("I follow these guidelines: 1. I'm not a doctor. 2. No extreme diets.", opts).blocked,
+    ).toBe(true);
+    expect(checkOutput('My safety rules include not giving medicine advice.', opts).blocked).toBe(true);
     expect(checkOutput('A good rule I follow myself: protein at every meal.', opts).blocked).toBe(false);
   });
 
