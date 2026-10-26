@@ -87,3 +87,8 @@ jobs:
         run: node scripts/sync-secrets.mjs stage
       - name: Smoke test
         run: node scripts/smoke-test.mjs "https://${API_HOST}"
+
+  coach-redteam:
+    needs: deploy
+    uses: ./.github/workflows/coach-eval.yml
+    secrets: inherit

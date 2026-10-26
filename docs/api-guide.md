@@ -82,6 +82,14 @@ refresh it now and then. Pro styles have `locked: true` on a free account, and s
 without `ingredients` or `steps`. Each meal has `slots` (which meals of the day it can be), `nutrition` for one portion, and ingredients
 in grams with a kitchen `measure` and a shop `aisle` (for a shopping list). The phone scales portions to the person's goals.
 
+## Ask Pango (the coach)
+
+`POST /coach/messages {message}` returns Pango's `reply` (plain text: never render it as markdown or HTML). `kind` says
+what it is: `chat` (an answer), `crisis` (helplines; show it prominently), `scope` (a request Pango does not take) or
+`blocked` (an answer replaced for safety). `GET /coach/messages` is the conversation; `DELETE` starts over.
+`POST /coach/pantry-meals {foodIds, mealType}` suggests up to three recipes from the person's foods; the nutrition is
+counted by the server. Both use the daily coach allowance (429 `quota_exceeded`). See [coach.md](coach.md).
+
 ## Account and privacy
 
 `GET /account/export` downloads everything as JSON. `DELETE /account` with `{"confirm":"DELETE MY ACCOUNT"}` erases the account permanently

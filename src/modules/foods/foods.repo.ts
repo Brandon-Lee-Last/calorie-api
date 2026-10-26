@@ -123,6 +123,18 @@ export class FoodsRepo {
     );
   }
 
+  /** Foods this person may use: their own and the shared catalogue's. Unknown or deleted ids are left out. */
+  visibleByIds(userId: string, ids: string[]): Promise<FoodRow[]> {
+    if (ids.length === 0) return Promise.resolve([]);
+    return all<FoodRow>(
+      this.db
+        .prepare(
+          `SELECT * FROM foods WHERE id IN (${ids.map(() => '?').join(', ')}) AND deleted_at IS NULL AND (user_id IS NULL OR user_id = ?)`,
+        )
+        .bind(...ids, userId),
+    );
+  }
+
   findOwnByBarcode(userId: string, barcode: string): Promise<FoodRow | null> {
     return first<FoodRow>(
       this.db

@@ -129,6 +129,7 @@ const USER_TABLES = [
   'refresh_tokens',
   'identities',
   'user_profiles',
+  'coach_messages',
 ];
 
 describe('data export', () => {

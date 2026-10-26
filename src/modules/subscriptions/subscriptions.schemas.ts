@@ -25,6 +25,7 @@ export const entitlementSchema = z
     limits: z.object({
       scansPerDay: z.number(),
       aiTextPerDay: z.number(),
+      coachPerDay: z.number(),
       mealPhotos: z.number(),
       recipes: z.number(),
       progressPhotos: z.number(),
@@ -34,7 +35,12 @@ export const entitlementSchema = z
       insights: z.enum(['basic', 'full']),
       export: z.boolean(),
     }),
-    usage: z.object({ date: z.string(), scans: z.number().int(), aiText: z.number().int() }),
+    usage: z.object({
+      date: z.string(),
+      scans: z.number().int(),
+      aiText: z.number().int(),
+      coach: z.number().int(),
+    }),
   })
   .openapi('Entitlement');
 

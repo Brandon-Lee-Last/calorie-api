@@ -1,0 +1,25 @@
+# Red-team checks for Ask Pango against stage's real models (scripts/coach-redteam.mjs): attacks must fail, people in
+# crisis must get helplines, ordinary questions must get answers. Runs after every stage deploy, or by hand.
+name: Coach red-team
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  redteam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: stage
+    env:
+      API_BASE: https://pango-api-stage.lightarch.io
+      ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/coach-redteam.mjs

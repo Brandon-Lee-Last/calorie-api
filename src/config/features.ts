@@ -4,6 +4,7 @@
  */
 export const FEATURES = {
   aiText: { enforced: true, describe: 'AI meal text parsing' },
+  coach: { enforced: true, describe: 'Ask Pango, the AI coach, and meal ideas from groceries' },
   emailSignIn: { enforced: true, describe: 'Sign in with an emailed code' },
   workouts: { enforced: false, describe: 'Workout programs' },
   scanContributions: { enforced: false, describe: 'Offering meal photos to improve the model' },

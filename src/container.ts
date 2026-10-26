@@ -32,6 +32,9 @@ import { WorkoutsRepo } from './modules/workouts/workouts.repo';
 import { WorkoutsService } from './modules/workouts/workouts.service';
 import { MealsRepo } from './modules/meals/meals.repo';
 import { MealsService } from './modules/meals/meals.service';
+import { CoachRepo } from './modules/coach/coach.repo';
+import { CoachService } from './modules/coach/coach.service';
+import { PantryService } from './modules/coach/pantry';
 import { SettingsRepo } from './modules/settings/settings.repo';
 import { SettingsService } from './modules/settings/settings.service';
 import { CatalogueRepo } from './modules/foods/catalogue.repo';
@@ -459,6 +462,31 @@ export class Container {
     );
   }
 
+  get coach(): CoachService {
+    return this.once(
+      'coach',
+      () =>
+        new CoachService(
+          new CoachRepo(this.db),
+          this.aiClient,
+          new UsersRepo(this.db),
+          new DiaryRepo(this.db),
+          new BodyRepo(this.db),
+          new SessionsRepo(this.db),
+          new MealsRepo(this.db),
+          this.clock,
+          this.logger,
+        ),
+    );
+  }
+
+  get pantry(): PantryService {
+    return this.once(
+      'pantry',
+      () => new PantryService(this.aiClient, new FoodsRepo(this.db), new UsersRepo(this.db)),
+    );
+  }
+
   get sessions(): SessionsService {
     return this.once(
       'sessions',
@@ -499,7 +527,14 @@ export class Container {
   get aiClient(): AiClient {
     return this.once(
       'aiClient',
-      () => this.overrides.ai ?? new WorkersAiClient(this.env.AI, this.config.AI_TEXT_MODEL),
+      () =>
+        this.overrides.ai ??
+        new WorkersAiClient(
+          this.env.AI,
+          this.config.AI_TEXT_MODEL,
+          this.config.AI_COACH_MODEL,
+          this.config.AI_GUARD_MODEL,
+        ),
     );
   }
 

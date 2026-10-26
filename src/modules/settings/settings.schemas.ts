@@ -59,6 +59,7 @@ export const publicConfigSchema = z
         limits: z.object({
           scansPerDay: z.number(),
           aiTextPerDay: z.number(),
+          coachPerDay: z.number(),
           mealPhotos: z.number(),
           recipes: z.number(),
           progressPhotos: z.number(),

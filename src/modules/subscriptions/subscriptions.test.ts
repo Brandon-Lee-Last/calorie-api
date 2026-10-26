@@ -48,7 +48,7 @@ describe('entitlements for a new account', () => {
       isTrial: false,
       limits: PLANS.free.limits,
       features: PLANS.free.features,
-      usage: { date: '2026-10-21', scans: 0, aiText: 0 },
+      usage: { date: '2026-10-21', scans: 0, aiText: 0, coach: 0 },
     }); // fmt: skip
   });
   it('need sign-in', async () => {
@@ -256,11 +256,11 @@ describe('daily allowances', () => {
     await send('PATCH', '/v1/me/profile', { timezone: 'Africa/Johannesburg' });
     for (let i = 0; i < 5; i++) await send('POST', '/v1/test/ai');
     expect((await send('POST', '/v1/test/ai')).status).toBe(429);
-    expect((await ent()).usage).toEqual({ date: '2026-10-21', scans: 0, aiText: 5 });
+    expect((await ent()).usage).toEqual({ date: '2026-10-21', scans: 0, aiText: 5, coach: 0 });
     t.clock.advance(10 * HOUR); // 22:00 UTC = midnight in Johannesburg: a new local day
     await relogin();
     expect((await send('POST', '/v1/test/ai')).status).toBe(200);
-    expect((await ent()).usage).toEqual({ date: '2026-10-22', scans: 0, aiText: 1 });
+    expect((await ent()).usage).toEqual({ date: '2026-10-22', scans: 0, aiText: 1, coach: 0 });
   });
   it('are bigger on Pro', async () => {
     const { send, verify } = await setup();

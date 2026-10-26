@@ -24,31 +24,32 @@ npm run check            # typecheck + formatting + secret scan + all tests
 
 ## What is built
 
-| Area          | Endpoints                                                           | Notes                                                              |
-| ------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Auth          | anonymous, Google, email code sign-in; linking; refresh; logout     | rotating single-use refresh tokens; Play Integrity gate (opt-in)   |
-| Me            | profile, body stats, calorie and macro goals                        | Mifflin-St Jeor recommendation with a safety floor                 |
-| Diary         | entries, day summaries, recent foods, meal photos (R2)              | client-made ids, idempotent, later edit wins                       |
-| Body          | weight, water                                                       | weight keeps the profile and goals in step                         |
-| Foods         | custom foods, accent-insensitive search, barcode lookup             | Open Food Facts on demand, cached in a shared catalogue            |
-| Scans         | what the on-device model said vs what the person kept               | consent-gated photo contribution; admin accuracy report            |
-| Sync          | `pull?since=` and `push` over all synced records                    | per-user revision counter, no clock dependence                     |
-| Subscriptions | entitlements, verify, restore, simulate (stage), Play notifications | mock store; Google Play provider tested against a fake only        |
-| Workouts      | exercise library, free and Pro programs, enrolment, session logging | per-workout free samples inside Pro programs                       |
-| Meal plans    | diet styles and the meals plans are built from                      | free and Pro styles; figures from USDA, checked on every change    |
-| Media         | signed expiring links, Range and ETag, Pro gating                   | R2; external links; Cloudflare Stream signed playback              |
-| AI            | text meal parsing                                                   | Workers AI; estimates only; metered; failed calls not charged      |
-| Insights      | overview, weekly summary                                            | Pro adds depth and an AI-written summary built from numbers only   |
-| Account       | data export, permanent delete                                       | removes every row and file; old tokens die at once                 |
-| Admin         | media, exercises, programs, foods, settings, audit, accuracy        | key + optional IP allowlist + Cloudflare Access; every call logged |
-| Recipes       | recipes with ingredients, per-serving figures                       | synced; free accounts keep a limited number                        |
-| Activity      | exercise and daily steps                                            | synced; calories estimated from MET and weight, marked as such     |
-| Measurements  | waist, hips, chest, body fat and more                               | synced; believable ranges per kind                                 |
-| Progress      | progress photos with weight and pose                                | synced; plan-limited; removed with the account                     |
-| Reminders     | phones, per-person reminders in local time, test push               | five-minute job; each reminder sent once; FCM tested on a fake     |
-| Config        | `GET /config`: maintenance, update required, kill switches, plans   | switched live from `PUT /admin/settings`, no deploy                |
-| Training data | admin list and download of photos people chose to contribute        | pseudonymous donors, GPS stripped on upload, export script         |
-| Housekeeping  | nightly cron                                                        | tokens, deletion markers, counters, rate limits, codes, audit      |
+| Area          | Endpoints                                                               | Notes                                                              |
+| ------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Auth          | anonymous, Google, email code sign-in; linking; refresh; logout         | rotating single-use refresh tokens; Play Integrity gate (opt-in)   |
+| Me            | profile, body stats, calorie and macro goals                            | Mifflin-St Jeor recommendation with a safety floor                 |
+| Diary         | entries, day summaries, recent foods, meal photos (R2)                  | client-made ids, idempotent, later edit wins                       |
+| Body          | weight, water                                                           | weight keeps the profile and goals in step                         |
+| Foods         | custom foods, accent-insensitive search, barcode lookup                 | Open Food Facts on demand, cached in a shared catalogue            |
+| Scans         | what the on-device model said vs what the person kept                   | consent-gated photo contribution; admin accuracy report            |
+| Sync          | `pull?since=` and `push` over all synced records                        | per-user revision counter, no clock dependence                     |
+| Subscriptions | entitlements, verify, restore, simulate (stage), Play notifications     | mock store; Google Play provider tested against a fake only        |
+| Workouts      | exercise library, free and Pro programs, enrolment, session logging     | per-workout free samples inside Pro programs                       |
+| Coach         | Ask Pango (AI chat with the person's own numbers), meals from groceries | layered safety (docs/coach.md); red-teamed on stage every deploy   |
+| Meal plans    | diet styles and the meals plans are built from                          | free and Pro styles; figures from USDA, checked on every change    |
+| Media         | signed expiring links, Range and ETag, Pro gating                       | R2; external links; Cloudflare Stream signed playback              |
+| AI            | text meal parsing                                                       | Workers AI; estimates only; metered; failed calls not charged      |
+| Insights      | overview, weekly summary                                                | Pro adds depth and an AI-written summary built from numbers only   |
+| Account       | data export, permanent delete                                           | removes every row and file; old tokens die at once                 |
+| Admin         | media, exercises, programs, foods, settings, audit, accuracy            | key + optional IP allowlist + Cloudflare Access; every call logged |
+| Recipes       | recipes with ingredients, per-serving figures                           | synced; free accounts keep a limited number                        |
+| Activity      | exercise and daily steps                                                | synced; calories estimated from MET and weight, marked as such     |
+| Measurements  | waist, hips, chest, body fat and more                                   | synced; believable ranges per kind                                 |
+| Progress      | progress photos with weight and pose                                    | synced; plan-limited; removed with the account                     |
+| Reminders     | phones, per-person reminders in local time, test push                   | five-minute job; each reminder sent once; FCM tested on a fake     |
+| Config        | `GET /config`: maintenance, update required, kill switches, plans       | switched live from `PUT /admin/settings`, no deploy                |
+| Training data | admin list and download of photos people chose to contribute            | pseudonymous donors, GPS stripped on upload, export script         |
+| Housekeeping  | nightly cron                                                            | tokens, deletion markers, counters, rate limits, codes, audit      |
 
 ## Layout
 

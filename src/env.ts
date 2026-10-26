@@ -10,6 +10,8 @@ export interface Bindings {
   GOOGLE_CLIENT_IDS: string;
   BILLING_PROVIDER: string;
   AI_TEXT_MODEL: string;
+  AI_COACH_MODEL?: string;
+  AI_GUARD_MODEL?: string;
   CORS_ORIGINS: string;
   SIMULATE_ENABLED: string;
   // secrets
@@ -102,6 +104,9 @@ const schema = z.object({
   GOOGLE_CLIENT_IDS: z.string().default('').transform(list),
   BILLING_PROVIDER: z.enum(['mock', 'google_play']).default('mock'),
   AI_TEXT_MODEL: z.string().min(1),
+  // The coach needs a bigger model than meal parsing; the guard is Meta's Llama Guard safety classifier.
+  AI_COACH_MODEL: z.string().min(1).default('@cf/meta/llama-3.3-70b-instruct-fp8-fast'),
+  AI_GUARD_MODEL: z.string().min(1).default('@cf/meta/llama-guard-3-8b'),
   CORS_ORIGINS: z.string().default('').transform(list),
   SIMULATE_ENABLED: z
     .enum(['true', 'false'])

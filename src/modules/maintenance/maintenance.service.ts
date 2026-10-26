@@ -1,5 +1,6 @@
 import { DAY, type Clock } from '../../core/time';
 import { STALE_DEVICE_MS } from '../reminders/reminders.service';
+import { RETENTION_MS as COACH_RETENTION_MS } from '../coach/coach.service';
 import { AUDIT_RETENTION_MS } from '../admin/audit.service';
 import type { Logger } from '../../core/logger';
 
@@ -27,6 +28,7 @@ export type MaintenanceReport = {
   emailCodesRemoved: number;
   adminAuditRemoved: number;
   devicesRemoved: number;
+  coachMessagesRemoved: number;
   subscriptionsReconciled: number;
 };
 
@@ -53,6 +55,7 @@ export class MaintenanceService {
       emailCodesRemoved: 0,
       adminAuditRemoved: 0,
       devicesRemoved: 0,
+      coachMessagesRemoved: 0,
       subscriptionsReconciled: 0,
     };
 
@@ -101,6 +104,14 @@ export class MaintenanceService {
       await this.db
         .prepare('DELETE FROM devices WHERE last_seen_at < ?')
         .bind(now - STALE_DEVICE_MS)
+        .run()
+    ).meta.changes;
+
+    // Conversations with Pango are kept for 90 days.
+    report.coachMessagesRemoved = (
+      await this.db
+        .prepare('DELETE FROM coach_messages WHERE created_at < ?')
+        .bind(now - COACH_RETENTION_MS)
         .run()
     ).meta.changes;
 

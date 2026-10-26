@@ -1,5 +1,6 @@
 import {
   ANONYMOUS_AI_TEXT_PER_DAY,
+  ANONYMOUS_COACH_PER_DAY,
   PLANS,
   PRODUCTS,
   isProductId,
@@ -70,7 +71,11 @@ export class SubscriptionsService {
     const plan = (await this.entitlement(userId)).plan;
     const limits = PLANS[plan].limits;
     if (plan === 'free' && !(await this.usersRepo.hasIdentity(userId)))
-      return { ...limits, aiTextPerDay: Math.min(limits.aiTextPerDay, ANONYMOUS_AI_TEXT_PER_DAY) };
+      return {
+        ...limits,
+        aiTextPerDay: Math.min(limits.aiTextPerDay, ANONYMOUS_AI_TEXT_PER_DAY),
+        coachPerDay: Math.min(limits.coachPerDay, ANONYMOUS_COACH_PER_DAY),
+      };
     return limits;
   }
 
@@ -89,7 +94,7 @@ export class SubscriptionsService {
       ...entitlement,
       limits: await this.limitsFor(userId),
       features: plan.features,
-      usage: { date: period, scans: used.scan ?? 0, aiText: used.ai_text ?? 0 },
+      usage: { date: period, scans: used.scan ?? 0, aiText: used.ai_text ?? 0, coach: used.coach ?? 0 },
     };
   }
 

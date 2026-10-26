@@ -90,6 +90,15 @@ export class AccountRepo {
       'local_date, logged_at',
     );
   }
+  coachMessages(userId: string) {
+    return all<Record<string, unknown>>(
+      this.db
+        .prepare(
+          'SELECT role, content, kind, created_at FROM coach_messages WHERE user_id = ? ORDER BY rowid',
+        )
+        .bind(userId),
+    );
+  }
   subscriptions(userId: string) {
     return all<Record<string, unknown>>(
       this.db

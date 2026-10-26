@@ -11,6 +11,8 @@ export type PlanLimits = {
   scansPerDay: number;
   /** AI text meal logging calls per day. */
   aiTextPerDay: number;
+  /** Messages to Ask Pango (the coach), and meal ideas from groceries, per day. */
+  coachPerDay: number;
   /** Meal photos kept on the server. */
   mealPhotos: number;
   /** Saved recipes. */
@@ -32,11 +34,19 @@ export const UNLIMITED = 1_000_000;
  * smaller AI allowance. Linking a sign-in method raises it to the plan's normal limit.
  */
 export const ANONYMOUS_AI_TEXT_PER_DAY = 2;
+export const ANONYMOUS_COACH_PER_DAY = 3;
 
 export const PLANS: Record<PlanId, Plan> = {
   free: {
     id: 'free',
-    limits: { scansPerDay: 3, aiTextPerDay: 5, mealPhotos: 30, recipes: 10, progressPhotos: 12 },
+    limits: {
+      scansPerDay: 3,
+      aiTextPerDay: 5,
+      coachPerDay: 10,
+      mealPhotos: 30,
+      recipes: 10,
+      progressPhotos: 12,
+    },
     features: { workouts: 'free', insights: 'basic', export: true },
   },
   pro: {
@@ -44,6 +54,7 @@ export const PLANS: Record<PlanId, Plan> = {
     limits: {
       scansPerDay: UNLIMITED,
       aiTextPerDay: 100,
+      coachPerDay: 60,
       mealPhotos: UNLIMITED,
       recipes: UNLIMITED,
       progressPhotos: UNLIMITED,
@@ -52,13 +63,14 @@ export const PLANS: Record<PlanId, Plan> = {
   },
 };
 
-export const USAGE_KEYS = ['scan', 'ai_text'] as const;
+export const USAGE_KEYS = ['scan', 'ai_text', 'coach'] as const;
 export type UsageKey = (typeof USAGE_KEYS)[number];
 
 /** Which limit applies to which counter. */
 export const LIMIT_FOR_KEY: Record<UsageKey, keyof PlanLimits> = {
   scan: 'scansPerDay',
   ai_text: 'aiTextPerDay',
+  coach: 'coachPerDay',
 };
 
 export const PRODUCTS = [
