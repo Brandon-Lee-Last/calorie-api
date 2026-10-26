@@ -31,7 +31,7 @@ jobs:
     env:
       NODE_OPTIONS: --max-old-space-size=6144 # USDA's files are a few hundred MB of JSON
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -48,7 +48,7 @@ jobs:
       API_BASE: https://pango-api-stage.lightarch.io
       ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: 22
