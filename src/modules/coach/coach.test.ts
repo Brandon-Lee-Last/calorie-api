@@ -67,6 +67,25 @@ describe('Ask Pango', () => {
     expect((await body(await send('GET', '/v1/coach/messages'))).items).toEqual([]);
   });
 
+  it('knows the steps the phone sent, once there are some', async () => {
+    const { ai, ask, send } = await setup();
+    await ask('How am I doing?');
+    expect(system(ai)).not.toContain('- Steps:');
+    const steps = (localDate: string, count: number) =>
+      send('PUT', `/v1/activity/${newId()}`, {
+        loggedAt: T0,
+        localDate,
+        kind: 'steps',
+        steps: count,
+        caloriesBurned: 150,
+        clientUpdatedAt: T0,
+      });
+    expect((await steps('2026-10-21', 6400)).status).toBe(200);
+    expect((await steps('2026-10-20', 9600)).status).toBe(200);
+    await ask('And my walking?');
+    expect(system(ai)).toMatch(/- Steps: 6\s400 today, 8\s000 a day on average over the last 7 days\./);
+  });
+
   it('answers someone in crisis with helplines, without a model and without charging', async () => {
     const { ai, ask } = await setup();
     const out = await body(await ask('I want to kill myself'));

@@ -473,6 +473,7 @@ export class Container {
           new DiaryRepo(this.db),
           new BodyRepo(this.db),
           new SessionsRepo(this.db),
+          new ActivityRepo(this.db),
           new MealsRepo(this.db),
           this.clock,
           this.logger,

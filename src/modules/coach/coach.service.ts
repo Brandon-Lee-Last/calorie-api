@@ -8,6 +8,7 @@ import type { BodyRepo } from '../body/body.repo';
 import type { DiaryRepo } from '../diary/diary.repo';
 import type { MealsRepo } from '../meals/meals.repo';
 import type { UsersRepo } from '../users/users.repo';
+import type { ActivityRepo } from '../activity/activity.repo';
 import type { SessionsRepo } from '../workouts/sessions.repo';
 import type { CoachKind, CoachRepo, CoachRow } from './coach.repo';
 import { PROMPT_MARKERS, systemPrompt, type CoachFacts } from './prompt';
@@ -66,6 +67,7 @@ export class CoachService {
     private diary: DiaryRepo,
     private body: BodyRepo,
     private sessions: SessionsRepo,
+    private activity: ActivityRepo,
     private meals: MealsRepo,
     private clock: Clock,
     private logger: Logger,
@@ -203,6 +205,7 @@ export class CoachService {
       },
       week: { daysLogged: 6, averageCalories: 1790, proteinDaysOnTarget: 3 },
       workouts: { count: 2, minutes: 75, last: 'Upper body' },
+      steps: { today: 6400, averageWeek: 7800 },
       streakDays: 12,
       planStyle: 'Balanced',
     };
@@ -276,11 +279,12 @@ export class CoachService {
     const p = await this.users.getProfile(userId);
     const tz = p?.timezone ?? 'UTC';
     const today = localDateIn(tz, now);
-    const [history, entries, weights, sessions, diets] = await Promise.all([
+    const [history, entries, weights, sessions, activity, diets] = await Promise.all([
       this.diary.daySummary(userId, addDays(today, -89), today),
       this.diary.list(userId, today, today),
       this.body.listWeight(userId, addDays(today, -40), today),
       this.sessions.list(userId, addDays(today, -6), today),
+      this.activity.list(userId, addDays(today, -6), today),
       planStyle ? this.meals.diets() : Promise.resolve([]),
     ]);
     const targets = {
@@ -294,6 +298,11 @@ export class CoachService {
     const latest = weights.at(-1);
     const monthAgo = weights.filter((w) => w.local_date <= addDays(today, -25)).at(-1);
     const finished = sessions.filter((s) => s.finished_at);
+    // A phone keeps one steps record a day; take the highest if two phones sent one.
+    const stepsByDay = new Map<string, number>();
+    for (const a of activity)
+      if (a.kind === 'steps' && a.steps)
+        stepsByDay.set(a.local_date, Math.max(stepsByDay.get(a.local_date) ?? 0, a.steps));
     let style: string | null = null;
     for (const d of diets)
       if (d.slug === planStyle)
@@ -330,6 +339,12 @@ export class CoachService {
         ),
         last: finished.at(-1)?.title ?? null,
       },
+      steps: stepsByDay.size
+        ? {
+            today: stepsByDay.get(today) ?? 0,
+            averageWeek: [...stepsByDay.values()].reduce((s, x) => s + x, 0) / stepsByDay.size,
+          }
+        : null,
       streakDays: streakDays(
         new Set(history.filter((d) => d.entries > 0).map((d) => d.local_date)),
         today,
