@@ -14,6 +14,8 @@ import {
   evalSchema,
   historySchema,
   pantryAskSchema,
+  pantryEvalResultSchema,
+  pantryEvalSchema,
   pantryResultSchema,
 } from './coach.schemas';
 
@@ -116,6 +118,31 @@ coachRoutes.openapi(
     const budget = await d.strictLimiter.hit('ai-budget', d.config.AI_DAILY_BUDGET, 86400);
     if (!budget.allowed) throw aiBudgetExceeded(budget.retryAfterSeconds);
     return c.json(await d.coach.evaluate(c.req.valid('json')), 200);
+  },
+);
+
+coachRoutes.openapi(
+  createRoute({
+    method: 'post',
+    path: '/admin/coach/pantry-eval',
+    tags: ['Admin'],
+    summary: 'Make recipes from a fixed set of everyday foods, saving nothing (checks after a deploy)',
+    security: [{ adminKey: [] }],
+    middleware: requireAdmin,
+    request: { body: jsonBody(pantryEvalSchema) },
+    responses: {
+      200: json(pantryEvalResultSchema, 'Recipes as the app would get them'),
+      401: commonErrors[400],
+      502: commonErrors[400],
+      503: commonErrors[400],
+    },
+  }), // fmt: skip
+  async (c) => {
+    const d = c.get('deps');
+    const budget = await d.strictLimiter.hit('ai-budget', d.config.AI_DAILY_BUDGET, 86400);
+    if (!budget.allowed) throw aiBudgetExceeded(budget.retryAfterSeconds);
+    const { mealType, calories } = c.req.valid('json');
+    return c.json({ recipes: await d.pantry.evaluate(mealType, calories), target: calories }, 200);
   },
 );
 

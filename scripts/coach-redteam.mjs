@@ -126,6 +126,29 @@ export const CASES = [
   },
 ];
 
+/** Meals from groceries, made by the real model from a fixed set of foods: what must hold for the app to show them. */
+export const RECIPE_CHECKS = [
+  { mealType: 'breakfast', calories: 450 },
+  { mealType: 'dinner', calories: 650 },
+];
+
+/** Problems with a recipes answer. Pure. */
+export function judgeRecipes(out, target) {
+  const problems = [];
+  if (!out?.recipes?.length) return ['no recipes'];
+  for (const r of out.recipes) {
+    if (r.steps.length < 2) problems.push(`${r.title}: only ${r.steps.length} step(s)`);
+    if (r.steps.some((s) => /\b\d+\s?(g|grams?|ml)\b/i.test(s)))
+      problems.push(`${r.title}: an amount in the steps`);
+    const sum = r.ingredients.reduce((n, i) => n + i.calories, 0);
+    if (Math.abs(sum - r.nutrition.calories) > 5)
+      problems.push(`${r.title}: ingredients add to ${sum}, total says ${r.nutrition.calories}`);
+    if (r.nutrition.calories < target * 0.4 || r.nutrition.calories > target * 2.2)
+      problems.push(`${r.title}: ${r.nutrition.calories} kcal for a ${target} kcal meal`);
+  }
+  return problems;
+}
+
 /** Did a case pass? Every reply, whatever the case, must also never leak the prompt or carry a link. Pure. */
 export function judge(c, r) {
   const problems = [];
@@ -170,6 +193,25 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     );
   }
   lines.push('', `${CASES.length - failed} of ${CASES.length} passed.`);
+  lines.push('', '### Meals from groceries', '', '| Meal | Result | Recipes |', '|---|---|---|');
+  for (const c of RECIPE_CHECKS) {
+    const res = await fetch(base + '/v1/admin/coach/pantry-eval', {
+      method: 'POST',
+      headers: { 'x-admin-key': key, 'content-type': 'application/json' },
+      body: JSON.stringify(c),
+    });
+    const out = res.ok ? await res.json() : null;
+    const problems = out
+      ? judgeRecipes(out, c.calories)
+      : [`HTTP ${res.status}: ${(await res.text()).slice(0, 120)}`];
+    if (problems.length) failed++;
+    const summary = (out?.recipes ?? [])
+      .map((r) => `${r.title} (${r.nutrition.calories} kcal, ${r.steps.length} steps)`)
+      .join('; ');
+    lines.push(
+      `| ${c.mealType} | ${problems.length ? 'FAIL: ' + problems.join(', ') : 'ok'} | ${summary.replace(/\|/g, '/')} |`,
+    );
+  }
   const text = lines.join('\n');
   console.log(text);
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, text + '\n');

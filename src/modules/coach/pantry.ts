@@ -178,6 +178,22 @@ export class PantryService {
     if (rows.length < 2) throw badRequest('Add at least two foods to make meals from');
     const profile = await this.users.getProfile(userId);
     const target = Math.round(input.calories ?? (profile?.calorie_goal ?? 2000) * SHARE[input.mealType]);
+    const usage = await allowance.take();
+    try {
+      const recipes = await this.generate(rows, input.mealType, target);
+      return { recipes, target, usage };
+    } catch (e) {
+      await allowance.giveBack();
+      throw e;
+    }
+  }
+
+  /**
+   * Asks the model for recipes from these foods and keeps the ones the server can stand behind. Three recipes with full
+   * methods need room, and a reply cut off by the token limit is not valid JSON, so it gets plenty; a broken or empty
+   * reply is asked for once more before giving up.
+   */
+  async generate(rows: FoodRow[], mealType: MealType, target: number): Promise<Recipe[]> {
     const byRef = new Map(rows.map((f, n) => [`i${n + 1}`, f]));
     const list = [...byRef]
       .map(
@@ -185,41 +201,92 @@ export class PantryService {
           `${ref}: ${datamark(f.brand ? `${f.name} (${f.brand})` : f.name, 60)}, ${Math.round(f.calories_100g)} kcal per 100 g`,
       )
       .join('\n');
-
-    const usage = await allowance.take();
-    try {
-      const raw = await this.ai.chatJson({
-        messages: [
-          { role: 'system', content: SYSTEM(input.mealType, target) },
-          { role: 'user', content: `Ingredients:\n${list}` },
-        ],
-        schema: RECIPES_JSON_SCHEMA,
-      });
-      let recipes = buildRecipes(raw, byRef, input.mealType, target);
-      if (recipes.length) {
-        const words = recipes.map((r) => `${r.title}\n${r.steps.join('\n')}`).join('\n\n');
-        const verdict = await this.ai
-          .moderate([
-            { role: 'user', content: `Recipes for ${input.mealType}` },
-            { role: 'assistant', content: words },
-          ])
-          .catch(() => null);
-        if (
-          verdict &&
-          !verdict.safe &&
-          verdict.categories.some((c) => BLOCKED_CATEGORIES.has(c) || c === 'S11')
-        )
-          recipes = [];
-      }
-      if (!recipes.length)
-        throw upstreamFailed(
-          'Workers AI',
-          'Pango could not make meals from these foods. Try adding a few more.',
-        );
-      return { recipes, target, usage };
-    } catch (e) {
-      await allowance.giveBack();
-      throw e;
+    let recipes: Recipe[] = [];
+    for (let attempt = 0; attempt < 2 && !recipes.length; attempt++) {
+      const raw = await this.ai
+        .chatJson({
+          messages: [
+            { role: 'system', content: SYSTEM(mealType, target) },
+            { role: 'user', content: `Ingredients:\n${list}` },
+          ],
+          schema: RECIPES_JSON_SCHEMA,
+          maxTokens: 3000,
+        })
+        .catch((e) => {
+          if (attempt) throw e;
+          return null;
+        });
+      recipes = buildRecipes(raw, byRef, mealType, target);
     }
+    if (recipes.length) {
+      const words = recipes.map((r) => `${r.title}\n${r.steps.join('\n')}`).join('\n\n');
+      const verdict = await this.ai
+        .moderate([
+          { role: 'user', content: `Recipes for ${mealType}` },
+          { role: 'assistant', content: words },
+        ])
+        .catch(() => null);
+      if (
+        verdict &&
+        !verdict.safe &&
+        verdict.categories.some((c) => BLOCKED_CATEGORIES.has(c) || c === 'S11')
+      )
+        recipes = [];
+    }
+    if (!recipes.length)
+      throw upstreamFailed(
+        'Workers AI',
+        'Pango could not make meals from these foods. Try again, or add a few more.',
+      );
+    return recipes;
+  }
+
+  /** The same, from a fixed set of everyday foods, for the checks run against the real model after each deploy. */
+  evaluate(mealType: MealType, target: number): Promise<Recipe[]> {
+    return this.generate(EVAL_FOODS, mealType, target);
   }
 }
+
+const evalFood = (
+  id: string,
+  name: string,
+  kcal: number,
+  protein: number,
+  carb: number,
+  fat: number,
+): FoodRow => ({
+  id,
+  user_id: null,
+  source: 'usda',
+  external_id: null,
+  barcode: null,
+  name,
+  name_norm: name.toLowerCase(),
+  brand: null,
+  serving_g: null,
+  serving_label: null,
+  calories_100g: kcal,
+  protein_100g: protein,
+  carb_100g: carb,
+  fat_100g: fat,
+  fiber_100g: null,
+  sugar_100g: null,
+  sodium_mg_100g: null,
+  dish_id: null,
+  aliases_norm: null,
+  created_at: 0,
+  updated_at: 0,
+  deleted_at: null,
+  client_updated_at: 0,
+  rev: 0,
+}); // fmt: skip
+const EVAL_FOODS: FoodRow[] = [
+  evalFood('eval-oats', 'Rolled oats', 379, 13.2, 67.7, 6.5),
+  evalFood('eval-milk', 'Low-fat milk', 50, 3.3, 4.8, 2),
+  evalFood('eval-banana', 'Banana', 89, 1.1, 22.8, 0.3),
+  evalFood('eval-egg', 'Egg', 143, 12.6, 0.7, 9.5),
+  evalFood('eval-chicken', 'Chicken breast, raw', 120, 22.5, 0, 2.6),
+  evalFood('eval-rice', 'Brown rice, cooked', 123, 2.7, 25.6, 1),
+  evalFood('eval-spinach', 'Baby spinach', 23, 2.9, 3.6, 0.4),
+  evalFood('eval-tomato', 'Tomato', 18, 0.9, 3.9, 0.2),
+];

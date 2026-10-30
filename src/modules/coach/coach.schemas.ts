@@ -91,6 +91,15 @@ export const pantryResultSchema = z
   })
   .openapi('PantryMeals');
 
+export const pantryEvalSchema = z
+  .object({
+    mealType: mealTypeSchema,
+    calories: z.number().int().min(100).max(2000),
+  })
+  .openapi('PantryEvalAsk');
+
+export const pantryEvalResultSchema = pantryResultSchema.omit({ usage: true }).openapi('PantryEvalResult');
+
 export const evalSchema = z
   .object({
     message: z.string().min(1).max(MAX_MESSAGE),
