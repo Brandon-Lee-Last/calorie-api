@@ -158,6 +158,20 @@ describe('the API under bad input', () => {
     const mailer = new MemoryMailer();
     const ai = new FakeAi();
     ai.jsonAnswer = { items: [toastItem] };
+    // A usable recipe, so the admin recipe check (which needs no foods of the caller's) can answer 200.
+    ai.chatJsonAnswer = {
+      recipes: [
+        {
+          title: 'Oats',
+          minutes: 5,
+          ingredients: [
+            { ref: 'i1', grams: 50 },
+            { ref: 'i2', grams: 200 },
+          ],
+          steps: ['Cook the oats in the milk.', 'Eat warm.'],
+        },
+      ],
+    }; // fmt: skip
     const t = makeApp({ mailer, ai, pushSender: new MemoryPush() });
     const doc = (await body(await t.request('/v1/openapi.json'))) as Json;
     const admin = adminClient(t);
