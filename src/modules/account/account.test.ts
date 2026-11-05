@@ -130,6 +130,10 @@ const USER_TABLES = [
   'identities',
   'user_profiles',
   'coach_messages',
+  'points_ledger',
+  'invite_codes',
+  'partner_signups',
+  'reward_grants',
 ];
 
 describe('data export', () => {

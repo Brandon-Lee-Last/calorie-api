@@ -64,6 +64,21 @@ export class FoodsService {
     private repo: FoodsRepo,
     private lookup: FoodLookup,
     private clock: Clock,
+    /** Rewards: points for a food newly added to the list, taken back if it is deleted. */
+    private hooks: {
+      onAdded?: (
+        userId: string,
+        food: {
+          id: string;
+          barcode: string | null;
+          calories100g: number;
+          protein100g: number;
+          carb100g: number;
+          fat100g: number;
+        },
+      ) => Promise<void>;
+      onDeleted?: (userId: string, id: string) => Promise<void>;
+    } = {},
   ) {}
 
   async putCustom(userId: string, id: string, input: FoodInput) {
@@ -89,6 +104,7 @@ export class FoodsService {
       sugar100g: input.sugar100g ?? null,
       sodiumMg100g: input.sodiumMg100g ?? null,
     }; // fmt: skip
+    const isNew = !(await this.repo.getOwn(userId, id));
     try {
       const { applied } = await this.repo.upsertCustom(
         userId,
@@ -97,6 +113,7 @@ export class FoodsService {
         sanitizeClientTime(input.clientUpdatedAt, now),
         now,
       );
+      if (applied && isNew) await this.hooks.onAdded?.(userId, { id, ...data });
       return { applied, record: toFood((await this.repo.getOwn(userId, id))!, userId) };
     } catch (e) {
       if (e instanceof Error && /UNIQUE/i.test(e.message))
@@ -105,15 +122,17 @@ export class FoodsService {
     }
   }
 
-  deleteCustom(userId: string, id: string, clientUpdatedAt?: number) {
+  async deleteCustom(userId: string, id: string, clientUpdatedAt?: number) {
     const now = this.clock.now();
-    return this.repo.deleteCustom(
+    const result = await this.repo.deleteCustom(
       userId,
       id,
       clientUpdatedAt === undefined ? now : sanitizeClientTime(clientUpdatedAt, now),
       now,
       clientUpdatedAt === undefined, // a direct DELETE is the person acting now: always applies
     );
+    await this.hooks.onDeleted?.(userId, id);
+    return result;
   }
 
   async get(userId: string, id: string) {

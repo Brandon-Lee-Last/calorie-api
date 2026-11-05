@@ -1,0 +1,72 @@
+# Partners (gyms): add one, list them, a month's statement, record a payout, or stop a code. Run it by hand from the
+# Actions tab ("Partners", Run workflow); the result shows on the run's summary page. Uses the admin key, never logged.
+name: Partners
+
+on:
+  workflow_dispatch:
+    inputs:
+      where:
+        description: Which server
+        type: choice
+        options: [stage, production]
+        default: stage
+      action:
+        description: What to do
+        type: choice
+        options: [list, create, report, paid, stop]
+        default: list
+      name:
+        description: 'create: the gym''s name'
+        default: ''
+      code:
+        description: 'create, report, paid, stop: the code (3 to 16 letters and digits)'
+        default: ''
+      share:
+        description: 'create: share of each Plus payment in %, after VAT and the Play fee (blank: 20)'
+        default: ''
+      months:
+        description: 'create: months after joining that a member earns the gym its share (blank: 12; 0 = as long as they pay)'
+        default: ''
+      welcome:
+        description: 'create: Pango Points a member gets for using the code (blank: 200)'
+        default: ''
+      contact:
+        description: 'create: who to talk to at the gym (optional)'
+        default: ''
+      month:
+        description: 'report: the month, like 2026-11 (blank: this month)'
+        default: ''
+      until:
+        description: 'paid: mark everything owed before this date as paid, like 2026-12-01'
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  partners:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: ${{ inputs.where }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run
+        env:
+          API_BASE: ${{ inputs.where == 'production' && 'https://pango-api.lightarch.io' || 'https://pango-api-stage.lightarch.io' }}
+          ADMIN_API_KEY: ${{ secrets.ADMIN_API_KEY }}
+          ACTION: ${{ inputs.action }}
+          NAME: ${{ inputs.name }}
+          CODE: ${{ inputs.code }}
+          SHARE: ${{ inputs.share }}
+          MONTHS: ${{ inputs.months }}
+          WELCOME: ${{ inputs.welcome }}
+          CONTACT: ${{ inputs.contact }}
+          MONTH: ${{ inputs.month }}
+          UNTIL: ${{ inputs.until }}
+        # Inputs reach the script as environment variables, never pasted into the command, so no input can run code.
+        run: >
+          node scripts/partners.mjs "$ACTION" --name "$NAME" --code "$CODE" --share "$SHARE" --months "$MONTHS"
+          --welcome "$WELCOME" --contact "$CONTACT" --month "$MONTH" --until "$UNTIL"

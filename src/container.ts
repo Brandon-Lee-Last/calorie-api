@@ -40,6 +40,8 @@ import { SettingsService } from './modules/settings/settings.service';
 import { CatalogueRepo } from './modules/foods/catalogue.repo';
 import { CatalogueService } from './modules/foods/catalogue.service';
 import { ActivityRepo } from './modules/activity/activity.repo';
+import { RewardsRepo } from './modules/rewards/rewards.repo';
+import { RewardsService } from './modules/rewards/rewards.service';
 import { ActivityService } from './modules/activity/activity.service';
 import { MeasurementsRepo } from './modules/measurements/measurements.repo';
 import { MeasurementsService } from './modules/measurements/measurements.service';
@@ -419,6 +421,11 @@ export class Container {
           this.billing,
           this.clock,
           { isProduction: this.config.isProduction, simulateEnabled: this.config.SIMULATE_ENABLED },
+          {
+            extraStates: (userId) => this.rewards.grantStates(userId),
+            onStored: (row) => this.rewards.onSubscriptionStored(row),
+            onRefunded: (id) => this.rewards.onRefunded(id),
+          },
         ),
     );
   }
@@ -568,6 +575,7 @@ export class Container {
           this.storage,
           this.clock,
           async (userId) => (await this.subscriptions.limitsFor(userId)).mealPhotos,
+          (userId) => this.rewards.onDiaryLogged(userId),
         ),
     );
   }
@@ -584,7 +592,28 @@ export class Container {
   }
 
   get foods(): FoodsService {
-    return this.once('foods', () => new FoodsService(new FoodsRepo(this.db), this.foodLookup, this.clock));
+    return this.once(
+      'foods',
+      () =>
+        new FoodsService(new FoodsRepo(this.db), this.foodLookup, this.clock, {
+          onAdded: (userId, food) => this.rewards.onFoodAdded(userId, food),
+          onDeleted: (userId, id) => this.rewards.onFoodDeleted(userId, id),
+        }),
+    );
+  }
+
+  get rewards(): RewardsService {
+    return this.once(
+      'rewards',
+      () =>
+        new RewardsService(
+          new RewardsRepo(this.db),
+          this.clock,
+          this.logger,
+          (userId) => this.subscriptions.storeAccessUntil(userId),
+          this.config.PLUS_PRICES_CENTS,
+        ),
+    );
   }
 
   get scans(): ScansService {

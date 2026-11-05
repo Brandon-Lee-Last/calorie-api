@@ -1,3 +1,4 @@
+import { DEFAULT_PRICES_CENTS } from './config/rewards';
 import { z } from 'zod';
 import { isValidIpRule } from './lib/ip';
 
@@ -34,6 +35,7 @@ export interface Bindings {
   GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT?: string;
   OFF_USER_AGENT?: string;
   AI_DAILY_BUDGET?: string;
+  PLUS_PRICES_CENTS?: string;
   REQUIRE_INTEGRITY?: string;
   RESEND_API_KEY?: string;
   EMAIL_FROM?: string;
@@ -120,6 +122,26 @@ const schema = z.object({
   OFF_USER_AGENT: z.string().optional(),
   /** Most AI calls the whole service will make in a day, so a bug or an attack cannot run up the bill. */
   AI_DAILY_BUDGET: z.coerce.number().int().min(0).default(20000),
+  /** Plus prices in the shop in cents (JSON, e.g. {"pro_monthly":6999}), for partners' shares. Must match the Play Console. */
+  PLUS_PRICES_CENTS: z
+    .string()
+    .optional()
+    .transform((s, ctx) => {
+      if (!s) return DEFAULT_PRICES_CENTS;
+      try {
+        const v = JSON.parse(s) as unknown;
+        if (
+          v &&
+          typeof v === 'object' &&
+          Object.values(v).every((n) => Number.isInteger(n) && (n as number) > 0)
+        )
+          return { ...DEFAULT_PRICES_CENTS, ...(v as Record<string, number>) };
+      } catch {
+        /* reported below */
+      }
+      ctx.addIssue({ code: 'custom', message: 'PLUS_PRICES_CENTS must be JSON like {"pro_monthly":6999}' });
+      return z.NEVER;
+    }),
   RESEND_API_KEY: z.string().optional(),
   /** Oldest app version still allowed to use the API ("1.4.0"). Older ones get 426 `upgrade_required`. Admin settings override it. */
   MIN_APP_VERSION: z

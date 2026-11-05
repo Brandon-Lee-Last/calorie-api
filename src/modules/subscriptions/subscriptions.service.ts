@@ -59,12 +59,27 @@ export class SubscriptionsService {
     private billing: BillingProvider,
     private clock: Clock,
     private opts: { isProduction: boolean; simulateEnabled: boolean },
+    /** Rewards: Plus months bought with points, and a partner's share of each paid period. */
+    private hooks: {
+      extraStates?: (userId: string) => Promise<SubscriptionState[]>;
+      onStored?: (row: SubscriptionRow) => Promise<void>;
+      onRefunded?: (subscriptionId: string) => Promise<void>;
+    } = {},
   ) {}
 
   // ---- entitlements and quotas ---------------------------------------------------------------------------------
 
   async entitlement(userId: string): Promise<Entitlement> {
-    return resolveEntitlement((await this.repo.listForUser(userId)).map(toState), this.clock.now());
+    const [subs, extra] = await Promise.all([
+      this.repo.listForUser(userId),
+      this.hooks.extraStates?.(userId) ?? [],
+    ]);
+    return resolveEntitlement([...subs.map(toState), ...extra], this.clock.now());
+  }
+
+  /** Until when a store subscription alone gives Plus (not counting months bought with points). */
+  async storeAccessUntil(userId: string): Promise<number | null> {
+    return resolveEntitlement((await this.repo.listForUser(userId)).map(toState), this.clock.now()).expiresAt;
   }
 
   async limitsFor(userId: string): Promise<PlanLimits> {
@@ -201,6 +216,7 @@ export class SubscriptionsService {
       },
       now,
     ); // fmt: skip
+    await this.hooks.onRefunded?.(row.id);
     return true;
   }
 
@@ -235,7 +251,9 @@ export class SubscriptionsService {
     }
     if (existing) await this.repo.applyState(existing.id, state, now);
     else await this.repo.insert(newId(now), userId, state, now);
-    return (await this.repo.findByExternal(state.provider, state.externalId))!;
+    const row = (await this.repo.findByExternal(state.provider, state.externalId))!;
+    await this.hooks.onStored?.(row);
+    return row;
   }
 
   // ---- simulation (development and stage only) -----------------------------------------------------------------
@@ -306,7 +324,7 @@ export class SubscriptionsService {
         });
         break;
     }
-    await this.repo.applyState(row.id, s, now);
+    await this.store(userId, s); // the same path as the real store, so partners' shares work on stage too
     return this.current(userId);
   }
 }

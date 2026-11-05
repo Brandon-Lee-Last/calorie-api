@@ -90,6 +90,8 @@ export class DiaryService {
     private clock: Clock,
     /** How many meal photos this person may keep (depends on their plan). */
     private photoLimit: (userId: string) => Promise<number> = async () => Number.MAX_SAFE_INTEGER,
+    /** Rewards: an invited friend's logging can earn both of them points. */
+    private onLogged: (userId: string) => Promise<void> = async () => {},
   ) {}
 
   async put(userId: string, id: string, input: EntryInput) {
@@ -121,6 +123,7 @@ export class DiaryService {
       sanitizeClientTime(input.clientUpdatedAt, now),
       now,
     ); // fmt: skip
+    if (applied) await this.onLogged(userId);
     return { applied, record: toEntry((await this.repo.get(userId, id))!) };
   }
 

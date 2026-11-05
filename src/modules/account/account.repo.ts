@@ -90,6 +90,15 @@ export class AccountRepo {
       'local_date, logged_at',
     );
   }
+  points(userId: string) {
+    return all<Record<string, unknown>>(
+      this.db
+        .prepare(
+          'SELECT amount, reason, ref, created_at FROM points_ledger WHERE user_id = ? ORDER BY created_at',
+        )
+        .bind(userId),
+    );
+  }
   coachMessages(userId: string) {
     return all<Record<string, unknown>>(
       this.db

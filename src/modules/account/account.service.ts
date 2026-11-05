@@ -44,6 +44,7 @@ export class AccountService {
       measurements,
       progress,
       coach,
+      points,
     ] = await Promise.all([
       this.repo.profile(userId),
       this.repo.identities(userId),
@@ -60,6 +61,7 @@ export class AccountService {
       this.repo.measurements(userId),
       this.repo.progressPhotos(userId),
       this.repo.coachMessages(userId),
+      this.repo.points(userId),
     ]); // fmt: skip
     return {
       format: 1,
@@ -80,6 +82,7 @@ export class AccountService {
       bodyMeasurements: measurements.map(tidy),
       progressPhotos: progress.map(tidy),
       coachMessages: coach.map(tidy),
+      pangoPoints: points.map(tidy),
     };
   }
 
