@@ -16,7 +16,7 @@ on:
         options: [list, create, report, paid, stop]
         default: list
       name:
-        description: 'create: the gym''s name'
+        description: "create: the gym's name"
         default: ''
       code:
         description: 'create, report, paid, stop: the code (3 to 16 letters and digits)'

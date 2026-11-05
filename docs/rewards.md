@@ -4,11 +4,11 @@ All the numbers live in `src/config/rewards.ts`; change them there.
 
 ## Pango Points
 
-| How | Points | Limits |
-|---|---|---|
-| Add a new food to the food list (with a barcode) | 10 (20) | 5 rewarded foods a day; the numbers must add up (energy within 35% of 4/4/9 kcal per g of protein, carbs, fat); deleting the food takes the points back |
-| Invite a friend who then logs food on 3 different days | 200 to you, 100 to them | 10 rewarded invites a month per person; the friend enters your code within 30 days of joining |
-| Join with a partner's code | the partner's welcome points (200 by default) | one partner per person, within 30 days of joining |
+| How                                                    | Points                                        | Limits                                                                                                                                                  |
+| ------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add a new food to the food list (with a barcode)       | 10 (20)                                       | 5 rewarded foods a day; the numbers must add up (energy within 35% of 4/4/9 kcal per g of protein, carbs, fat); deleting the food takes the points back |
+| Invite a friend who then logs food on 3 different days | 200 to you, 100 to them                       | 10 rewarded invites a month per person; the friend enters your code within 30 days of joining                                                           |
+| Join with a partner's code                             | the partner's welcome points (200 by default) | one partner per person, within 30 days of joining                                                                                                       |
 
 1,000 points buy a month (30 days) of Plus, stacking after any month already bought. Not sold while a Google Play
 subscription is running (those points would be wasted). Months bought with points count as Plus everywhere the API
